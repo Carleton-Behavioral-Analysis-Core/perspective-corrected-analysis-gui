@@ -2,6 +2,7 @@ import sys
 import os
 import cv2
 import time
+import yaml
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
@@ -151,19 +152,22 @@ class MyTabWidget(QWidget):
         self.cwd = os.getcwd()
         # self.path = QFileDialog.getOpenFileName(self,"Open Video File",r"" + str(self.cwd),"Video Files (*.mp4)")
         self.path = QFileDialog.getExistingDirectory(self,"Open the location of the recorded video files",r"" + str(self.cwd))
-        print(self.path)
-        self.vidPath = self.path[0]
+        # print(self.path)
+        # self.vidPath = self.path[0]
 
-
-        if len(self.path[0]) ==0:
+        try:
+            if len(self.path) !=0:
+                try:
+                    self.successLabel.setText('Successfully connected to  "' + str(self.path) + '"') 
+                    self.btnCreateProj.setDisabled(False)
+                    self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
+                except:
+                    self.successLabel.setText("Issue loading folder")
+            else:
+                self.successLabel.setText("Failed to selecting folder")
+            
+        except:
             self.successLabel.setText("Failed to selecting folder")
-        else:
-            try:
-                self.successLabel.setText('Successfully connected to  "' + str(self.path) + '"') 
-                self.btnCreateProj.setDisabled(False)
-                self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
-            except:
-                self.successLabel.setText("Issue loading folder")
         
 
     def Create_DLC_Project(self):
@@ -181,7 +185,18 @@ class MyTabWidget(QWidget):
             cord = pos.split(", ")
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
-        self.pointList.append(cord)    
+        self.pointList.append(cord)  
+        try:
+            with open('config.yaml', 'r') as file:
+                info = yaml.safe_load(file)
+        except:
+            info = {}
+        finally:
+
+            info["points"].append(cord)
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False)   
+
         string = str(cord).replace("[","(")
         string = str(string).replace("]",")")
         
