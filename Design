@@ -8,6 +8,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from PyQt5.QtWidgets import QMessageBox
 
 # Creating the main window
 class App(QMainWindow):
@@ -57,11 +58,26 @@ class MyTabWidget(QWidget):
         # Create first tab
         self.tabDataUpload.layout = QGridLayout()
         self.uploadVideoLabel = QLabel()
-        self.uploadVideoLabel.setText("Upload your video")
+        self.uploadVideoLabel.setText("Upload folders containing videos")
 
         self.successLabel = QLabel()
         self.successLabel.setText("")
 
+        self.listFolders = QListWidget()
+        self.listFolders
+        try:
+            with open('config.yaml', 'r') as file:
+                info = yaml.safe_load(file)
+                if len(info) == 0:
+                    # should probably change to !=3
+                    x = 1/0
+        except:
+            info= {"folderPath": [],"videoPaths":[], "points":[]}
+            with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False)   
+        if len(info["folderPath"]) != self.listFolders.count:
+            # for i in range(len(info["folderPath"])):
+            self.listFolders.addItems(info["folderPath"])
 
         self.btnSearch = QPushButton("Search Folder")
         self.btnSearch.clicked.connect(self.FolderSearch)
@@ -72,7 +88,8 @@ class MyTabWidget(QWidget):
 
 
         self.tabDataUpload.layout.addWidget(self.uploadVideoLabel,0,0,1,4, alignment=QtCore.Qt.AlignCenter)
-        self.tabDataUpload.layout.addWidget(self.successLabel,1,0,1,4, alignment=QtCore.Qt.AlignCenter)       
+        # self.tabDataUpload.layout.addWidget(self.successLabel,1,0,1,4, alignment=QtCore.Qt.AlignCenter)    
+        self.tabDataUpload.layout.addWidget(self.listFolders,1,0,1,4, alignment=QtCore.Qt.AlignCenter)   
         self.tabDataUpload.layout.addWidget(self.btnSearch,2,0,1,1)
         self.tabDataUpload.layout.addWidget(self.searchField,2,1,1,3)
 
@@ -162,9 +179,11 @@ class MyTabWidget(QWidget):
         # Add tabs to widget
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
+
+      
     
     def FolderSearch(self):
-        
+
         self.cwd = os.getcwd()
         # self.path = QFileDialog.getOpenFileName(self,"Open Video File",r"" + str(self.cwd),"Video Files (*.mp4)")
         self.path = QFileDialog.getExistingDirectory(self,"Open the location of the recorded video files",r"" + str(self.cwd))
@@ -186,15 +205,32 @@ class MyTabWidget(QWidget):
                     except:
                         info= {"folderPath": [],"videoPaths":[], "points":[]}
                     finally:
-                        info["folderPath"].append(self.path)
+                         # makes sure not duplicates or has files that are within other selected files
+                        pathAlreadyIn = False
+                        numOfFolders = len(info["folderPath"])
+                        for i in range(numOfFolders):
+                            if info["folderPath"][numOfFolders -(i+1)] in (self.path):
+                                pathAlreadyIn = True
+                            elif self.path in (info["folderPath"][numOfFolders -(i+1)]):
+                                info["folderPath"].pop(numOfFolders -(i+1))
+                                
+                                
+                        if not pathAlreadyIn:
+                            info["folderPath"].append(self.path)
+                        self.listFolders.clear()
+                        self.listFolders.addItems(info["folderPath"])
+
+                        # info["folderPath"].append(self.path)
                         fileList = os.listdir(self.path)
                         for i in range(len(fileList)):
                             fileList[i] = str(self.path) + str(fileList[i])
                         info["videoPaths"] = info["videoPaths"] + fileList
+                        self.uploadVideoLabel.setText("")
                         
                     with open('config.yaml', 'w') as file:
                         yaml.dump(info,file,default_flow_style=False)   
                 except:
+                    print("erroorr")
                     self.successLabel.setText("Issue loading folder")
             else:
                 self.successLabel.setText("Failed to selecting folder")  
@@ -213,10 +249,8 @@ class MyTabWidget(QWidget):
             # Checksif path exist and then cheanges interface and updates changes to yaml
             if os.path.exists(self.path):
                 try:
-                    self.successLabel.setText('Connected  "' + str(self.path) + '"') 
-                    self.btnCreateProj.setDisabled(False)
-                    self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
                     try:
+                        self.path = self.path.replace("\\","/")
                         with open('config.yaml', 'r') as file:
                             info = yaml.safe_load(file)
                             if len(info) == 0:
@@ -224,11 +258,35 @@ class MyTabWidget(QWidget):
                     except:
                         info= {"folderPath": [],"videoPaths":[], "points":[]}
                     finally:
-                        info["folderPath"].append(self.path)
-                        fileList = os.listdir(self.path)
-                        for i in range(len(fileList)):
-                            fileList[i] = str(self.path) + str(fileList[i])
-                        info["videoPaths"] = info["videoPaths"] + fileList
+                         # makes sure not duplicates or has files that are within other selected files
+                        pathAlreadyIn = False
+                        numOfFolders = len(info["folderPath"])
+                        for i in range(numOfFolders):
+                            if info["folderPath"][numOfFolders -(i+1)] in (self.path):
+                                pathAlreadyIn = True
+                            elif self.path in (info["folderPath"][numOfFolders -(i+1)]):
+                                info["folderPath"].pop(numOfFolders -(i+1))
+                                
+                                
+                        if not pathAlreadyIn:
+                            info["folderPath"].append(self.path)
+                        self.listFolders.clear()
+                        self.listFolders.addItems(info["folderPath"])
+
+
+                        # self.successLabel.setText('Connected  "' + str(self.path) + '"') #dont need any longer I think
+                        self.btnCreateProj.setDisabled(False)
+                        self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
+                        
+                        # dont think we need video path
+                        if not pathAlreadyIn:
+                            fileList = os.listdir(self.path)
+                            for i in range(len(fileList)):
+                                fileList[i] = str(self.path) + str(fileList[i])
+                            info["videoPaths"] = info["videoPaths"] + fileList
+                        self.uploadVideoLabel.setText("")
+                        
+                       
                         
                     with open('config.yaml', 'w') as file:
                         yaml.dump(info,file,default_flow_style=False)   
@@ -243,11 +301,20 @@ class MyTabWidget(QWidget):
         # Place Holder
         sender = self.sender()
         print(sender.text() + ' was pressed')
+        self.pop = self.show_popup()
+        self.pop.show()
+        # info= {"folderPath": [],"videoPaths":[], "points":[]}
+        # with open('config.yaml', 'w') as file:
+        #     yaml.dump(info,file,default_flow_style=False)  
+        # was going to have it so it cleared the yaml file and poped up message before it cleared
 
     def Open_DLC_Project(self):
         # Place Holder
         sender = self.sender()
         print(sender.text() + ' was pressed')
+        self.pop = self.show_popup()
+        self.pop.show()
+    #    pop up not yet connected to choices
 
     def locationInImage(self,event):
         pos = str(event.pos())
@@ -285,7 +352,23 @@ class MyTabWidget(QWidget):
             self.labelPointList.setText(str(self.labelPointList.text()) + " , " + string)
         # self.labelPointList = QLabel(str(self.pointList))
 
-  
+    def show_popup(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Warning")
+        msg.setText("Previously saved project may be deleted\nWould you like to proceed?")
+        msg.setIcon(QMessageBox.Warning)
+        msg.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
+        msg.setDefaultButton(QMessageBox.No)
+        
+
+        msg.setDetailedText("may overide yaml file if stored in same location")
+
+        msg.buttonClicked.connect(self.popup_button)
+        return msg
+
+    def popup_button(self, i):
+        print(i.text())
+        # not yet connected to actual yer or no
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
