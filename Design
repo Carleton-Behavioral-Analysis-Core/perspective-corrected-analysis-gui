@@ -15,10 +15,12 @@ def openYaml():
     try:
         with open('config.yaml', 'r') as file:
             info = yaml.safe_load(file)
-            if len(info) != 3:
+            if len(info) != 4:
                 x = 1/0
     except:
-        info= {"folderPath": [],"videoPaths":[], "points":[]}
+        info= {"folderPath": [],"DLCfolderPath": [],"videoPaths":[], "points":[]}
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
     return info
 # Creating the main window
 class App(QMainWindow):
@@ -46,10 +48,12 @@ class MyTabWidget(QWidget):
   
         # Initialize tab screen
         self.tabs = QTabWidget()
-        self.tabDataUpload = QWidget()
+        self.tabCreateOrLoad = QWidget()
+        self.tabFolderDisplay = QWidget()
         self.tabPointSelection = QWidget()
         self.tabProcess = QWidget()
-        self.tabDataReview = QWidget()
+        self.tabScoring = QWidget()
+        self.tabValidation = QWidget()
         # self.tabDataCompare = QWidget()
         self.tabs.resize(300, 200)
         self.path = ""
@@ -59,69 +63,200 @@ class MyTabWidget(QWidget):
         self.framechanges = 0
   
         # Add tabs
-        self.tabs.addTab(self.tabDataUpload, "Upload")
+        self.tabs.addTab(self.tabCreateOrLoad, "Load/Create")
+        self.tabs.addTab(self.tabFolderDisplay, "Folder Display")
         self.tabs.addTab(self.tabPointSelection, "Choose Points")
-        self.tabs.addTab(self.tabProcess, "Process Videos")
-        self.tabs.addTab(self.tabDataReview, "Review")
+        self.tabs.addTab(self.tabScoring, "Scoring")
+        self.tabs.addTab(self.tabValidation, "Validation")
+        self.tabs.addTab(self.tabProcess, "Junk?")
+
+        self.tabs.setStyleSheet("""
+                        QTabBar::tab {
+                            background-color: gray;
+                            color: black;
+                            }
+                        QTabBar::tab:selected { 
+                            background-color: white;
+                            color: black; 
+                            }
+                            """)
+           
+
+       
+
+        self.tabCreateOrLoad.setDisabled(False)
+        self.tabFolderDisplay.setDisabled(True)
+        self.tabPointSelection.setDisabled(True)
+        self.tabScoring.setDisabled(True)
+        self.tabValidation.setDisabled(True)
+        self.tabProcess.setDisabled(True)
+
         # self.tabs.addTab(self.tabDataCompare, "Compare")
   
-        # Create first tab
-        self.tabDataUpload.layout = QGridLayout()
-        self.uploadVideoLabel = QLabel()
-        self.uploadVideoLabel.setText("Upload folders containing videos")
-
-        self.successLabel = QLabel()
-        self.successLabel.setText("")
-
-        self.listFolders = QListWidget()
-        
-        info = openYaml()
-             
-        if len(info["folderPath"]) != self.listFolders.count:
-            # for i in range(len(info["folderPath"])):
-            self.listFolders.addItems(info["folderPath"])
-
-        self.btnDelFolder = QPushButton("Delete Folder")
-        self.btnDelFolder.clicked.connect(self.deleteFolder)
-
-        self.btnSearch = QPushButton("Search Folder")
-        self.btnSearch.clicked.connect(self.FolderSearch)
-
-        self.searchField = QLineEdit()
-        self.searchField.setPlaceholderText("Enter Folder Path")
-        self.searchField.returnPressed.connect(self.FolderSearchField)
-
-
-        self.tabDataUpload.layout.addWidget(self.uploadVideoLabel,0,0,1,4, alignment=QtCore.Qt.AlignCenter)
-        # self.tabDataUpload.layout.addWidget(self.successLabel,1,0,1,4, alignment=QtCore.Qt.AlignCenter)    
-        self.tabDataUpload.layout.addWidget(self.listFolders,1,0,1,4, alignment=QtCore.Qt.AlignCenter)   
-        self.tabDataUpload.layout.addWidget(self.btnSearch,2,0,1,1)
-        self.tabDataUpload.layout.addWidget(self.searchField,2,1,1,2)
-        self.tabDataUpload.layout.addWidget(self.btnDelFolder,2,3,1,1)
-
+        # load or create tab
+        self.tabCreateOrLoad.layout = QHBoxLayout()
         self.btnCreateProj = QPushButton("Create Project")
         self.btnCreateProj.clicked.connect(self.Create_DLC_Project)
-        self.btnCreateProj.setDisabled(True)
-        self.btnCreateProj.setStyleSheet('QPushButton {background-color: red; color: black;}')
-        self.tabDataUpload.layout.addWidget(self.btnCreateProj,3,0,1,2)
+        # self.btnCreateProj.setDisabled(True)
+        self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
+        self.tabCreateOrLoad.layout.addWidget(self.btnCreateProj)
 
         self.btnOpenProj = QPushButton("Open Project")
         self.btnOpenProj.clicked.connect(self.Open_DLC_Project)
         # self.btnOpenProj.setDisabled(True)
         self.btnOpenProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
-        # option to add uploaded files to existing project
-        self.tabDataUpload.layout.addWidget(self.btnOpenProj,3,2,1,2)
+     
+        self.tabCreateOrLoad.layout.addWidget(self.btnOpenProj)
+
+        self.tabCreateOrLoad.setLayout(self.tabCreateOrLoad.layout)
+# Still connected to previous settings need to reconnect for new purpose
+
+        # load or create tab
 
 
-        self.tabDataUpload.setLayout(self.tabDataUpload.layout)
-        # tab 1 end
+        # Create second tab
+        self.tabFolderDisplay.layout = QGridLayout()
+
+        self.labelVideoFolder = QLabel()
+        self.labelVideoFolder.setText("Video Folder")
+
+        self.searchField = QLineEdit()
+        self.searchField.setPlaceholderText("Enter Folder Path")
+        self.searchField.returnPressed.connect(self.FolderSearchField) 
+# Folder search function may have to be changed maybe to something involving yaml for opening folder (not new)
+        
+        self.btnSearchVideoFolder = QPushButton("OPEN")
+        self.btnSearchVideoFolder.clicked.connect(self.FolderSearch)
+
+        self.labelDLCVideoFolder = QLabel()
+        self.labelDLCVideoFolder.setText("DeepLabCut Analysis Folder")
+
+        self.searchFieldDLC = QLineEdit()
+        self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
+        self.searchFieldDLC.returnPressed.connect(self.FolderSearchField) 
+
+        self.btnSearchVideoDLCFolder = QPushButton("OPEN")
+        self.btnSearchVideoDLCFolder.clicked.connect(self.FolderSearch)
+
+        self.labelVidToDLC = QLabel()
+        self.labelVidToDLC.setText("Video to DLC Label Matching")
+
+        self.listVideoFolders = QListWidget()
+        
+        self.labelListVideoTitle = QLabel()
+        self.labelListVideoTitle.setText("Videos")
+
+        self.labelListDLCTitle = QLabel()
+        self.labelListDLCTitle.setText("DeepLabCut Files")
+
+        info = openYaml()
+ 
+        if len(info["videoPaths"]) != self.listVideoFolders.count:
+            self.listVideoFolders.addItems(info["videoPaths"])
+        
+
+        self.listDLCVideoFolders = QListWidget()
+        if len(info["DLCfolderPath"]) != self.listDLCVideoFolders.count:
+            self.listDLCVideoFolders.addItems(info["DLCfolderPath"])
+
+        self.tabFolderDisplay.layout.addWidget(self.labelVideoFolder,0,0,1,4, alignment=QtCore.Qt.AlignCenter)   
+        self.tabFolderDisplay.layout.addWidget(self.searchField,1,0,1,3)
+        self.tabFolderDisplay.layout.addWidget(self.btnSearchVideoFolder,1,3,1,1)
+        self.tabFolderDisplay.layout.addWidget(self.labelDLCVideoFolder,2,0,1,4, alignment=QtCore.Qt.AlignCenter)   
+        self.tabFolderDisplay.layout.addWidget(self.searchFieldDLC,3,0,1,3)
+        self.tabFolderDisplay.layout.addWidget(self.btnSearchVideoDLCFolder,3,3,1,1)
+        self.tabFolderDisplay.layout.addWidget(self.labelVidToDLC,4,0,1,4, alignment=QtCore.Qt.AlignCenter) 
+        self.tabFolderDisplay.layout.addWidget(self.labelListVideoTitle,5,0,1,2, alignment=QtCore.Qt.AlignCenter)
+        self.tabFolderDisplay.layout.addWidget(self.labelListDLCTitle,5,2,1,2, alignment=QtCore.Qt.AlignCenter)  
+        self.tabFolderDisplay.layout.addWidget(self.listVideoFolders,6,0,1,2)
+        self.tabFolderDisplay.layout.addWidget(self.listDLCVideoFolders,6,2,1,2)
+
+        self.tabFolderDisplay.setLayout(self.tabFolderDisplay.layout)
+
+        
+        # tab 2 end
+
+        #tab 3 start
+        self.tabPointSelection.layout = QGridLayout()
+        
+        self.labelBoxWidth = QLabel()
+        self.labelBoxWidth.setText("Box Width [mm]")
+
+        self.FieldBoxWidth = QLineEdit()
+        self.FieldBoxWidth.setPlaceholderText("Enter the box width in mm")
+        self.FieldBoxWidth.returnPressed.connect(self.FolderSearchField) 
+
+        self.labelBoxHeight = QLabel()
+        self.labelBoxHeight.setText("Box Height [mm]")
+
+        self.FieldBoxHeight = QLineEdit()
+        self.FieldBoxHeight.setPlaceholderText("Enter the box height in mmm")
+        self.FieldBoxHeight.returnPressed.connect(self.FolderSearchField) 
+
+        self.btnCreateSchema = QPushButton("CREATE SCHEMA")
+        self.btnCreateSchema.clicked.connect(self.placeHodlerBtn)
+
+        self.btnRegisterCorners = QPushButton("REGISTER CORNERS")
+        self.btnRegisterCorners.clicked.connect(self.placeHodlerBtn)
+
+        self.btnVisualizeRegistrations = QPushButton("Visualize REGISTRATIONS")
+        self.btnVisualizeRegistrations.clicked.connect(self.placeHodlerBtn)
+
+        self.ComboVidMenu = QComboBox()
+        self.ComboVidMenu.addItems(info["videoPaths"])
+
+        self.labelImageOri = QLabel()
+        self.labelImageOri.setText("Original Image Place Holder")
+
+        self.labelImageAlt = QLabel()
+        self.labelImageAlt.setText("Altered Image Place Holder")
+
+
+        self.tabPointSelection.layout.addWidget(self.labelBoxWidth,0,0,1,2, alignment=QtCore.Qt.AlignCenter)
+        self.tabPointSelection.layout.addWidget(self.labelBoxHeight,0,2,1,2, alignment=QtCore.Qt.AlignCenter)      
+        self.tabPointSelection.layout.addWidget(self.FieldBoxWidth,1,0,1,2)
+        self.tabPointSelection.layout.addWidget(self.FieldBoxHeight,1,2,1,2)
+        self.tabPointSelection.layout.addWidget(self.btnCreateSchema,2,0,1,1)
+        self.tabPointSelection.layout.addWidget(self.btnRegisterCorners,2,1,1,1)
+        self.tabPointSelection.layout.addWidget(self.btnVisualizeRegistrations,2,2,1,1)
+        self.tabPointSelection.layout.addWidget(self.ComboVidMenu,2,3,1,1)
+        self.tabPointSelection.layout.addWidget(self.labelImageOri,3,0,1,2)
+        self.tabPointSelection.layout.addWidget(self.labelImageAlt,3,2,1,2)
+
+        self.tabPointSelection.setLayout(self.tabPointSelection.layout)
+        #tab 3 end
+
+        # scoring tab start
+        self.tabScoring.layout = QGridLayout()
+
+        self.btnScoreVid = QPushButton("SCORE VIDEOS")
+        self.btnScoreVid.clicked.connect(self.placeHodlerBtn)
+
+        self.btnCreateVis = QPushButton("CREATE VISUALS")
+        self.btnCreateVis.clicked.connect(self.placeHodlerBtn)
+
+        self.labeltitleVisualScoring = QLabel()
+        self.labeltitleVisualScoring.setText("Visualizations of Scoring Parameters and Results")
+
+        self.labelImageAltScore = QLabel()
+        self.labelImageAltScore.setText("Altered Image Place Holder")
+
+        self.tabScoring.layout.addWidget(self.btnScoreVid,0,0,1,2)
+        self.tabScoring.layout.addWidget(self.btnCreateVis,0,2,1,2)
+        self.tabScoring.layout.addWidget(self.labeltitleVisualScoring,1,0,1,4, alignment=QtCore.Qt.AlignCenter) 
+        self.tabScoring.layout.addWidget(self.labelImageAltScore,2,0,1,4) 
+
+        self.tabScoring.setLayout(self.tabScoring.layout)
+        #tab 3 end
+        # scoring tab end
+
 
         # tab tabPointSelection
 
-        self.tabPointSelection.layout = QVBoxLayout()
+        self.tabProcess.layout = QVBoxLayout()
         self.instructionsPointsLabel = QLabel()
         self.instructionsPointsLabel.setText("Please select the points you wish to use in each of your videos")
-        self.tabPointSelection.layout.addWidget(self.instructionsPointsLabel, alignment=QtCore.Qt.AlignCenter)
+        self.tabProcess.layout.addWidget(self.instructionsPointsLabel, alignment=QtCore.Qt.AlignCenter)
 
         self.pointList = []
 
@@ -140,14 +275,14 @@ class MyTabWidget(QWidget):
         self.labelPointList = QLabel("")
         
 
-        self.tabPointSelection.layout.addWidget(self.labelPointVideo, alignment=QtCore.Qt.AlignCenter)
-        self.tabPointSelection.layout.addWidget(self.labelPointList, alignment=QtCore.Qt.AlignCenter)
-        self.tabPointSelection.setLayout(self.tabPointSelection.layout)
+        self.tabProcess.layout.addWidget(self.labelPointVideo, alignment=QtCore.Qt.AlignCenter)
+        self.tabProcess.layout.addWidget(self.labelPointList, alignment=QtCore.Qt.AlignCenter)
+        self.tabProcess.setLayout(self.tabProcess.layout)
         # tab tabPointSelection end
 
 
         # tab tabProcess 
-        self.tabProcess.layout = QVBoxLayout()
+        
         
         # self.btnCreateProj = QPushButton("Create Project")
         # self.btnCreateProj.clicked.connect(self.Create_DLC_Project)
@@ -162,19 +297,49 @@ class MyTabWidget(QWidget):
         
 
 
-# Need this? tabDataReview /*
+# Need this? tabValidation /*
 
-        self.tabDataReview.layout = QVBoxLayout()
+        self.tabValidation.layout = QGridLayout()
         self.labelVideo = QLabel()
-        self.tabDataReview.layout.addWidget(self.labelVideo, alignment=QtCore.Qt.AlignCenter)
+       
 
-        self.displayFrameChanges = QLabel()
-        self.displayFrameChanges.setText("")
-        self.tabDataReview.layout.addWidget(self.displayFrameChanges, alignment=QtCore.Qt.AlignCenter)
-        # Need this?*/
+        self.labelValidationVideoHeading = QLabel()
+        self.labelValidationVideoHeading.setText("Video")
+
+        self.labelValidationFeatureHeading = QLabel()
+        self.labelValidationFeatureHeading.setText("Not clear how to do")
+
+        self.listVideoFoldersValidation = QListWidget()
+        if len(info["videoPaths"]) != self.listVideoFoldersValidation.count:
+            self.listVideoFoldersValidation.addItems(info["videoPaths"])
 
 
-        self.tabDataReview.setLayout(self.tabDataReview.layout)    
+        self.labelValidationTimeHeading = QLabel()
+        self.labelValidationTimeHeading.setText("Time (s)")
+
+        self.FieldTimeValidation = QLineEdit()
+        self.FieldTimeValidation.setPlaceholderText("Enter Time")
+        self.FieldTimeValidation.returnPressed.connect(self.placeHodlerBtn) 
+
+        self.ComboVidValidationMenu = QComboBox()
+        self.ComboVidValidationMenu.addItems(info["videoPaths"])
+
+        self.PlayBackSpeedValidationMenu = QComboBox()
+        self.PlayBackSpeedValidationMenu.addItems(["0.5","1","2","5","10","30"])
+        
+        self.labelVideoValidation = QLabel()
+        self.labelVideoValidation.setText("Place Holder for Video")
+
+        self.tabValidation.layout.addWidget(self.labelValidationVideoHeading,0,0,1,2)
+        self.tabValidation.layout.addWidget(self.labelValidationFeatureHeading,0,2,1,2)
+        self.tabValidation.layout.addWidget(self.listVideoFoldersValidation,1,0,2,4) 
+        self.tabValidation.layout.addWidget(self.labelValidationTimeHeading,5,2,1,1, alignment=QtCore.Qt.AlignCenter)
+        self.tabValidation.layout.addWidget(self.FieldTimeValidation,6,2,1,1) 
+        self.tabValidation.layout.addWidget(self.ComboVidValidationMenu,5,3,1,1) 
+        self.tabValidation.layout.addWidget(self.PlayBackSpeedValidationMenu,6,3,1,1) 
+        self.tabValidation.layout.addWidget(self.labelVideoValidation,5,0,3,2)
+        
+        self.tabValidation.setLayout(self.tabValidation.layout)    
   
         # Add tabs to widget
         self.layout.addWidget(self.tabs)
@@ -194,9 +359,6 @@ class MyTabWidget(QWidget):
             # Checks path and then cheanges interface and updates changes to yaml
             if len(self.path) !=0:
                 try:
-                    self.successLabel.setText('Successfully connected to  "' + str(self.path) + '"') 
-                    self.btnCreateProj.setDisabled(False)
-                    self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
                     info = openYaml()
                     if True:
                          # makes sure not duplicates or has files that are within other selected files
@@ -211,25 +373,32 @@ class MyTabWidget(QWidget):
                                 
                         if not pathAlreadyIn:
                             info["folderPath"].append(self.path)
-                        self.listFolders.clear()
-                        self.listFolders.addItems(info["folderPath"])
+                        
 
                         # info["folderPath"].append(self.path)
                         fileList = os.listdir(self.path)
-                        for i in range(len(fileList)):
+                        x = len(fileList)
+                        for i in range(x):
                             fileList[i] = str(self.path) + str(fileList[i])
-                        info["videoPaths"] = info["videoPaths"] + fileList
-                        self.uploadVideoLabel.setText("")
+                        for i in range(x):
+                            if fileList[x-(i+1)] != ".mp4":
+                                fileList.pop(x-(i+1))
+
+                        info["videoPaths"] = fileList
+                        self.ComboVidValidationMenu.clear()
+                        self.ComboVidValidationMenu.addItems(info["videoPaths"])
+                        self.listVideoFolders.clear()
+                        self.listVideoFolders.addItems(info["videorPaths"])
                         
-                    with open('config.yaml', 'w') as file:
+                    with open('confi g.yaml', 'w') as file:
                         yaml.dump(info,file,default_flow_style=False)   
                 except:
-                    print("erroorr")
-                    self.successLabel.setText("Issue loading folder")
+                    pass
+                    
             else:
-                self.successLabel.setText("Failed to selecting folder")  
+                pass
         except:
-            self.successLabel.setText("Failed to selecting folder")
+            pass
     
     def FolderSearchField(self):
         self.cwd = os.getcwd()
@@ -279,18 +448,54 @@ class MyTabWidget(QWidget):
         except:
             self.successLabel.setText("Error???")
 
+    def placeHodlerBtn(self):
+        sender = self.sender()
+        print(sender.text() + ' was pressed')
+
     def Create_DLC_Project(self):
+        self.tabCreateOrLoad.setDisabled(False)
+        self.tabFolderDisplay.setDisabled(False)
+        self.tabPointSelection.setDisabled(False)
+        self.tabScoring.setDisabled(False)
+        self.tabValidation.setDisabled(False)
+        self.tabProcess.setDisabled(False)
+        self.tabs.setStyleSheet("""
+                        QTabBar::tab {
+                            background-color: silver;
+                            color: black;
+                            }
+                        QTabBar::tab:selected { 
+                            background-color: white;
+                            color: black; 
+                            }
+                            """)
         # Place Holder
         sender = self.sender()
         print(sender.text() + ' was pressed')
         self.pop = self.show_popup()
         self.pop.show()
-        # info= {"folderPath": [],"videoPaths":[], "points":[]}
+        # info= {"folderPath": [],"DLCfolderPath": [],"videoPaths":[], "points":[]}
         # with open('config.yaml', 'w') as file:
-        #     yaml.dump(info,file,default_flow_style=False)  
+        #     yaml.dump(info,file,default_flow_style=False) 
         # was going to have it so it cleared the yaml file and poped up message before it cleared
 
     def Open_DLC_Project(self):
+        self.tabCreateOrLoad.setDisabled(False)
+        self.tabFolderDisplay.setDisabled(False)
+        self.tabPointSelection.setDisabled(False)
+        self.tabScoring.setDisabled(False)
+        self.tabValidation.setDisabled(False)
+        self.tabProcess.setDisabled(False)
+        self.tabs.setStyleSheet("""
+                        QTabBar::tab {
+                            background-color: silver;
+                            color: black;
+                            }
+                        QTabBar::tab:selected { 
+                            background-color: white;
+                            color: black; 
+                            }
+                            """)
         # Place Holder
         sender = self.sender()
         print(sender.text() + ' was pressed')
