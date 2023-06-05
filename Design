@@ -15,10 +15,10 @@ def openYaml():
     try:
         with open('config.yaml', 'r') as file:
             info = yaml.safe_load(file)
-            if len(info) != 4:
+            if len(info) != 7:
                 x = 1/0
     except:
-        info= {"folderPath": [],"DLCfolderPath": [],"videoPaths":[], "points":[]}
+        info= {"folderPath": [],"DLCfolderPath": [],"videoPaths":[],"DLCvideoPaths":[], "points":[],"BoxHeight":[],"BoxWidth":[],"Name":"","Path":[]}
         with open('config.yaml', 'w') as file:
             yaml.dump(info,file,default_flow_style=False) 
     return info
@@ -45,17 +45,21 @@ class MyTabWidget(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.layout = QVBoxLayout(self)
-  
-        # Initialize tab screen
-        self.tabs = QTabWidget()
+
+        self.startTab = QTabWidget()
         self.tabCreateOrLoad = QWidget()
+        self.startTab.resize(300, 200)
+
+        # Initialize tab screen
+        self.tabCreate = QWidget()
+        self.tabLoad = QWidget()
         self.tabFolderDisplay = QWidget()
         self.tabPointSelection = QWidget()
         self.tabProcess = QWidget()
         self.tabScoring = QWidget()
         self.tabValidation = QWidget()
         # self.tabDataCompare = QWidget()
-        self.tabs.resize(300, 200)
+       
         self.path = ""
         self.vidPath = ""
         self.cmd = ""
@@ -63,16 +67,12 @@ class MyTabWidget(QWidget):
         self.framechanges = 0
   
         # Add tabs
-        self.tabs.addTab(self.tabCreateOrLoad, "Load/Create")
-        self.tabs.addTab(self.tabFolderDisplay, "Folder Display")
-        self.tabs.addTab(self.tabPointSelection, "Choose Points")
-        self.tabs.addTab(self.tabScoring, "Scoring")
-        self.tabs.addTab(self.tabValidation, "Validation")
-        self.tabs.addTab(self.tabProcess, "Junk?")
+        self.startTab.addTab(self.tabCreateOrLoad, "Load/Create")
+        
 
-        self.tabs.setStyleSheet("""
+        self.startTab.setStyleSheet("""
                         QTabBar::tab {
-                            background-color: gray;
+                            background-color: silver;
                             color: black;
                             }
                         QTabBar::tab:selected { 
@@ -80,16 +80,6 @@ class MyTabWidget(QWidget):
                             color: black; 
                             }
                             """)
-           
-
-       
-
-        self.tabCreateOrLoad.setDisabled(False)
-        self.tabFolderDisplay.setDisabled(True)
-        self.tabPointSelection.setDisabled(True)
-        self.tabScoring.setDisabled(True)
-        self.tabValidation.setDisabled(True)
-        self.tabProcess.setDisabled(True)
 
         # self.tabs.addTab(self.tabDataCompare, "Compare")
   
@@ -109,6 +99,59 @@ class MyTabWidget(QWidget):
         self.tabCreateOrLoad.layout.addWidget(self.btnOpenProj)
 
         self.tabCreateOrLoad.setLayout(self.tabCreateOrLoad.layout)
+
+        self.tabCreate.layout = QGridLayout()
+
+        
+        self.labelName = QLabel("Project Name:")
+        
+
+        self.projNameField = QLineEdit()
+        self.projNameField.setPlaceholderText("Enter the Project Name")
+        self.projNameField.returnPressed.connect(self.StoreProjName) 
+
+        self.labelProjPath = QLabel("Project Path:")
+
+        self.projLocField = QLineEdit()
+        self.projLocField.setPlaceholderText("Enter the project path")
+        self.projLocField.returnPressed.connect(self.StoreProjLocation) 
+        
+        self.btnProjPath = QPushButton("Project Path")
+        self.btnProjPath.clicked.connect(self.PathSearch)
+
+        self.btnCreate = QPushButton("Create Project")
+        self.btnCreate.clicked.connect(self.toNext)
+
+        self.tabCreate.layout.addWidget(self.labelName,0,0,1,1)   
+        self.tabCreate.layout.addWidget(self.projNameField,0,1,1,3)
+        self.tabCreate.layout.addWidget(self.labelProjPath,1,0,1,1)
+        self.tabCreate.layout.addWidget(self.projLocField,1,1,1,2)   
+        self.tabCreate.layout.addWidget(self.btnProjPath,1,3,1,1)
+        self.tabCreate.layout.addWidget(self.btnCreate,2,0,1,4)
+
+        self.tabCreate.setLayout(self.tabCreate.layout) 
+        
+        self.tabLoad.layout = QGridLayout()
+        self.labelProjPathv2 = QLabel("Project Path:")
+
+        self.projLocFieldv2 = QLineEdit()
+        self.projLocFieldv2.setPlaceholderText("Enter the project path")
+        self.projLocFieldv2.returnPressed.connect(self.StoreProjLocationv2) 
+        
+        self.btnProjPathv2 = QPushButton("Project Path")
+        self.btnProjPathv2.clicked.connect(self.PathSearch)
+
+        self.btnLoad = QPushButton("Load Project")
+        self.btnLoad.clicked.connect(self.toNext)
+
+      
+        self.tabLoad.layout.addWidget(self.labelProjPathv2,0,0,1,1)
+        self.tabLoad.layout.addWidget(self.projLocFieldv2,0,1,1,2)   
+        self.tabLoad.layout.addWidget(self.btnProjPathv2,0,3,1,1)
+        self.tabLoad.layout.addWidget(self.btnLoad,1,0,1,4)
+
+        self.tabLoad.setLayout(self.tabLoad.layout) 
+
 # Still connected to previous settings need to reconnect for new purpose
 
         # load or create tab
@@ -180,18 +223,22 @@ class MyTabWidget(QWidget):
         self.tabPointSelection.layout = QGridLayout()
         
         self.labelBoxWidth = QLabel()
-        self.labelBoxWidth.setText("Box Width [mm]")
+        self.labelBoxWidth.setSizePolicy(30,10)
+        self.labelBoxWidth.setFixedHeight(10)
+        self.labelBoxWidth.setText("Box Width [mm]:")
 
         self.FieldBoxWidth = QLineEdit()
         self.FieldBoxWidth.setPlaceholderText("Enter the box width in mm")
-        self.FieldBoxWidth.returnPressed.connect(self.FolderSearchField) 
+        self.FieldBoxWidth.returnPressed.connect(self.boxWidthSave) 
 
         self.labelBoxHeight = QLabel()
-        self.labelBoxHeight.setText("Box Height [mm]")
+        self.labelBoxHeight.setSizePolicy(30,10)
+        self.labelBoxHeight.setFixedHeight(10)
+        self.labelBoxHeight.setText("Box Height [mm]:")
 
         self.FieldBoxHeight = QLineEdit()
         self.FieldBoxHeight.setPlaceholderText("Enter the box height in mmm")
-        self.FieldBoxHeight.returnPressed.connect(self.FolderSearchField) 
+        self.FieldBoxHeight.returnPressed.connect(self.boxHeightSave) 
 
         self.btnCreateSchema = QPushButton("CREATE SCHEMA")
         self.btnCreateSchema.clicked.connect(self.placeHodlerBtn)
@@ -212,8 +259,8 @@ class MyTabWidget(QWidget):
         self.labelImageAlt.setText("Altered Image Place Holder")
 
 
-        self.tabPointSelection.layout.addWidget(self.labelBoxWidth,0,0,1,2, alignment=QtCore.Qt.AlignCenter)
-        self.tabPointSelection.layout.addWidget(self.labelBoxHeight,0,2,1,2, alignment=QtCore.Qt.AlignCenter)      
+        self.tabPointSelection.layout.addWidget(self.labelBoxWidth,0,0,1,2)
+        self.tabPointSelection.layout.addWidget(self.labelBoxHeight,0,2,1,2)      
         self.tabPointSelection.layout.addWidget(self.FieldBoxWidth,1,0,1,2)
         self.tabPointSelection.layout.addWidget(self.FieldBoxHeight,1,2,1,2)
         self.tabPointSelection.layout.addWidget(self.btnCreateSchema,2,0,1,1)
@@ -307,7 +354,7 @@ class MyTabWidget(QWidget):
         self.labelValidationVideoHeading.setText("Video")
 
         self.labelValidationFeatureHeading = QLabel()
-        self.labelValidationFeatureHeading.setText("Not clear how to do")
+        self.labelValidationFeatureHeading.setText("Not clear how to do Features")
 
         self.listVideoFoldersValidation = QListWidget()
         if len(info["videoPaths"]) != self.listVideoFoldersValidation.count:
@@ -327,6 +374,7 @@ class MyTabWidget(QWidget):
         self.PlayBackSpeedValidationMenu = QComboBox()
         self.PlayBackSpeedValidationMenu.addItems(["0.5","1","2","5","10","30"])
         
+        
         self.labelVideoValidation = QLabel()
         self.labelVideoValidation.setText("Place Holder for Video")
 
@@ -342,7 +390,7 @@ class MyTabWidget(QWidget):
         self.tabValidation.setLayout(self.tabValidation.layout)    
   
         # Add tabs to widget
-        self.layout.addWidget(self.tabs)
+        self.layout.addWidget(self.startTab)
         self.setLayout(self.layout)
 
       
@@ -350,125 +398,202 @@ class MyTabWidget(QWidget):
     def FolderSearch(self):
 
         self.cwd = os.getcwd()
-        # self.path = QFileDialog.getOpenFileName(self,"Open Video File",r"" + str(self.cwd),"Video Files (*.mp4)")
         self.path = QFileDialog.getExistingDirectory(self,"Open the location of the recorded video files",r"" + str(self.cwd))
-        # print(self.path)
-        # self.vidPath = self.path[0]
-
         try:
             # Checks path and then cheanges interface and updates changes to yaml
             if len(self.path) !=0:
                 try:
                     info = openYaml()
-                    if True:
-                         # makes sure not duplicates or has files that are within other selected files
-                        pathAlreadyIn = False
-                        numOfFolders = len(info["folderPath"])
-                        for i in range(numOfFolders):
-                            if info["folderPath"][numOfFolders -(i+1)] in (self.path):
-                                pathAlreadyIn = True
-                            elif self.path in (info["folderPath"][numOfFolders -(i+1)]):
-                                info["folderPath"].pop(numOfFolders -(i+1))
-                                
-                                
-                        if not pathAlreadyIn:
-                            info["folderPath"].append(self.path)
-                        
-
-                        # info["folderPath"].append(self.path)
-                        fileList = os.listdir(self.path)
-                        x = len(fileList)
-                        for i in range(x):
-                            fileList[i] = str(self.path) + str(fileList[i])
-                        for i in range(x):
-                            if fileList[x-(i+1)] != ".mp4":
-                                fileList.pop(x-(i+1))
-
-                        info["videoPaths"] = fileList
-                        self.ComboVidValidationMenu.clear()
-                        self.ComboVidValidationMenu.addItems(info["videoPaths"])
-                        self.listVideoFolders.clear()
-                        self.listVideoFolders.addItems(info["videorPaths"])
-                        
-                    with open('confi g.yaml', 'w') as file:
-                        yaml.dump(info,file,default_flow_style=False)   
-                except:
-                    pass
+                    info["folderPath"] = [self.path]
                     
+                    fileList = os.listdir(self.path)
+                    x = len(fileList)
+                    for i in range(x):
+                        if not fileList[x-(i+1)].endswith(".mp4"):
+                            fileList.pop(x-(i+1))
+                    info["videoPaths"] = fileList
+                       
+                    with open('config.yaml', 'w') as file:
+                        yaml.dump(info,file,default_flow_style=False)   
+                    self.yamlUpdateUI()
+                except:
+                    print("error 4")     
             else:
-                pass
+                print("error 5")
         except:
-            pass
+            print("error 6")
     
     def FolderSearchField(self):
         self.cwd = os.getcwd()
-        # self.path = QFileDialog.getOpenFileName(self,"Open Video File",r"" + str(self.cwd),"Video Files (*.mp4)")
         self.path = self.searchField.text()
-        # print(self.path)
-        # self.vidPath = self.path[0]
         try:
             # Checksif path exist and then cheanges interface and updates changes to yaml
             if os.path.exists(self.path):
                 try:
                     self.path = self.path.replace("\\","/")
                     info = openYaml()
-                    if True:
-                         # makes sure not duplicates or has files that are within other selected files
-                        pathAlreadyIn = False
-                        numOfFolders = len(info["folderPath"])
-                        for i in range(numOfFolders):
-                            if info["folderPath"][numOfFolders -(i+1)] in (self.path):
-                                pathAlreadyIn = True
-                            elif self.path in (info["folderPath"][numOfFolders -(i+1)]):
-                                info["folderPath"].pop(numOfFolders -(i+1))
-                                          
-                        if not pathAlreadyIn:
-                            info["folderPath"].append(self.path)
-                        self.listFolders.clear()
-                        self.listFolders.addItems(info["folderPath"])
+                    info["folderPath"][0] = self.path
+                    fileList = os.listdir(self.path)
+                    x = len(fileList)
+                       
+                    for i in range(x):
+                        if not fileList[x-(i+1)].endswith(".mp4"):
+                            fileList.pop(x-(i+1))
 
-                        # self.successLabel.setText('Connected  "' + str(self.path) + '"') #dont need any longer I think
-                        self.btnCreateProj.setDisabled(False)
-                        self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
-                        
-                        # dont think we need video path
-                        if not pathAlreadyIn:
-                            fileList = os.listdir(self.path)
-                            for i in range(len(fileList)):
-                                fileList[i] = str(self.path) + str(fileList[i])
-                            info["videoPaths"] = info["videoPaths"] + fileList
-                        self.uploadVideoLabel.setText("")
+                    info["videoPaths"] = fileList
                                      
                     with open('config.yaml', 'w') as file:
-                        yaml.dump(info,file,default_flow_style=False)   
+                        yaml.dump(info,file,default_flow_style=False) 
+                    self.yamlUpdateUI()  
                 except:
-                    self.successLabel.setText("Issue loading folder")
+                    print("error 1")
             else:
-                self.successLabel.setText("Invalid Path")  
+                print("error 2")
         except:
-            self.successLabel.setText("Error???")
+            print("error 3")
+
+    def yamlUpdateUI(self):
+        info = openYaml()
+
+        
+        if len(info["folderPath"]) != 0:
+            self.searchField.setText("")
+            self.searchField.setPlaceholderText(info["folderPath"][0])
+        else:
+            self.searchField.setPlaceholderText("Enter Folder Path")
+
+        if len(info["DLCfolderPath"]) != 0:
+            self.searchFieldDLC.setText("")
+            self.searchFieldDLC.setPlaceholderText(info["DLCfolderPath"][0])
+        else:
+            self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
+        
+        self.listVideoFolders.clear()
+        self.listVideoFolders.addItems(info["videoPaths"])
+
+        self.listDLCVideoFolders.clear()
+        self.listDLCVideoFolders.addItems(info["DLCfolderPath"])
+
+        self.ComboVidMenu.clear()
+        self.ComboVidMenu.addItems(info["videoPaths"])
+
+        self.ComboVidValidationMenu.clear()
+        self.ComboVidValidationMenu.addItems(info["videoPaths"])
+
+        self.listVideoFoldersValidation.clear()
+        self.listVideoFoldersValidation.addItems(info["videoPaths"])
+
+        if len(info["BoxWidth"][0]) != 0:
+            self.FieldBoxWidth.setText("")
+            self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"][0]))
+        else:
+            self.FieldBoxWidth.setPlaceholderText("Enter the box width in mm")
+
+        if len(info["BoxHeight"][0]) != 0:
+            self.FieldBoxHeight.setText("")
+            self.FieldBoxHeight.setPlaceholderText(str(info["BoxHeight"][0]))
+        else:
+            self.FieldBoxHeight.setPlaceholderText("Enter the box height in mmm")
+
+    def StoreProjName(self):
+        name = self.projNameField.text()  
+        info = openYaml()
+        info["Name"] = name
+        self.projNameField.setText("")
+        self.projNameField.setPlaceholderText(str(name))
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
+    
+    def StoreProjLocation(self):
+        loc = self.projLocField.text()
+         
+        if os.path.exists(loc):
+            info = openYaml()
+            info["Path"] = loc
+            self.projLocField.setText("")
+            self.projLocField.setPlaceholderText(str(loc))
+            self.projLocFieldv2.setText("")
+            self.projLocFieldv2.setPlaceholderText(str(loc))
+            with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False) 
+        else:
+            self.projLocField.setText("")
+            self.projLocField.setPlaceholderText("Invalid Path Name")
+            
+    def StoreProjLocationv2(self):
+        loc = self.projLocFieldv2.text()  
+        if os.path.exists(loc):
+            info = openYaml()
+            info["Path"] = loc
+            self.projLocField.setText("")
+            self.projLocField.setPlaceholderText(str(loc))
+            self.projLocFieldv2.setText("")
+            self.projLocFieldv2.setPlaceholderText(str(loc))
+            with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False) 
+        else:
+            self.projLocFieldv2.setText("")
+            self.projLocFieldv2.setPlaceholderText("Invalid Path Name")
+
+
+    def PathSearch(self):
+
+        self.cwd = os.getcwd()
+        self.path = QFileDialog.getExistingDirectory(self,"Open the location of the folder",r"" + str(self.cwd))
+        try:
+            # Checks path and then cheanges interface and updates changes to yaml
+            if len(self.path) !=0:
+                    info = openYaml()
+                    info["Path"] = self.path
+                    self.projLocField.setPlaceholderText(self.path)
+                    self.projLocFieldv2.setPlaceholderText(self.path)
+                    with open('config.yaml', 'w') as file:
+                        yaml.dump(info,file,default_flow_style=False)   
+                    
+        except:
+            print("Something Failed")
+
+    def boxWidthSave(self):
+        bw = self.FieldBoxWidth.text()
+        # try:
+        if True:
+            eval(bw + "+0")
+            bw = float(bw)
+            info = openYaml()
+            info["BoxWidth"] = [bw]
+            self.FieldBoxWidth.setText("")
+            self.FieldBoxWidth.setPlaceholderText(str(bw))
+            with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False) 
+
+        # except:
+        #     self.FieldBoxWidth.setText("Invalid Entry")
+    
+    def boxHeightSave(self):
+        bh = self.FieldBoxHeight.text()
+        try:
+            eval(bh + "+0")
+            bh = float(bh)
+            info = openYaml()
+            info["BoxHeight"] = [bh]
+            self.FieldBoxHeight.setText("")
+            self.FieldBoxHeight.setPlaceholderText(str(bh))
+            with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False) 
+
+        except:
+            self.FieldBoxHeight.setText("Invalid Entry")
 
     def placeHodlerBtn(self):
         sender = self.sender()
         print(sender.text() + ' was pressed')
 
     def Create_DLC_Project(self):
-        self.tabCreateOrLoad.setDisabled(False)
-        self.tabFolderDisplay.setDisabled(False)
-        self.tabPointSelection.setDisabled(False)
-        self.tabScoring.setDisabled(False)
-        self.tabValidation.setDisabled(False)
-        self.tabProcess.setDisabled(False)
-        self.tabs.setStyleSheet("""
-                        QTabBar::tab {
-                            background-color: silver;
-                            color: black;
-                            }
-                        QTabBar::tab:selected { 
-                            background-color: white;
-                            color: black; 
-                            }
-                            """)
+        try:
+            self.startTab.removeTab(1)
+        except:
+            pass
+        self.startTab.addTab(self.tabCreate,"Create")
         # Place Holder
         sender = self.sender()
         print(sender.text() + ' was pressed')
@@ -478,30 +603,34 @@ class MyTabWidget(QWidget):
         # with open('config.yaml', 'w') as file:
         #     yaml.dump(info,file,default_flow_style=False) 
         # was going to have it so it cleared the yaml file and poped up message before it cleared
+        
+        # self.layout.remove(self.startTab)
+        # QObjectCleanupHandler().add(self.layout())
+        
+        # q = QWidget().setLayout(self.layout())
+        # del q
+        # layout = QGridLayout(self)
+        
+        
+        # self.layout2 = QVBoxLayout(self)
+        # self.layout2.addWidget(self.tabs)
+        # print("3")
+        # self.setLayout(self.layout2)
 
     def Open_DLC_Project(self):
-        self.tabCreateOrLoad.setDisabled(False)
-        self.tabFolderDisplay.setDisabled(False)
-        self.tabPointSelection.setDisabled(False)
-        self.tabScoring.setDisabled(False)
-        self.tabValidation.setDisabled(False)
-        self.tabProcess.setDisabled(False)
-        self.tabs.setStyleSheet("""
-                        QTabBar::tab {
-                            background-color: silver;
-                            color: black;
-                            }
-                        QTabBar::tab:selected { 
-                            background-color: white;
-                            color: black; 
-                            }
-                            """)
+        try:
+            self.startTab.removeTab(1)
+        except:
+            pass
+        self.startTab.addTab(self.tabLoad,"Load")
         # Place Holder
         sender = self.sender()
         print(sender.text() + ' was pressed')
         self.pop = self.show_popup()
         self.pop.show()
     #    pop up not yet connected to choices
+       
+        
 
     def locationInImage(self,event):
         pos = str(event.pos())
@@ -528,6 +657,20 @@ class MyTabWidget(QWidget):
         else:
             self.labelPointList.setText(str(self.labelPointList.text()) + " , " + string)
         # self.labelPointList = QLabel(str(self.pointList))
+    
+    def toNext(self):
+        try:
+            self.startTab.removeTab(0)
+            self.startTab.removeTab(0)
+        except:
+            pass
+        self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
+        self.startTab.addTab(self.tabPointSelection, "Choose Points")
+        self.startTab.addTab(self.tabScoring, "Scoring")
+        self.startTab.addTab(self.tabValidation, "Validation")
+        self.startTab.addTab(self.tabProcess, "Junk?")
+
+
 
     def show_popup(self):
         msg = QMessageBox()
@@ -546,15 +689,7 @@ class MyTabWidget(QWidget):
         print(i.text())
         # not yet connected to actual yer or no
 
-    def deleteFolder(self):
-        curRow = self.listFolders.currentRow()
-        if curRow >= 0:
-            Folder = self.listFolders.takeItem(curRow)
-            del Folder
-            info = openYaml()
-            info["folderPath"].pop(curRow)
-            with open('config.yaml', 'w') as file:
-                            yaml.dump(info,file,default_flow_style=False)
+    
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
