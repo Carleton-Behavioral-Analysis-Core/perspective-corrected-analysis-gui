@@ -22,6 +22,7 @@ def openYaml():
         with open('config.yaml', 'w') as file:
             yaml.dump(info,file,default_flow_style=False) 
     return info
+
 # Creating the main window
 class App(QMainWindow):
     def __init__(self):
@@ -58,18 +59,19 @@ class MyTabWidget(QWidget):
         self.tabProcess = QWidget()
         self.tabScoring = QWidget()
         self.tabValidation = QWidget()
-        # self.tabDataCompare = QWidget()
-       
+        
+        # Dont think I need most of these
         self.path = ""
         self.vidPath = ""
         self.cmd = ""
         self.title =""
         self.framechanges = 0
-  
+        info = openYaml()
+
         # Add tabs
         self.startTab.addTab(self.tabCreateOrLoad, "Load/Create")
         
-
+        # Styles
         self.startTab.setStyleSheet("""
                         QTabBar::tab {
                             background-color: silver;
@@ -81,31 +83,32 @@ class MyTabWidget(QWidget):
                             }
                             """)
 
-        # self.tabs.addTab(self.tabDataCompare, "Compare")
-  
+ 
         # load or create tab
         self.tabCreateOrLoad.layout = QHBoxLayout()
+
+
         self.btnCreateProj = QPushButton("Create Project")
         self.btnCreateProj.clicked.connect(self.Create_DLC_Project)
-        # self.btnCreateProj.setDisabled(True)
         self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
-        self.tabCreateOrLoad.layout.addWidget(self.btnCreateProj)
+        
 
         self.btnOpenProj = QPushButton("Open Project")
         self.btnOpenProj.clicked.connect(self.Open_DLC_Project)
-        # self.btnOpenProj.setDisabled(True)
         self.btnOpenProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
-     
+
+        self.tabCreateOrLoad.layout.addWidget(self.btnCreateProj)
         self.tabCreateOrLoad.layout.addWidget(self.btnOpenProj)
 
         self.tabCreateOrLoad.setLayout(self.tabCreateOrLoad.layout)
 
+
+        # Create taab
         self.tabCreate.layout = QGridLayout()
 
         
         self.labelName = QLabel("Project Name:")
         
-
         self.projNameField = QLineEdit()
         self.projNameField.setPlaceholderText("Enter the Project Name")
         self.projNameField.returnPressed.connect(self.StoreProjName) 
@@ -134,7 +137,11 @@ class MyTabWidget(QWidget):
 
         self.tabCreate.setLayout(self.tabCreate.layout) 
         
+
+        # Load tab
         self.tabLoad.layout = QGridLayout()
+
+
         self.labelProjPathv2 = QLabel("Project Path:")
 
         self.projLocFieldv2 = QLineEdit()
@@ -149,7 +156,6 @@ class MyTabWidget(QWidget):
 
         self.loadhelplabel = QLabel("")
 
-      
         self.tabLoad.layout.addWidget(self.labelProjPathv2,0,0,1,1)
         self.tabLoad.layout.addWidget(self.projLocFieldv2,0,1,1,2)   
         self.tabLoad.layout.addWidget(self.btnProjPathv2,0,3,1,1)
@@ -158,13 +164,10 @@ class MyTabWidget(QWidget):
 
         self.tabLoad.setLayout(self.tabLoad.layout) 
 
-# Still connected to previous settings need to reconnect for new purpose
 
-        # load or create tab
-
-
-        # Create second tab
+        # Folder Display tab
         self.tabFolderDisplay.layout = QGridLayout()
+
 
         self.labelVideoFolder = QLabel()
         self.labelVideoFolder.setText("Video Folder")
@@ -198,8 +201,6 @@ class MyTabWidget(QWidget):
         self.labelListDLCTitle = QLabel()
         self.labelListDLCTitle.setText("DeepLabCut Files")
 
-        info = openYaml()
- 
         if len(info["videoPaths"]) != self.listVideoFolders.count:
             self.listVideoFolders.addItems(info["videoPaths"])
         
@@ -222,10 +223,9 @@ class MyTabWidget(QWidget):
 
         self.tabFolderDisplay.setLayout(self.tabFolderDisplay.layout)
 
-        
-        # tab 2 end
 
-        #tab 3 start
+        
+        #Point selection tab 
         self.tabPointSelection.layout = QGridLayout()
         
         self.labelBoxWidth = QLabel()
@@ -277,10 +277,12 @@ class MyTabWidget(QWidget):
         self.tabPointSelection.layout.addWidget(self.labelImageAlt,3,2,1,2)
 
         self.tabPointSelection.setLayout(self.tabPointSelection.layout)
-        #tab 3 end
+       
+
 
         # scoring tab start
         self.tabScoring.layout = QGridLayout()
+
 
         self.btnScoreVid = QPushButton("SCORE VIDEOS")
         self.btnScoreVid.clicked.connect(self.placeHodlerBtn)
@@ -288,11 +290,9 @@ class MyTabWidget(QWidget):
         self.btnCreateVis = QPushButton("CREATE VISUALS")
         self.btnCreateVis.clicked.connect(self.placeHodlerBtn)
 
-        self.labeltitleVisualScoring = QLabel()
-        self.labeltitleVisualScoring.setText("Visualizations of Scoring Parameters and Results")
+        self.labeltitleVisualScoring = QLabel("Visualizations of Scoring Parameters and Results")
 
-        self.labelImageAltScore = QLabel()
-        self.labelImageAltScore.setText("Altered Image Place Holder")
+        self.labelImageAltScore = QLabel("Altered Image Place Holder")
 
         self.tabScoring.layout.addWidget(self.btnScoreVid,0,0,1,2)
         self.tabScoring.layout.addWidget(self.btnCreateVis,0,2,1,2)
@@ -300,75 +300,24 @@ class MyTabWidget(QWidget):
         self.tabScoring.layout.addWidget(self.labelImageAltScore,2,0,1,4) 
 
         self.tabScoring.setLayout(self.tabScoring.layout)
-        #tab 3 end
-        # scoring tab end
+      
 
 
-        # tab tabPointSelection
-
-        self.tabProcess.layout = QVBoxLayout()
-        self.instructionsPointsLabel = QLabel()
-        self.instructionsPointsLabel.setText("Please select the points you wish to use in each of your videos")
-        self.tabProcess.layout.addWidget(self.instructionsPointsLabel, alignment=QtCore.Qt.AlignCenter)
-
-        self.pointList = []
-
-        # self.Frame = QFrame()
-        self.labelPointVideo = QLabel("Dummy replacement for image")
-        # self.labelPointVideo.setText("Dummy replacement for image")
-        # self.labelPointVideo.set(True)
-        # Prints position on label could be used for position on image to track points
-        self.labelPointVideo.mousePressEvent = lambda event: self.locationInImage(event)
-        # self.labelPointVideo.mousePressEvent = lambda event: self.pointList.append(event.pos())
-        self.labelPointVideo.setStyleSheet("QLabel {background-color: grey; color: black;}")
-        # self.labelPointVideo.mousePressEvent() = self.locationInImage
-        # self.locationInImage(self.labelPointVideo.mousePressEvent())
-        # self.Frame.show()
-
-        self.labelPointList = QLabel("")
-        
-
-        self.tabProcess.layout.addWidget(self.labelPointVideo, alignment=QtCore.Qt.AlignCenter)
-        self.tabProcess.layout.addWidget(self.labelPointList, alignment=QtCore.Qt.AlignCenter)
-        self.tabProcess.setLayout(self.tabProcess.layout)
-        # tab tabPointSelection end
-
-
-        # tab tabProcess 
-        
-        
-        # self.btnCreateProj = QPushButton("Create Project")
-        # self.btnCreateProj.clicked.connect(self.Create_DLC_Project)
-        # self.btnCreateProj.setDisabled(True)
-        # self.btnCreateProj.setStyleSheet('QPushButton {background-color: red; color: black;}')
-        # self.tabProcess.layout.addWidget(self.btnCreateProj, alignment=QtCore.Qt.AlignCenter)
-
-        self.tabProcess.setLayout(self.tabProcess.layout)
-
-
-        # tab tabProcess end
-        
-
-
-# Need this? tabValidation /*
-
+        # Validation tab
         self.tabValidation.layout = QGridLayout()
+
+
         self.labelVideo = QLabel()
        
+        self.labelValidationVideoHeading = QLabel("Video")
 
-        self.labelValidationVideoHeading = QLabel()
-        self.labelValidationVideoHeading.setText("Video")
-
-        self.labelValidationFeatureHeading = QLabel()
-        self.labelValidationFeatureHeading.setText("Not clear how to do Features")
+        self.labelValidationFeatureHeading = QLabel("Not clear how to do Features")
 
         self.listVideoFoldersValidation = QListWidget()
         if len(info["videoPaths"]) != self.listVideoFoldersValidation.count:
             self.listVideoFoldersValidation.addItems(info["videoPaths"])
 
-
-        self.labelValidationTimeHeading = QLabel()
-        self.labelValidationTimeHeading.setText("Time (s)")
+        self.labelValidationTimeHeading = QLabel("Time (s)")
 
         self.FieldTimeValidation = QLineEdit()
         self.FieldTimeValidation.setPlaceholderText("Enter Time")
@@ -379,7 +328,6 @@ class MyTabWidget(QWidget):
 
         self.PlayBackSpeedValidationMenu = QComboBox()
         self.PlayBackSpeedValidationMenu.addItems(["0.5","1","2","5","10","30"])
-        
         
         self.labelVideoValidation = QLabel()
         self.labelVideoValidation.setText("Place Holder for Video")
@@ -393,7 +341,56 @@ class MyTabWidget(QWidget):
         self.tabValidation.layout.addWidget(self.PlayBackSpeedValidationMenu,6,3,1,1) 
         self.tabValidation.layout.addWidget(self.labelVideoValidation,5,0,3,2)
         
-        self.tabValidation.setLayout(self.tabValidation.layout)    
+        self.tabValidation.setLayout(self.tabValidation.layout) 
+
+
+
+        # # Mess of tabs dont think are needed
+        # # tab tabPointSelection
+        # self.tabProcess.layout = QVBoxLayout()
+
+
+        # self.instructionsPointsLabel = QLabel("Please select the points you wish to use in each of your videos")
+        # self.tabProcess.layout.addWidget(self.instructionsPointsLabel, alignment=QtCore.Qt.AlignCenter)
+
+        # self.pointList = []
+
+        # # self.Frame = QFrame()
+        # self.labelPointVideo = QLabel("Dummy replacement for image")
+        # # self.labelPointVideo.setText("Dummy replacement for image")
+        # # self.labelPointVideo.set(True)
+        # # Prints position on label could be used for position on image to track points
+        # self.labelPointVideo.mousePressEvent = lambda event: self.locationInImage(event)
+        # # self.labelPointVideo.mousePressEvent = lambda event: self.pointList.append(event.pos())
+        # self.labelPointVideo.setStyleSheet("QLabel {background-color: grey; color: black;}")
+        # # self.labelPointVideo.mousePressEvent() = self.locationInImage
+        # # self.locationInImage(self.labelPointVideo.mousePressEvent())
+        # # self.Frame.show()
+
+        # self.labelPointList = QLabel("")
+        
+
+        # self.tabProcess.layout.addWidget(self.labelPointVideo, alignment=QtCore.Qt.AlignCenter)
+        # self.tabProcess.layout.addWidget(self.labelPointList, alignment=QtCore.Qt.AlignCenter)
+        # self.tabProcess.setLayout(self.tabProcess.layout)
+        # # tab tabPointSelection end
+
+
+        # # tab tabProcess 
+        
+        
+        # # self.btnCreateProj = QPushButton("Create Project")
+        # # self.btnCreateProj.clicked.connect(self.Create_DLC_Project)
+        # # self.btnCreateProj.setDisabled(True)
+        # # self.btnCreateProj.setStyleSheet('QPushButton {background-color: red; color: black;}')
+        # # self.tabProcess.layout.addWidget(self.btnCreateProj, alignment=QtCore.Qt.AlignCenter)
+
+        # self.tabProcess.setLayout(self.tabProcess.layout)
+
+
+        
+
+ 
 
         # Delete when real
         # self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
@@ -641,8 +638,6 @@ class MyTabWidget(QWidget):
         # self.pop = self.show_popup()
         # self.pop.show()
     #    pop up not yet connected to choices
-       
-        
 
     def locationInImage(self,event):
         """When pressed will save place in image clicked"""
@@ -674,21 +669,15 @@ class MyTabWidget(QWidget):
     def toNext(self):
         """Will continue from the create or load project button and will update tabs to move to the rest"""
         sender = self.sender()
-        
         pathExist = True
-        
-        print(sender.text() + ' was pressed')
         info = openYaml()
         if not os.path.exists(info["Path"]):
             pathExist = False
             self.createhelplabel.setText("You need")
-        
         nameExist = True
-        
         if len(str(info["Name"])) == 0 and sender.text() == "Create Project":
             nameExist = False
         
-
         if nameExist and pathExist:
             try:
                 self.startTab.removeTab(0)
