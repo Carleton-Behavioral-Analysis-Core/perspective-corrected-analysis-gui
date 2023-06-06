@@ -15,10 +15,10 @@ def openYaml():
     try:
         with open('config.yaml', 'r') as file:
             info = yaml.safe_load(file)
-            if len(info) != 7:
+            if len(info) != 9:
                 x = 1/0
     except:
-        info= {"folderPath": [],"DLCfolderPath": [],"videoPaths":[],"DLCvideoPaths":[], "points":[],"BoxHeight":[],"BoxWidth":[],"Name":"","Path":[]}
+        info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "points":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":""}
         with open('config.yaml', 'w') as file:
             yaml.dump(info,file,default_flow_style=False) 
     return info
@@ -199,8 +199,8 @@ class MyTabWidget(QWidget):
         
 
         self.listDLCVideoFolders = QListWidget()
-        if len(info["DLCfolderPath"]) != self.listDLCVideoFolders.count:
-            self.listDLCVideoFolders.addItems(info["DLCfolderPath"])
+        if len(info["DLCvideoPaths"]) != self.listDLCVideoFolders.count:
+            self.listDLCVideoFolders.addItems(info["DLCvideoPaths"])
 
         self.tabFolderDisplay.layout.addWidget(self.labelVideoFolder,0,0,1,4, alignment=QtCore.Qt.AlignCenter)   
         self.tabFolderDisplay.layout.addWidget(self.searchField,1,0,1,3)
@@ -396,75 +396,76 @@ class MyTabWidget(QWidget):
       
     
     def FolderSearch(self):
-
+        """When button is clicked will allow user to search explorer for folder that contains video files and updates config file"""
         self.cwd = os.getcwd()
         self.path = QFileDialog.getExistingDirectory(self,"Open the location of the recorded video files",r"" + str(self.cwd))
         try:
             # Checks path and then cheanges interface and updates changes to yaml
             if len(self.path) !=0:
-                try:
-                    info = openYaml()
-                    info["folderPath"] = [self.path]
+                info = openYaml()
+                info["folderPath"] = self.path
                     
-                    fileList = os.listdir(self.path)
-                    x = len(fileList)
-                    for i in range(x):
-                        if not fileList[x-(i+1)].endswith(".mp4"):
-                            fileList.pop(x-(i+1))
-                    info["videoPaths"] = fileList
+                fileList = os.listdir(self.path)
+                x = len(fileList)
+                for i in range(x):
+                    if not fileList[x-(i+1)].endswith(".mp4"):
+                        fileList.pop(x-(i+1))
+                info["videoPaths"] = fileList
                        
-                    with open('config.yaml', 'w') as file:
-                        yaml.dump(info,file,default_flow_style=False)   
-                    self.yamlUpdateUI()
-                except:
-                    print("error 4")     
+                with open('config.yaml', 'w') as file:
+                    yaml.dump(info,file,default_flow_style=False)   
+                
+                self.yamlUpdateUI()
+   
             else:
                 print("error 5")
         except:
-            print("error 6")
+            print("error 4")
     
     def FolderSearchField(self):
+        """When enter is pressed will check if path is valid for folder that contains video files and updates config file"""
         self.cwd = os.getcwd()
         self.path = self.searchField.text()
         try:
             # Checksif path exist and then cheanges interface and updates changes to yaml
             if os.path.exists(self.path):
-                try:
-                    self.path = self.path.replace("\\","/")
-                    info = openYaml()
-                    info["folderPath"][0] = self.path
-                    fileList = os.listdir(self.path)
-                    x = len(fileList)
+                self.path = self.path.replace("\\","/")
+                info = openYaml()
+                   
+                info["folderPath"] = str(self.path)
+                fileList = os.listdir(self.path)
+                x = len(fileList)
                        
-                    for i in range(x):
-                        if not fileList[x-(i+1)].endswith(".mp4"):
-                            fileList.pop(x-(i+1))
+                for i in range(x):
+                    if not fileList[x-(i+1)].endswith(".mp4"):
+                        fileList.pop(x-(i+1))
 
-                    info["videoPaths"] = fileList
+                info["videoPaths"] = fileList
                                      
-                    with open('config.yaml', 'w') as file:
-                        yaml.dump(info,file,default_flow_style=False) 
-                    self.yamlUpdateUI()  
-                except:
-                    print("error 1")
+                with open('config.yaml', 'w') as file:
+                    yaml.dump(info,file,default_flow_style=False) 
+                   
+                self.yamlUpdateUI()  
+
             else:
                 print("error 2")
         except:
-            print("error 3")
+            print("error 1")
 
     def yamlUpdateUI(self):
+        """Will take the info from the config file and update the UI"""
         info = openYaml()
 
         
         if len(info["folderPath"]) != 0:
             self.searchField.setText("")
-            self.searchField.setPlaceholderText(info["folderPath"][0])
+            self.searchField.setPlaceholderText(info["folderPath"])
         else:
             self.searchField.setPlaceholderText("Enter Folder Path")
 
         if len(info["DLCfolderPath"]) != 0:
             self.searchFieldDLC.setText("")
-            self.searchFieldDLC.setPlaceholderText(info["DLCfolderPath"][0])
+            self.searchFieldDLC.setPlaceholderText(info["DLCfolderPath"])
         else:
             self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
         
@@ -472,7 +473,7 @@ class MyTabWidget(QWidget):
         self.listVideoFolders.addItems(info["videoPaths"])
 
         self.listDLCVideoFolders.clear()
-        self.listDLCVideoFolders.addItems(info["DLCfolderPath"])
+        self.listDLCVideoFolders.addItems(info["DLCvideoPaths"])
 
         self.ComboVidMenu.clear()
         self.ComboVidMenu.addItems(info["videoPaths"])
@@ -483,19 +484,20 @@ class MyTabWidget(QWidget):
         self.listVideoFoldersValidation.clear()
         self.listVideoFoldersValidation.addItems(info["videoPaths"])
 
-        if len(info["BoxWidth"][0]) != 0:
+        if len(str(info["BoxWidth"])) != 0:
             self.FieldBoxWidth.setText("")
-            self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"][0]))
+            self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"]))
         else:
             self.FieldBoxWidth.setPlaceholderText("Enter the box width in mm")
 
-        if len(info["BoxHeight"][0]) != 0:
+        if len(str(info["BoxHeight"])) != 0:
             self.FieldBoxHeight.setText("")
-            self.FieldBoxHeight.setPlaceholderText(str(info["BoxHeight"][0]))
+            self.FieldBoxHeight.setPlaceholderText(str(info["BoxHeight"]))
         else:
             self.FieldBoxHeight.setPlaceholderText("Enter the box height in mmm")
 
     def StoreProjName(self):
+        """Will store the project name to the config file"""
         name = self.projNameField.text()  
         info = openYaml()
         info["Name"] = name
@@ -505,6 +507,7 @@ class MyTabWidget(QWidget):
             yaml.dump(info,file,default_flow_style=False) 
     
     def StoreProjLocation(self):
+        """Will store the project location to the config file (specific for create tab)"""
         loc = self.projLocField.text()
          
         if os.path.exists(loc):
@@ -521,6 +524,7 @@ class MyTabWidget(QWidget):
             self.projLocField.setPlaceholderText("Invalid Path Name")
             
     def StoreProjLocationv2(self):
+        """Will store the project location to the config file (specific for load tab)"""
         loc = self.projLocFieldv2.text()  
         if os.path.exists(loc):
             info = openYaml()
@@ -537,7 +541,7 @@ class MyTabWidget(QWidget):
 
 
     def PathSearch(self):
-
+        """ button to store the project location to the config file (for both create and load tabs)"""
         self.cwd = os.getcwd()
         self.path = QFileDialog.getExistingDirectory(self,"Open the location of the folder",r"" + str(self.cwd))
         try:
@@ -551,16 +555,17 @@ class MyTabWidget(QWidget):
                         yaml.dump(info,file,default_flow_style=False)   
                     
         except:
-            print("Something Failed")
+            print("Failed to choose valid path")
 
     def boxWidthSave(self):
+        """Will store the box width to the config file (specific for choose points tab)"""
         bw = self.FieldBoxWidth.text()
         # try:
         if True:
             eval(bw + "+0")
             bw = float(bw)
             info = openYaml()
-            info["BoxWidth"] = [bw]
+            info["BoxWidth"] = bw
             self.FieldBoxWidth.setText("")
             self.FieldBoxWidth.setPlaceholderText(str(bw))
             with open('config.yaml', 'w') as file:
@@ -570,12 +575,13 @@ class MyTabWidget(QWidget):
         #     self.FieldBoxWidth.setText("Invalid Entry")
     
     def boxHeightSave(self):
+        """Will store the box height to the config file (specific for choose points tab)"""
         bh = self.FieldBoxHeight.text()
         try:
             eval(bh + "+0")
             bh = float(bh)
             info = openYaml()
-            info["BoxHeight"] = [bh]
+            info["BoxHeight"] = bh
             self.FieldBoxHeight.setText("")
             self.FieldBoxHeight.setPlaceholderText(str(bh))
             with open('config.yaml', 'w') as file:
@@ -589,6 +595,7 @@ class MyTabWidget(QWidget):
         print(sender.text() + ' was pressed')
 
     def Create_DLC_Project(self):
+        """When pressed will update tabs and start the process for creating a new project including clearing config file"""
         try:
             self.startTab.removeTab(1)
         except:
@@ -618,6 +625,7 @@ class MyTabWidget(QWidget):
         # self.setLayout(self.layout2)
 
     def Open_DLC_Project(self):
+        """When pressed will update tabs and start the process for loading a existing project"""
         try:
             self.startTab.removeTab(1)
         except:
@@ -633,6 +641,7 @@ class MyTabWidget(QWidget):
         
 
     def locationInImage(self,event):
+        """When pressed will save place in image clicked"""
         pos = str(event.pos())
         pos = pos.strip("PyQt5.QtCore.Qpoint")
         pos = pos.strip("()")
@@ -659,6 +668,7 @@ class MyTabWidget(QWidget):
         # self.labelPointList = QLabel(str(self.pointList))
     
     def toNext(self):
+        """Will continue from the create or load project button and will update tabs to move to the rest"""
         try:
             self.startTab.removeTab(0)
             self.startTab.removeTab(0)
@@ -673,6 +683,7 @@ class MyTabWidget(QWidget):
 
 
     def show_popup(self):
+        """pop up """
         msg = QMessageBox()
         msg.setWindowTitle("Warning")
         msg.setText("Previously saved project may be deleted\nWould you like to proceed?")
@@ -686,6 +697,7 @@ class MyTabWidget(QWidget):
         return msg
 
     def popup_button(self, i):
+        """to connect to the pop up but doesnt seem to work not really important """
         print(i.text())
         # not yet connected to actual yer or no
 

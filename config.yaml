@@ -1,9 +1,9 @@
-BoxHeight: []
-BoxWidth: []
-DLCfolderPath: []
+BoxHeight: ""
+BoxWidth: ""
+DLCfolderPath: ''
 DLCvideoPaths: []
 Name: ''
-Path: []
-folderPath: []
+Path: ''
+folderPath: ""
 points: []
 videoPaths: []
