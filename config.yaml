@@ -1,9 +1,11 @@
-BoxHeight: ""
-BoxWidth: ""
+BoxHeight: ''
+BoxWidth: 7.0
 DLCfolderPath: ''
 DLCvideoPaths: []
-Name: ''
-Path: ''
-folderPath: ""
+Name: st
+Path: C:\Users\avpet\OneDrive\Documents\Python code\DSRI
+folderPath: C:/Users/avpet/OneDrive/Documents/Python code/DSRI/Frame-Change
 points: []
-videoPaths: []
+videoPaths:
+- Overlord-slow.mp4
+- Overlord.mp4

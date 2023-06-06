@@ -122,12 +122,15 @@ class MyTabWidget(QWidget):
         self.btnCreate = QPushButton("Create Project")
         self.btnCreate.clicked.connect(self.toNext)
 
+        self.createhelplabel = QLabel("")
+
         self.tabCreate.layout.addWidget(self.labelName,0,0,1,1)   
         self.tabCreate.layout.addWidget(self.projNameField,0,1,1,3)
         self.tabCreate.layout.addWidget(self.labelProjPath,1,0,1,1)
         self.tabCreate.layout.addWidget(self.projLocField,1,1,1,2)   
         self.tabCreate.layout.addWidget(self.btnProjPath,1,3,1,1)
         self.tabCreate.layout.addWidget(self.btnCreate,2,0,1,4)
+        self.tabCreate.layout.addWidget(self.createhelplabel,3,0,1,4)
 
         self.tabCreate.setLayout(self.tabCreate.layout) 
         
@@ -144,11 +147,14 @@ class MyTabWidget(QWidget):
         self.btnLoad = QPushButton("Load Project")
         self.btnLoad.clicked.connect(self.toNext)
 
+        self.loadhelplabel = QLabel("")
+
       
         self.tabLoad.layout.addWidget(self.labelProjPathv2,0,0,1,1)
         self.tabLoad.layout.addWidget(self.projLocFieldv2,0,1,1,2)   
         self.tabLoad.layout.addWidget(self.btnProjPathv2,0,3,1,1)
         self.tabLoad.layout.addWidget(self.btnLoad,1,0,1,4)
+        self.tabLoad.layout.addWidget(self.loadhelplabel,2,0,1,4)
 
         self.tabLoad.setLayout(self.tabLoad.layout) 
 
@@ -228,7 +234,7 @@ class MyTabWidget(QWidget):
         self.labelBoxWidth.setText("Box Width [mm]:")
 
         self.FieldBoxWidth = QLineEdit()
-        self.FieldBoxWidth.setPlaceholderText("Enter the box width in mm")
+        self.FieldBoxWidth.setPlaceholderText("Box Width in mm")
         self.FieldBoxWidth.returnPressed.connect(self.boxWidthSave) 
 
         self.labelBoxHeight = QLabel()
@@ -237,16 +243,16 @@ class MyTabWidget(QWidget):
         self.labelBoxHeight.setText("Box Height [mm]:")
 
         self.FieldBoxHeight = QLineEdit()
-        self.FieldBoxHeight.setPlaceholderText("Enter the box height in mmm")
+        self.FieldBoxHeight.setPlaceholderText("Box Height in mm")
         self.FieldBoxHeight.returnPressed.connect(self.boxHeightSave) 
 
-        self.btnCreateSchema = QPushButton("CREATE SCHEMA")
+        self.btnCreateSchema = QPushButton("1. CREATE SCHEMA")
         self.btnCreateSchema.clicked.connect(self.placeHodlerBtn)
 
-        self.btnRegisterCorners = QPushButton("REGISTER CORNERS")
+        self.btnRegisterCorners = QPushButton("2. REGISTER CORNERS")
         self.btnRegisterCorners.clicked.connect(self.placeHodlerBtn)
 
-        self.btnVisualizeRegistrations = QPushButton("Visualize REGISTRATIONS")
+        self.btnVisualizeRegistrations = QPushButton("3. Visualize REGISTRATIONS")
         self.btnVisualizeRegistrations.clicked.connect(self.placeHodlerBtn)
 
         self.ComboVidMenu = QComboBox()
@@ -259,10 +265,10 @@ class MyTabWidget(QWidget):
         self.labelImageAlt.setText("Altered Image Place Holder")
 
 
-        self.tabPointSelection.layout.addWidget(self.labelBoxWidth,0,0,1,2)
-        self.tabPointSelection.layout.addWidget(self.labelBoxHeight,0,2,1,2)      
-        self.tabPointSelection.layout.addWidget(self.FieldBoxWidth,1,0,1,2)
-        self.tabPointSelection.layout.addWidget(self.FieldBoxHeight,1,2,1,2)
+        self.tabPointSelection.layout.addWidget(self.labelBoxWidth,0,0,1,1, alignment=QtCore.Qt.AlignRight)
+        self.tabPointSelection.layout.addWidget(self.labelBoxHeight,0,2,1,1, alignment=QtCore.Qt.AlignRight)      
+        self.tabPointSelection.layout.addWidget(self.FieldBoxWidth,0,1,1,1)
+        self.tabPointSelection.layout.addWidget(self.FieldBoxHeight,0,3,1,1)
         self.tabPointSelection.layout.addWidget(self.btnCreateSchema,2,0,1,1)
         self.tabPointSelection.layout.addWidget(self.btnRegisterCorners,2,1,1,1)
         self.tabPointSelection.layout.addWidget(self.btnVisualizeRegistrations,2,2,1,1)
@@ -388,6 +394,14 @@ class MyTabWidget(QWidget):
         self.tabValidation.layout.addWidget(self.labelVideoValidation,5,0,3,2)
         
         self.tabValidation.setLayout(self.tabValidation.layout)    
+
+        # Delete when real
+        # self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
+        # self.startTab.addTab(self.tabPointSelection, "Choose Points")
+        # self.startTab.addTab(self.tabScoring, "Scoring")
+        # self.startTab.addTab(self.tabValidation, "Validation")
+        # self.startTab.addTab(self.tabProcess, "Junk?")
+        # delete when real
   
         # Add tabs to widget
         self.layout.addWidget(self.startTab)
@@ -488,23 +502,27 @@ class MyTabWidget(QWidget):
             self.FieldBoxWidth.setText("")
             self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"]))
         else:
-            self.FieldBoxWidth.setPlaceholderText("Enter the box width in mm")
+            self.FieldBoxWidth.setPlaceholderText("Box Width in mm")
 
         if len(str(info["BoxHeight"])) != 0:
             self.FieldBoxHeight.setText("")
             self.FieldBoxHeight.setPlaceholderText(str(info["BoxHeight"]))
         else:
-            self.FieldBoxHeight.setPlaceholderText("Enter the box height in mmm")
+            self.FieldBoxHeight.setPlaceholderText("Box Height in mmm")
 
     def StoreProjName(self):
         """Will store the project name to the config file"""
         name = self.projNameField.text()  
-        info = openYaml()
-        info["Name"] = name
-        self.projNameField.setText("")
-        self.projNameField.setPlaceholderText(str(name))
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+        if len(name) !=0:
+            info = openYaml()
+            info["Name"] = name
+            self.projNameField.setText("")
+            self.projNameField.setPlaceholderText(str(name))
+            with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False) 
+        else:
+            self.projNameField.setText("")
+            
     
     def StoreProjLocation(self):
         """Will store the project location to the config file (specific for create tab)"""
@@ -521,7 +539,7 @@ class MyTabWidget(QWidget):
                 yaml.dump(info,file,default_flow_style=False) 
         else:
             self.projLocField.setText("")
-            self.projLocField.setPlaceholderText("Invalid Path Name")
+            
             
     def StoreProjLocationv2(self):
         """Will store the project location to the config file (specific for load tab)"""
@@ -537,7 +555,7 @@ class MyTabWidget(QWidget):
                 yaml.dump(info,file,default_flow_style=False) 
         else:
             self.projLocFieldv2.setText("")
-            self.projLocFieldv2.setPlaceholderText("Invalid Path Name")
+            
 
 
     def PathSearch(self):
@@ -601,28 +619,13 @@ class MyTabWidget(QWidget):
         except:
             pass
         self.startTab.addTab(self.tabCreate,"Create")
+        self.startTab.setCurrentIndex(1)
         # Place Holder
         sender = self.sender()
         print(sender.text() + ' was pressed')
-        self.pop = self.show_popup()
-        self.pop.show()
-        # info= {"folderPath": [],"DLCfolderPath": [],"videoPaths":[], "points":[]}
-        # with open('config.yaml', 'w') as file:
-        #     yaml.dump(info,file,default_flow_style=False) 
-        # was going to have it so it cleared the yaml file and poped up message before it cleared
+        # self.pop = self.show_popup()
+        # self.pop.show()
         
-        # self.layout.remove(self.startTab)
-        # QObjectCleanupHandler().add(self.layout())
-        
-        # q = QWidget().setLayout(self.layout())
-        # del q
-        # layout = QGridLayout(self)
-        
-        
-        # self.layout2 = QVBoxLayout(self)
-        # self.layout2.addWidget(self.tabs)
-        # print("3")
-        # self.setLayout(self.layout2)
 
     def Open_DLC_Project(self):
         """When pressed will update tabs and start the process for loading a existing project"""
@@ -631,11 +634,12 @@ class MyTabWidget(QWidget):
         except:
             pass
         self.startTab.addTab(self.tabLoad,"Load")
+        self.startTab.setCurrentIndex(1)
         # Place Holder
         sender = self.sender()
         print(sender.text() + ' was pressed')
-        self.pop = self.show_popup()
-        self.pop.show()
+        # self.pop = self.show_popup()
+        # self.pop.show()
     #    pop up not yet connected to choices
        
         
@@ -669,16 +673,44 @@ class MyTabWidget(QWidget):
     
     def toNext(self):
         """Will continue from the create or load project button and will update tabs to move to the rest"""
-        try:
-            self.startTab.removeTab(0)
-            self.startTab.removeTab(0)
-        except:
-            pass
-        self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
-        self.startTab.addTab(self.tabPointSelection, "Choose Points")
-        self.startTab.addTab(self.tabScoring, "Scoring")
-        self.startTab.addTab(self.tabValidation, "Validation")
-        self.startTab.addTab(self.tabProcess, "Junk?")
+        sender = self.sender()
+        
+        pathExist = True
+        
+        print(sender.text() + ' was pressed')
+        info = openYaml()
+        if not os.path.exists(info["Path"]):
+            pathExist = False
+            self.createhelplabel.setText("You need")
+        
+        nameExist = True
+        
+        if len(str(info["Name"])) == 0 and sender.text() == "Create Project":
+            nameExist = False
+        
+
+        if nameExist and pathExist:
+            try:
+                self.startTab.removeTab(0)
+                self.startTab.removeTab(0)
+            except:
+                pass
+            self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
+            self.startTab.addTab(self.tabPointSelection, "Choose Points")
+            self.startTab.addTab(self.tabScoring, "Scoring")
+            self.startTab.addTab(self.tabValidation, "Validation")
+            self.startTab.addTab(self.tabProcess, "Junk?")
+
+        elif (not nameExist) and (not pathExist):
+            self.createhelplabel.setText("You need to enter a project name and path")
+        elif not nameExist:
+            self.createhelplabel.setText("You need to enter a project name")
+        elif not pathExist and sender.text() == "Create Project":
+            self.createhelplabel.setText("You need to enter a project path")
+        else:
+            self.loadhelplabel.setText("You need to enter a project path")
+
+
 
 
 
