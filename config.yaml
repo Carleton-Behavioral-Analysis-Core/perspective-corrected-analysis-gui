@@ -1,9 +1,23 @@
 BoxHeight: ''
-BoxWidth: ""
+BoxWidth: ''
 DLCfolderPath: ''
 DLCvideoPaths: []
-Name: ""
-Path: ""
-folderPath: ""
+Name: ''
+Path: ''
+data:
+  ' Videos':
+  - PlaceHold.mp4
+  - PlaceHolder.mp4
+  - PlaceHoldest.mp4
+  Feature 1:
+  - 1
+  - 2
+  - 3
+  Feature 2:
+  - 1
+  - 2
+  - 3
+folderPath: ''
+numFeatures: '3'
 points: []
 videoPaths: []
