@@ -4,6 +4,9 @@ import cv2
 import time
 import yaml
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from pathlib import Path
 
 # from PyQt5.QtWidgets import QApplication, QTableView
 # from PyQt5.QtCore import QAbstractTableModel, Qt
@@ -13,21 +16,26 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QMessageBox
 
-def openYaml():
+def openYaml(rewrite=True):
     """Opens yaml file if file is messed with resets it to generic if not returns yaml info"""
     try:
+    # if True:
         with open('config.yaml', 'r') as file:
             info = yaml.safe_load(file)
+            # print(len(info))
             if len(info) != 11:
                 x = 1/0
     except:
-        info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "points":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":"","numFeatures":"3",
-               "data":
-               {' Videos':['PlaceHold.mp4', 'PlaceHolder.mp4', 'PlaceHoldest.mp4'],
-                   'Feature 1': [1, 2, 3],
-                   'Feature 2': [1, 2, 3]}}
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+    # if False:
+        if rewrite:
+            # print("rewrite")
+            info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "points":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":"","numFeatures":"2",
+                "data":
+                {' Videos':[],
+                    'Feature 1': [],
+                    'Feature 2': []}}
+            with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False) 
     return info
 
 class pandasModel(QAbstractTableModel):
@@ -36,7 +44,6 @@ class pandasModel(QAbstractTableModel):
         QAbstractTableModel.__init__(self)
         self._data = data
         
-
     def rowCount(self, parent=None):
         return self._data.shape[0]
 
@@ -91,6 +98,7 @@ class MyTabWidget(QWidget):
         self.tabProcess = QWidget()
         self.tabScoring = QWidget()
         self.tabValidation = QWidget()
+        self.tabRegisterCorners = QWidget()
         
         # Dont think I need most of these
         self.path = ""
@@ -125,7 +133,7 @@ class MyTabWidget(QWidget):
         self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
         
 
-        self.btnOpenProj = QPushButton("Open Project")
+        self.btnOpenProj = QPushButton("Load Project")
         self.btnOpenProj.clicked.connect(self.Open_DLC_Project)
         self.btnOpenProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
 
@@ -201,57 +209,63 @@ class MyTabWidget(QWidget):
         self.tabFolderDisplay.layout = QGridLayout()
 
 
-        self.labelVideoFolder = QLabel()
-        self.labelVideoFolder.setText("Video Folder")
-
+        self.labelVideoFolder = QLabel("Video Folder")
+        
         self.searchField = QLineEdit()
-        self.searchField.setPlaceholderText("Enter Folder Path")
+        if len(info["folderPath"]) != 0 and os.path.exists(str(info["folderPath"])):
+            self.searchField.setPlaceholderText(str(info["folderPath"]))
+        else:
+            self.searchField.setPlaceholderText("Enter Folder Path")
         self.searchField.returnPressed.connect(self.FolderSearchField) 
 # Folder search function may have to be changed maybe to something involving yaml for opening folder (not new)
         
         self.btnSearchVideoFolder = QPushButton("OPEN")
         self.btnSearchVideoFolder.clicked.connect(self.FolderSearch)
 
-        self.labelDLCVideoFolder = QLabel()
-        self.labelDLCVideoFolder.setText("DeepLabCut Analysis Folder")
-
+        self.labelDLCVideoFolder = QLabel("DeepLabCut Analysis Folder")
+       
         self.searchFieldDLC = QLineEdit()
-        self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
+        if len(info["DLCfolderPath"]) != 0 and os.path.exists(str(info["DLCfolderPath"])):
+            self.searchFieldDLC.setPlaceholderText(str(info["DLCfolderPath"]))
+        else:
+            self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
         self.searchFieldDLC.returnPressed.connect(self.FolderSearchField) 
 
         self.btnSearchVideoDLCFolder = QPushButton("OPEN")
         self.btnSearchVideoDLCFolder.clicked.connect(self.FolderSearch)
 
-        self.labelVidToDLC = QLabel()
-        self.labelVidToDLC.setText("Video to DLC Label Matching")
+        self.labelVidToDLC = QLabel("Video to DLC Label Matching")
 
         self.listVideoFolders = QListWidget()
         
-        self.labelListVideoTitle = QLabel()
-        self.labelListVideoTitle.setText("Videos")
-
-        self.labelListDLCTitle = QLabel()
-        self.labelListDLCTitle.setText("DeepLabCut Files")
-
-        if len(info["videoPaths"]) != self.listVideoFolders.count:
-            self.listVideoFolders.addItems(info["videoPaths"])
+        self.labelListVideoTitle = QLabel("Videos")
+       
+        self.labelListDLCTitle = QLabel("DeepLabCut Files")
+        # print((info["data"][" Videos"]))
+        if len(info["data"][" Videos"]) != 0:
+            self.listVideoFolders.addItems(info["data"][" Videos"])
         
 
         self.listDLCVideoFolders = QListWidget()
-        if len(info["DLCvideoPaths"]) != self.listDLCVideoFolders.count:
+        if len(info["DLCvideoPaths"]) != 0:
             self.listDLCVideoFolders.addItems(info["DLCvideoPaths"])
+
+        self.labelSpacer1 = QLabel("")
+        self.labelSpacer2 = QLabel("")
 
         self.tabFolderDisplay.layout.addWidget(self.labelVideoFolder,0,0,1,4, alignment=QtCore.Qt.AlignCenter)   
         self.tabFolderDisplay.layout.addWidget(self.searchField,1,0,1,3)
         self.tabFolderDisplay.layout.addWidget(self.btnSearchVideoFolder,1,3,1,1)
-        self.tabFolderDisplay.layout.addWidget(self.labelDLCVideoFolder,2,0,1,4, alignment=QtCore.Qt.AlignCenter)   
-        self.tabFolderDisplay.layout.addWidget(self.searchFieldDLC,3,0,1,3)
-        self.tabFolderDisplay.layout.addWidget(self.btnSearchVideoDLCFolder,3,3,1,1)
-        self.tabFolderDisplay.layout.addWidget(self.labelVidToDLC,4,0,1,4, alignment=QtCore.Qt.AlignCenter) 
-        self.tabFolderDisplay.layout.addWidget(self.labelListVideoTitle,5,0,1,2, alignment=QtCore.Qt.AlignCenter)
-        self.tabFolderDisplay.layout.addWidget(self.labelListDLCTitle,5,2,1,2, alignment=QtCore.Qt.AlignCenter)  
-        self.tabFolderDisplay.layout.addWidget(self.listVideoFolders,6,0,1,2)
-        self.tabFolderDisplay.layout.addWidget(self.listDLCVideoFolders,6,2,1,2)
+        self.tabFolderDisplay.layout.addWidget(self.labelSpacer1,2,0,1,4, alignment=QtCore.Qt.AlignCenter) 
+        self.tabFolderDisplay.layout.addWidget(self.labelDLCVideoFolder,3,0,1,4, alignment=QtCore.Qt.AlignCenter)   
+        self.tabFolderDisplay.layout.addWidget(self.searchFieldDLC,4,0,1,3)
+        self.tabFolderDisplay.layout.addWidget(self.btnSearchVideoDLCFolder,4,3,1,1)
+        self.tabFolderDisplay.layout.addWidget(self.labelSpacer2,5,0,1,4, alignment=QtCore.Qt.AlignCenter) 
+        self.tabFolderDisplay.layout.addWidget(self.labelVidToDLC,6,0,1,4, alignment=QtCore.Qt.AlignCenter) 
+        self.tabFolderDisplay.layout.addWidget(self.labelListVideoTitle,7,0,1,2, alignment=QtCore.Qt.AlignCenter)
+        self.tabFolderDisplay.layout.addWidget(self.labelListDLCTitle,7,2,1,2, alignment=QtCore.Qt.AlignCenter)  
+        self.tabFolderDisplay.layout.addWidget(self.listVideoFolders,8,0,1,2)
+        self.tabFolderDisplay.layout.addWidget(self.listDLCVideoFolders,8,2,1,2)
 
         self.tabFolderDisplay.setLayout(self.tabFolderDisplay.layout)
 
@@ -260,41 +274,44 @@ class MyTabWidget(QWidget):
         #Point selection tab 
         self.tabPointSelection.layout = QGridLayout()
         
-        self.labelBoxWidth = QLabel()
+        self.labelBoxWidth = QLabel("Box Width [mm]:")
         self.labelBoxWidth.setSizePolicy(30,10)
         self.labelBoxWidth.setFixedHeight(10)
-        self.labelBoxWidth.setText("Box Width [mm]:")
-
+        
         self.FieldBoxWidth = QLineEdit()
-        self.FieldBoxWidth.setPlaceholderText("Box Width in mm")
+        if len(info["BoxWidth"]) != 0 and (str(info["BoxWidth"])).isnumeric():
+            self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"]))
+        else:
+            self.FieldBoxWidth.setPlaceholderText("Box Width in mm")
         self.FieldBoxWidth.returnPressed.connect(self.boxWidthSave) 
 
-        self.labelBoxHeight = QLabel()
+        self.labelBoxHeight = QLabel("Box Height [mm]:")
         self.labelBoxHeight.setSizePolicy(30,10)
         self.labelBoxHeight.setFixedHeight(10)
-        self.labelBoxHeight.setText("Box Height [mm]:")
 
         self.FieldBoxHeight = QLineEdit()
-        self.FieldBoxHeight.setPlaceholderText("Box Height in mm")
+        if len(info["BoxHeight"]) != 0 and (str(info["BoxHeight"])).isnumeric():
+            self.FieldBoxHeight.setPlaceholderText(str(info["BoxHeight"]))
+        else:
+            self.FieldBoxHeight.setPlaceholderText("Box Height in mm")
         self.FieldBoxHeight.returnPressed.connect(self.boxHeightSave) 
 
         self.btnCreateSchema = QPushButton("1. CREATE SCHEMA")
-        self.btnCreateSchema.clicked.connect(self.placeHodlerBtn)
+        self.btnCreateSchema.clicked.connect(self.displayAltFrame)
 
         self.btnRegisterCorners = QPushButton("2. REGISTER CORNERS")
-        self.btnRegisterCorners.clicked.connect(self.placeHodlerBtn)
+        self.btnRegisterCorners.clicked.connect(self.toRegisterCorners)
 
         self.btnVisualizeRegistrations = QPushButton("3. Visualize REGISTRATIONS")
-        self.btnVisualizeRegistrations.clicked.connect(self.placeHodlerBtn)
+        self.btnVisualizeRegistrations.clicked.connect(self.displayFrame)
 
         self.ComboVidMenu = QComboBox()
-        self.ComboVidMenu.addItems(info["videoPaths"])
+        self.ComboVidMenu.addItems(info["data"][" Videos"])
+        # self.ComboVidMenu.clicked.connect
 
-        self.labelImageOri = QLabel()
-        self.labelImageOri.setText("Original Image Place Holder")
+        self.labelImageOri = QLabel("Original Image Place Holder")
 
-        self.labelImageAlt = QLabel()
-        self.labelImageAlt.setText("Altered Image Place Holder")
+        self.labelImageAlt = QLabel("Altered Image Place Holder")
 
 
         self.tabPointSelection.layout.addWidget(self.labelBoxWidth,0,0,1,1, alignment=QtCore.Qt.AlignRight)
@@ -343,46 +360,116 @@ class MyTabWidget(QWidget):
        
         self.labelValidationVideoHeading = QLabel("Video")
 
-        self.labelValidationFeatureHeading = QLabel("Not clear how to do Features")
+        self.labelValidationFeatureHeading = QLabel("cool")
 
         self.listVideoFoldersValidation = QListWidget()
-        if len(info["videoPaths"]) != self.listVideoFoldersValidation.count:
-            self.listVideoFoldersValidation.addItems(info["videoPaths"])
-        
+        if len(info["data"][" Videos"]) != 0:
+            self.listVideoFoldersValidation.addItems(info["data"][" Videos"])
         
         self.featuresDataDisplay = QTableView()
         self.featuresDataDisplay.setModel(pandasModel(pd.DataFrame(info["data"])))
         self.featuresDataDisplay.resizeColumnsToContents()
-        
 
         self.labelValidationTimeHeading = QLabel("Time (s)")
 
         self.FieldTimeValidation = QLineEdit()
         self.FieldTimeValidation.setPlaceholderText("Enter Time")
-        self.FieldTimeValidation.returnPressed.connect(self.placeHodlerBtn) 
+        # SHouldnt be connected to thisjust for test
+        self.FieldTimeValidation.returnPressed.connect(self.displayVideo) 
 
         self.ComboVidValidationMenu = QComboBox()
-        self.ComboVidValidationMenu.addItems(info["videoPaths"])
+        self.ComboVidValidationMenu.addItems(info["data"][" Videos"])
 
         self.PlayBackSpeedValidationMenu = QComboBox()
         self.PlayBackSpeedValidationMenu.addItems(["0.5","1","2","5","10","30"])
         
-        self.labelVideoValidation = QLabel()
-        self.labelVideoValidation.setText("Place Holder for Video")
+        self.labelVideoValidation = QLabel("Place Holder for Video")
 
         # self.tabValidation.layout.addWidget(self.labelValidationVideoHeading,0,0,1,2)
         # self.tabValidation.layout.addWidget(self.labelValidationFeatureHeading,0,2,1,2)
         # self.tabValidation.layout.addWidget(self.listVideoFoldersValidation,1,0,2,1) 
-        self.tabValidation.layout.addWidget(self.featuresDataDisplay,0,0,2,4) 
-        self.tabValidation.layout.addWidget(self.labelValidationTimeHeading,4,2,1,1, alignment=QtCore.Qt.AlignCenter)
-        self.tabValidation.layout.addWidget(self.FieldTimeValidation,5,2,1,1) 
-        self.tabValidation.layout.addWidget(self.ComboVidValidationMenu,4,3,1,1) 
-        self.tabValidation.layout.addWidget(self.PlayBackSpeedValidationMenu,5,3,1,1) 
-        self.tabValidation.layout.addWidget(self.labelVideoValidation,4,0,3,2)
+        self.tabValidation.layout.addWidget(self.featuresDataDisplay,0,0,2,5) 
+        self.tabValidation.layout.addWidget(self.labelValidationTimeHeading,4,3,1,1, alignment=QtCore.Qt.AlignCenter)
+        self.tabValidation.layout.addWidget(self.FieldTimeValidation,5,3,1,1) 
+        self.tabValidation.layout.addWidget(self.ComboVidValidationMenu,4,4,1,1) 
+        self.tabValidation.layout.addWidget(self.PlayBackSpeedValidationMenu,5,4,1,1) 
+        self.tabValidation.layout.addWidget(self.labelVideoValidation,4,0,3,3)
         
         self.tabValidation.setLayout(self.tabValidation.layout) 
 
 
+        # self.tabRegisterCorners
+        self.tabRegisterCorners.layout = QGridLayout()
+
+
+        self.ComboVidMenuCorner = QComboBox()
+        self.ComboVidMenuCorner.addItems(info["data"][" Videos"])
+
+        self.btnChangeFrame = QPushButton("Change Frame")
+        self.btnChangeFrame.clicked.connect(self.displayFrameCorner)
+
+        self.labelImageOriCorner = QLabel("Original Image Place Holder")
+        self.labelImageOriCorner.mousePressEvent = lambda event: self.locationInImage(event)
+
+        self.labelInstructions = QLabel("Either enter x,y cordnitaes seperated by single space or press on image")
+
+        self.labelTopLeft= QLabel("Top Left:")
+        self.FieldTL = QLineEdit()
+        self.FieldTL.setPlaceholderText("Enter Cordinate in x y form")
+        # if len(info["BoxWidth"]) != 0 and (str(info["BoxWidth"])).isnumeric():
+        #     self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"]))
+        # else:
+        #     self.FieldBoxWidth.setPlaceholderText("Box Width in mm")
+        self.FieldTL.returnPressed.connect(self.FieldPointRegistrationTL) #Prob save x
+
+        self.labelTopRight= QLabel("Top Right:")
+        self.FieldTR = QLineEdit()
+        self.FieldTR.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldTR.returnPressed.connect(self.FieldPointRegistrationTR)
+
+        self.labelBottomRight= QLabel("Bottom Right:")
+        self.FieldBR = QLineEdit()
+        self.FieldBR.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldBR.returnPressed.connect(self.FieldPointRegistrationBR)
+
+        self.labelBottomLeft= QLabel("Bottom Left:")
+        self.FieldBL = QLineEdit()
+        self.FieldBL.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldBL.returnPressed.connect(self.FieldPointRegistrationBL)
+
+        self.btnSetForAll = QPushButton("Set For All")
+        self.btnSetForAll.clicked.connect(self.saveToAllCorner)
+
+        self.btnClearPoints = QPushButton("Clear Points")
+        self.btnClearPoints.clicked.connect(self.clearPointsCorner)
+
+        self.btnDoneCorner = QPushButton("Done")
+        self.btnDoneCorner.clicked.connect(self.DoneRegisterCornersToBack)
+
+       
+
+
+        self.tabRegisterCorners.layout.addWidget(self.ComboVidMenuCorner,0,0,1,2)
+        self.tabRegisterCorners.layout.addWidget(self.btnChangeFrame,0,2,1,1)      
+        self.tabRegisterCorners.layout.addWidget(self.labelInstructions,0,3,1,2)
+        self.tabRegisterCorners.layout.addWidget(self.labelImageOriCorner,1,0,4,3)
+        self.tabRegisterCorners.layout.addWidget(self.labelTopLeft,1,3,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.FieldTL,1,4,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.labelTopRight,2,3,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.FieldTR,2,4,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.labelBottomRight,3,3,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.FieldBR,3,4,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.labelBottomLeft,4,3,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.FieldBL,4,4,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.btnSetForAll,5,4,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.btnClearPoints,5,3,1,1)
+        self.tabRegisterCorners.layout.addWidget(self.btnDoneCorner,5,0,1,3)
+
+
+
+
+
+        self.tabRegisterCorners.setLayout(self.tabRegisterCorners.layout)
 
         # # Mess of tabs dont think are needed
         # # tab tabPointSelection
@@ -432,11 +519,13 @@ class MyTabWidget(QWidget):
  
 
         # Delete when real
-        self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
-        self.startTab.addTab(self.tabPointSelection, "Choose Points")
-        self.startTab.addTab(self.tabScoring, "Scoring")
-        self.startTab.addTab(self.tabValidation, "Validation")
-        self.startTab.addTab(self.tabProcess, "Junk?")
+        # self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
+        # self.startTab.addTab(self.tabPointSelection, "Choose Points")
+        # self.startTab.addTab(self.tabScoring, "Scoring")
+        # self.startTab.addTab(self.tabValidation, "Validation")
+        # self.startTab.addTab(self.tabRegisterCorners, "Register Corners")
+        
+        # self.startTab.addTab(self.tabProcess, "Junk?")
         # # delete when real
   
         # Add tabs to widget
@@ -449,24 +538,34 @@ class MyTabWidget(QWidget):
         """When button is clicked will allow user to search explorer for folder that contains video files and updates config file"""
         self.cwd = os.getcwd()
         self.path = QFileDialog.getExistingDirectory(self,"Open the location of the recorded video files",r"" + str(self.cwd))
-        try:
+        # try:
+        if True:
             # Checks path and then cheanges interface and updates changes to yaml
             if len(self.path) !=0:
                 info = openYaml()
                 info["folderPath"] = self.path
-                    
+                info["videoPaths"] = ["Clear"]
+                info["data"][' Videos'] = ["CLearedd"]
+
                 fileList = os.listdir(self.path)
                 x = len(fileList)
                 for i in range(x):
                     if not fileList[x-(i+1)].endswith(".mp4"):
                         fileList.pop(x-(i+1))
-                info["videoPaths"] = fileList
-                info["data"] = {' Videos':fileList}
+                info["data"] = {' Videos':fileList.copy()}
+                info["videoPaths"] = fileList.copy()
+               
+                # print(fileList)
+                for i in range(len(fileList)):
+                    info["videoPaths"][i] = [info["videoPaths"][i],[]]
+
+                
+              
                 for j in range(int(info["numFeatures"])):
                     info["data"]["Feature %d" % (j +1)] = []
                     for i in range (len(fileList)):
                         info["data"]["Feature %d" % (j +1)].append(0)
-                       
+                  
                 with open('config.yaml', 'w') as file:
                     yaml.dump(info,file,default_flow_style=False)   
                 
@@ -474,8 +573,8 @@ class MyTabWidget(QWidget):
    
             else:
                 print("error 5")
-        except:
-            print("error 4")
+        # except:
+        #     print("error 4")
     
     def FolderSearchField(self):
         """When enter is pressed will check if path is valid for folder that contains video files and updates config file"""
@@ -486,6 +585,7 @@ class MyTabWidget(QWidget):
             if os.path.exists(self.path):
                 self.path = self.path.replace("\\","/")
                 info = openYaml()
+                
                    
                 info["folderPath"] = str(self.path)
                 fileList = os.listdir(self.path)
@@ -495,10 +595,11 @@ class MyTabWidget(QWidget):
                     if not fileList[x-(i+1)].endswith(".mp4"):
                         fileList.pop(x-(i+1))
 
-                info["videoPaths"] = fileList
+                info["videoPaths"] = fileList.copy()
+                for i in range(len(fileList)):
+                    info["videoPaths"][i] = [info["videoPaths"][i],[]]
                 
-                
-                info["data"] = {' Videos':fileList}
+                info["data"] = {' Videos':fileList.copy()}
                 for j in range(int(info["numFeatures"])):
                     info["data"]["Feature %d" % (j +1)] = []
                     for i in range (len(fileList)):
@@ -534,19 +635,19 @@ class MyTabWidget(QWidget):
             self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
         
         self.listVideoFolders.clear()
-        self.listVideoFolders.addItems(info["videoPaths"])
+        self.listVideoFolders.addItems(info["data"][" Videos"])
 
         self.listDLCVideoFolders.clear()
         self.listDLCVideoFolders.addItems(info["DLCvideoPaths"])
 
         self.ComboVidMenu.clear()
-        self.ComboVidMenu.addItems(info["videoPaths"])
+        self.ComboVidMenu.addItems(info["data"][" Videos"])
 
         self.ComboVidValidationMenu.clear()
-        self.ComboVidValidationMenu.addItems(info["videoPaths"])
+        self.ComboVidValidationMenu.addItems(info["data"][" Videos"])
 
         self.listVideoFoldersValidation.clear()
-        self.listVideoFoldersValidation.addItems(info["videoPaths"])
+        self.listVideoFoldersValidation.addItems(info["data"][" Videos"])
 
         if len(str(info["BoxWidth"])) != 0:
             self.FieldBoxWidth.setText("")
@@ -662,6 +763,7 @@ class MyTabWidget(QWidget):
             self.FieldBoxHeight.setText("Invalid Entry")
 
     def placeHodlerBtn(self):
+        """pLACE HOLDER FOR ACTUAL BUTTONS"""
         sender = self.sender()
         print(sender.text() + ' was pressed')
 
@@ -675,7 +777,7 @@ class MyTabWidget(QWidget):
         self.startTab.setCurrentIndex(1)
         # Place Holder
         sender = self.sender()
-        print(sender.text() + ' was pressed')
+        # print(sender.text() + ' was pressed')
         # self.pop = self.show_popup()
         # self.pop.show()
         
@@ -690,37 +792,210 @@ class MyTabWidget(QWidget):
         self.startTab.setCurrentIndex(1)
         # Place Holder
         sender = self.sender()
-        print(sender.text() + ' was pressed')
+        # print(sender.text() + ' was pressed')
         # self.pop = self.show_popup()
         # self.pop.show()
     #    pop up not yet connected to choices
 
     def locationInImage(self,event):
-        """When pressed will save place in image clicked"""
+        """When pressed will save place in image clicked and append to list however points won't be adjusted for the image so may not like what is imagined"""
         pos = str(event.pos())
         pos = pos.strip("PyQt5.QtCore.Qpoint")
         pos = pos.strip("()")
+        info = openYaml()
         if len(pos) == 0:
             cord = [0,0]
         else:
             cord = pos.split(", ")
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
-        self.pointList.append(cord)  
-        info = openYaml()
-
-        info["points"].append(cord)
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False)   
-
-        string = str(cord).replace("[","(")
-        string = str(string).replace("]",")")
+        for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                    info["videoPaths"][i][1].append(cord)
         
-        if  len(str(self.labelPointList.text())) == 0:
-            self.labelPointList.setText(string)
-        else:
-            self.labelPointList.setText(str(self.labelPointList.text()) + " , " + string)
+        
+
+        
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
+
+        self.displayFrameCorner()
+          
+
+        # string = str(cord).replace("[","(")
+        # string = str(string).replace("]",")")
+        
+        # if  len(str(self.labelPointList.text())) == 0:
+        #     self.labelPointList.setText(string)
+        # else:
+        #     self.labelPointList.setText(str(self.labelPointList.text()) + " , " + string)
         # self.labelPointList = QLabel(str(self.pointList))
+    
+    def clearPointsCorner(self):
+        """Clears points of the selected video"""
+        info = openYaml()
+        for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                    info["videoPaths"][i][1] = []
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
+        self.displayFrameCorner()
+        
+    def saveToAllCorner(self):
+        """Takes the points of the currently selected image and will save the points to all the others"""
+        info = openYaml()
+        for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                    points = info["videoPaths"][i][1] 
+        for j in range(len(info["videoPaths"])):
+            info["videoPaths"][j][1] = points
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
+        self.displayFrameCorner()
+
+    def fieldTextUpdater(self):
+        """Updates field  goes from TL to TR to BR to BL"""
+        info = openYaml()
+        for i in range(len(info["videoPaths"])):
+            if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                self.FieldTL.setPlaceholderText("Enter Cordinate in x y form")
+                self.FieldTL.setText("")
+                self.FieldTR.setPlaceholderText("Enter Cordinate in x y form")
+                self.FieldTR.setText("")
+                self.FieldBR.setPlaceholderText("Enter Cordinate in x y form")
+                self.FieldBR.setText("")
+                self.FieldBL.setPlaceholderText("Enter Cordinate in x y form")
+                self.FieldBL.setText("")
+                try:
+                    self.FieldTL.setPlaceholderText(str(info["videoPaths"][i][1][0][0]) + " " + str(info["videoPaths"][i][1][0][1]))
+                    self.FieldTR.setPlaceholderText(str(info["videoPaths"][i][1][1][0]) + " " + str(info["videoPaths"][i][1][1][1]))
+                    self.FieldBR.setPlaceholderText(str(info["videoPaths"][i][1][2][0]) + " " + str(info["videoPaths"][i][1][2][1]))
+                    self.FieldBL.setPlaceholderText(str(info["videoPaths"][i][1][3][0]) + " " + str(info["videoPaths"][i][1][3][1]))
+                except:
+                    pass
+
+        
+
+    def FieldPointRegistrationTL(self):
+        """Saves the top left position cordinate for a point"""
+        sender = self.sender()
+        info = openYaml()
+        # print(sender.text() + ' was pressed')
+        cord = sender.text()
+        cord = cord.split(" ")
+        # print(cord[0].isnumeric())
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                    if len(info["videoPaths"][i][1]) >= 4:
+                        info["videoPaths"][i][1][0] = cord
+                    elif len(info["videoPaths"][i][1]) == 0:
+                        info["videoPaths"][i][1] =  [cord]
+                    elif len(info["videoPaths"][i][1]) < 4:
+                        info["videoPaths"][i][1].insert(0,cord)
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
+        self.displayFrameCorner()
+
+    def FieldPointRegistrationTR(self):
+        """Saves the top Right position cordinate for a point"""
+        sender = self.sender()
+        info = openYaml()
+        # print(sender.text() + ' was pressed')
+        cord = sender.text()
+        cord = cord.split(" ")
+        # print(cord[0].isnumeric())
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                    if len(info["videoPaths"][i][1]) >= 4:
+                        info["videoPaths"][i][1][1] = cord
+                    elif len(info["videoPaths"][i][1]) == 0:
+                        info["videoPaths"][i][1] =  [cord]
+                    elif len(info["videoPaths"][i][1]) == 1:
+                        info["videoPaths"][i][1].append(cord)
+                    elif len(info["videoPaths"][i][1]) < 4:
+                        info["videoPaths"][i][1].insert(1,cord)
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
+        self.displayFrameCorner()
+    
+    def FieldPointRegistrationBR(self):
+        """Saves the Bottom Right position cordinate for a point"""
+        sender = self.sender()
+        info = openYaml()
+        # print(sender.text() + ' was pressed')
+        cord = sender.text()
+        cord = cord.split(" ")
+        # print(cord[0].isnumeric())
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                    if len(info["videoPaths"][i][1]) >= 4:
+                        info["videoPaths"][i][1][2] = cord
+                    elif len(info["videoPaths"][i][1]) == 0:
+                        info["videoPaths"][i][1] =  [cord]
+                    elif len(info["videoPaths"][i][1]) <= 2:
+                        info["videoPaths"][i][1].append(cord)
+                    elif len(info["videoPaths"][i][1]) < 4:
+                        info["videoPaths"][i][1].insert(2,cord)
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
+        self.displayFrameCorner()
+
+    def FieldPointRegistrationBL(self):
+        """Saves the Bottom left position cordinate for a point"""
+        sender = self.sender()
+        info = openYaml()
+        # print(sender.text() + ' was pressed')
+        cord = sender.text()
+        cord = cord.split(" ")
+        # print(cord[0].isnumeric())
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                    if len(info["videoPaths"][i][1]) >= 4:
+                        info["videoPaths"][i][1][3] = cord
+                    elif len(info["videoPaths"][i][1]) == 0:
+                        info["videoPaths"][i][1] =  [cord]
+                    elif len(info["videoPaths"][i][1]) <= 3:
+                        info["videoPaths"][i][1].append(cord)
+                    elif len(info["videoPaths"][i][1]) < 4:
+                        info["videoPaths"][i][1].insert(3,cord)
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
+        self.displayFrameCorner()
+        
+    def toRegisterCorners(self):
+        """Will continue from the Choose points tab and register corners button to register corners tab and remove everything"""
+        try:
+            self.startTab.removeTab(0)
+            self.startTab.removeTab(0)
+            self.startTab.removeTab(0)
+            self.startTab.removeTab(0)
+        except:
+            pass
+        self.startTab.addTab(self.tabRegisterCorners, "Register Corners")
+
+    def DoneRegisterCornersToBack(self):
+        """Brings back all tabs and gets rid of register corners tab"""
+        try:
+            self.startTab.removeTab(0)
+        except:
+            pass
+        self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
+        self.startTab.addTab(self.tabPointSelection, "Choose Points")
+        self.startTab.addTab(self.tabScoring, "Scoring")
+        self.startTab.addTab(self.tabValidation, "Validation")
+        self.startTab.setCurrentIndex(1)
     
     def toNext(self):
         """Will continue from the create or load project button and will update tabs to move to the rest"""
@@ -744,7 +1019,7 @@ class MyTabWidget(QWidget):
             self.startTab.addTab(self.tabPointSelection, "Choose Points")
             self.startTab.addTab(self.tabScoring, "Scoring")
             self.startTab.addTab(self.tabValidation, "Validation")
-            self.startTab.addTab(self.tabProcess, "Junk?")
+            # self.startTab.addTab(self.tabProcess, "Junk?")
 
         elif (not nameExist) and (not pathExist):
             self.createhelplabel.setText("You need to enter a project name and path")
@@ -756,11 +1031,8 @@ class MyTabWidget(QWidget):
             self.loadhelplabel.setText("You need to enter a project path")
 
 
-
-
-
     def show_popup(self):
-        """pop up """
+        """pop up dont think is nessary"""
         msg = QMessageBox()
         msg.setWindowTitle("Warning")
         msg.setText("Previously saved project may be deleted\nWould you like to proceed?")
@@ -777,6 +1049,178 @@ class MyTabWidget(QWidget):
         """to connect to the pop up but doesnt seem to work not really important """
         print(i.text())
         # not yet connected to actual yer or no
+
+    def displayFrame(self):
+        """Displays 1st frame of the video"""
+        info = openYaml(False)
+        
+        if self.ComboVidMenu.count != 0 and os.path.exists(info["folderPath"]):
+
+            # print(self.ComboVidMenu.currentText())
+            PROJECT_DIR = Path(info["folderPath"])
+            cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidMenu.currentText()))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+            ret, frame = cap.read()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = frame.shape
+            bytes_per_line = ch * w
+            image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            image = image.scaled(300, 300, Qt.KeepAspectRatio)
+            pixmap = QPixmap(image)
+            
+            # pixmap = QPixmap(cap)
+            self.labelImageOri.setPixmap(pixmap)
+            self.labelImageOri.setScaledContents(True)
+            # plt.imshow(frame)
+            # self.labelImageOri.setText("Original Image Place Holder")
+
+           
+        else:
+            self.labelImageOri.setText("Original Image Place Holder")
+        self.displayAltFrame()
+
+          
+
+
+    def displayAltFrame(self):
+        """Displays 1st frame of the altered video"""
+        # print("happened")
+        info = openYaml(False)
+        for i in range(len(info["videoPaths"])):
+            if info["videoPaths"][i][0] == self.ComboVidMenu.currentText():
+                index = i
+                # print(index)
+        if self.ComboVidMenu.count != 0 and os.path.exists(info["folderPath"]) and len(info["videoPaths"][index][1]) == 4:
+
+            # print(self.ComboVidMenu.currentText())
+            PROJECT_DIR = Path(info["folderPath"])
+            cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidMenu.currentText()))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+            ret, frame = cap.read()
+            registration_points = np.array(
+                info["videoPaths"][index][1]
+            ).astype(np.float32)
+
+            x = registration_points[:,0]
+            y = registration_points[:,1]
+            w, h = 500, 500 # in mm
+            schema = np.array([
+                [0, 0],
+                [w, 0],
+                [w, h],
+                [0, h]
+            ]).astype(np.float32)
+            homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
+            frame = cv2.warpPerspective(frame, homogeneous_transform, (w, h))
+            
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = frame.shape
+            bytes_per_line = ch * w
+            image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            image = image.scaled(300, 300, Qt.KeepAspectRatio)
+            pixmap = QPixmap(image)
+            
+            # pixmap = QPixmap(cap)
+            self.labelImageAlt.setPixmap(pixmap)
+            self.labelImageAlt.setScaledContents(True)
+            # plt.imshow(frame)
+            # self.labelImageOri.setText("Original Image Place Holder")
+
+        else:
+            print("else")
+            self.labelImageAlt.setText("Altered Image Place Holder")
+
+
+    def displayVideo(self):
+        """Plays video? not yet"""
+        info = openYaml(False)
+        
+        if self.ComboVidValidationMenu.count != 0 and os.path.exists(info["folderPath"]):
+
+            # print(self.ComboVidValidationMenu.currentText())
+            PROJECT_DIR = Path(info["folderPath"])
+            cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidValidationMenu.currentText()))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+            ret, frame = cap.read()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = frame.shape
+            bytes_per_line = ch * w
+            image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            image = image.scaled(300, 300, Qt.KeepAspectRatio)
+            pixmap = QPixmap(image)
+            
+            # pixmap = QPixmap(cap)
+            self.labelVideoValidation.setPixmap(pixmap)
+            self.labelVideoValidation.setMinimumSize(300,300)
+            self.labelVideoValidation.setMaximumSize(600,600)
+            self.labelVideoValidation.setScaledContents(True)
+            # plt.imshow(frame)
+            # self.labelImageOri.setText("Original Image Place Holder")
+
+           
+        else:
+            self.labelVideoValidation.setText("Original Image Place Holder")
+
+    def displayFrameCorner(self):
+        """Displays 1st frame of the video"""
+        info = openYaml(False)
+        
+        if self.ComboVidMenuCorner.count != 0 and os.path.exists(info["folderPath"]):
+
+            # print(self.ComboVidMenu.currentText())
+            PROJECT_DIR = Path(info["folderPath"])
+            cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidMenuCorner.currentText()))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+            
+
+
+
+            ret, frame = cap.read()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = frame.shape
+
+            
+            bytes_per_line = ch * w
+            image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            pixmap = QPixmap(image)
+            # Sets points
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText() and len(info["videoPaths"][i][1]) != 0:
+                    for j in range(len(info["videoPaths"][i][1])):
+                        painter = QtGui.QPainter(pixmap)
+                        pen = QPen(Qt.red)
+                        pen.setWidth(10)
+                        
+                        painter.setPen(pen) 
+                        
+                        painter.drawPoint(int(info["videoPaths"][i][1][j][0]), int(info["videoPaths"][i][1][j][1]),)
+                        # painter.drawLine(10, 10, 300, 200)
+                        painter.end()
+                        # print(j)
+            
+            
+            
+
+            
+            # pixmap = QPixmap(cap)
+            self.labelImageOriCorner.setPixmap(pixmap)
+            self.labelImageOriCorner.setMinimumSize(300,300)
+            self.labelImageOriCorner.setMaximumSize(600,600)
+            self.labelImageOriCorner.setScaledContents(True)
+            # print(info["videoPaths"])
+
+            # plt.imshow(frame)
+            # self.labelImageOri.setText("Original Image Place Holder")
+            self.fieldTextUpdater()
+
+           
+        else:
+            self.labelImageOriCorner.setText("Original Image Place Holder")
+
+
+
+            
+    
 
     
         

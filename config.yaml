@@ -5,19 +5,10 @@ DLCvideoPaths: []
 Name: ''
 Path: ''
 data:
-  ' Videos':
-  - PlaceHold.mp4
-  - PlaceHolder.mp4
-  - PlaceHoldest.mp4
-  Feature 1:
-  - 1
-  - 2
-  - 3
-  Feature 2:
-  - 1
-  - 2
-  - 3
+  ' Videos': []
+  Feature 1: []
+  Feature 2: []
 folderPath: ''
-numFeatures: '3'
+numFeatures: '2'
 points: []
 videoPaths: []
