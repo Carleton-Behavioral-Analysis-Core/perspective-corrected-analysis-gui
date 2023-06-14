@@ -415,9 +415,11 @@ class MyTabWidget(QWidget):
         self.labelImageOriCorner = QLabel("Original Image Place Holder")
         self.labelImageOriCorner.mousePressEvent = lambda event: self.locationInImage(event)
 
-        self.labelInstructions = QLabel("Either enter x,y cordnitaes seperated by single space or press on image")
+        self.labelInstructions = QLabel("Either enter x y coordinates seperated\nby single space or press on image")
+        # self.labelInstructions.setAlignment(alignment=QtCore.Qt.AlignCenter)
 
         self.labelTopLeft= QLabel("Top Left:")
+        self.labelTopLeft.setFixedWidth(70)
         self.FieldTL = QLineEdit()
         self.FieldTL.setPlaceholderText("Enter Cordinate in x y form")
         # if len(info["BoxWidth"]) != 0 and (str(info["BoxWidth"])).isnumeric():
@@ -427,16 +429,19 @@ class MyTabWidget(QWidget):
         self.FieldTL.returnPressed.connect(self.FieldPointRegistrationTL) #Prob save x
 
         self.labelTopRight= QLabel("Top Right:")
+        self.labelTopRight.setFixedWidth(70)
         self.FieldTR = QLineEdit()
         self.FieldTR.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldTR.returnPressed.connect(self.FieldPointRegistrationTR)
 
         self.labelBottomRight= QLabel("Bottom Right:")
+        self.labelBottomRight.setFixedWidth(70)
         self.FieldBR = QLineEdit()
         self.FieldBR.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldBR.returnPressed.connect(self.FieldPointRegistrationBR)
 
         self.labelBottomLeft= QLabel("Bottom Left:")
+        self.labelBottomLeft.setFixedWidth(70)
         self.FieldBL = QLineEdit()
         self.FieldBL.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldBL.returnPressed.connect(self.FieldPointRegistrationBL)
@@ -453,16 +458,17 @@ class MyTabWidget(QWidget):
         self.labelImageAltCorner = QLabel("Altered Image Place Holder\nWill be visble when 4 points are selected")
 
 
-        self.labelImgBL= QLabel("")
-        self.labelImgBR= QLabel("")
-        self.labelImgTL= QLabel("")
-        self.labelImgTR= QLabel("")
+        self.labelImgBL= QLabel("1")
+        self.labelImgBR= QLabel("2")
+        self.labelImgTL= QLabel("3")
+        self.labelImgTR= QLabel("4")
 
         self.spacingLabel1 = QLabel("")
         self.spacingLabel2 = QLabel("")
         self.spacingLabel3 = QLabel("")
         self.spacingLabel4 = QLabel("")
         self.spacingLabel5 = QLabel("")
+        self.spacingLabel6 = QLabel("")
 
        
 
@@ -484,30 +490,150 @@ class MyTabWidget(QWidget):
         # self.tabRegisterCorners.layout.addWidget(self.btnDoneCorner,5,0,1,3)
         # self.tabRegisterCorners.layout.addWidget(self.labelImageAltCorner,6,0)
 
-        self.tabRegisterCorners.layout.addWidget(self.ComboVidMenuCorner,0,5,1,3)
-        self.tabRegisterCorners.layout.addWidget(self.btnChangeFrame,1,5,1,3) 
 
-        self.tabRegisterCorners.layout.addWidget(self.labelInstructions,2,5,1,3)
-        self.tabRegisterCorners.layout.addWidget(self.labelImgTL,0,0,1,2, alignment=QtCore.Qt.AlignLeft)
-        self.tabRegisterCorners.layout.addWidget(self.labelImgTR,0,2,1,2, alignment=QtCore.Qt.AlignRight)
-        self.tabRegisterCorners.layout.addWidget(self.labelImageOriCorner,1,0,4,4)
-        self.tabRegisterCorners.layout.addWidget(self.labelImgBL,5,0,1,2, alignment=QtCore.Qt.AlignLeft)
-        self.tabRegisterCorners.layout.addWidget(self.labelImgBR,5,2,1,2, alignment=QtCore.Qt.AlignRight)
-        self.tabRegisterCorners.layout.addWidget(self.labelImageAltCorner,6,0,4,4)
+        # v4
+        # self.tabRegisterCorners.layout.addWidget(self.ComboVidMenuCorner,0,5,1,3)
+        # self.tabRegisterCorners.layout.addWidget(self.btnChangeFrame,1,5,1,3) 
+        # self.tabRegisterCorners.layout.addWidget(self.spacingLabel6,1,4,1,1) 
 
-        self.tabRegisterCorners.layout.addWidget(self.labelTopLeft,3,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        self.tabRegisterCorners.layout.addWidget(self.FieldTL,3,6,1,2)
+        # self.tabRegisterCorners.layout.addWidget(self.labelInstructions,2,5,1,3)
+        # self.tabRegisterCorners.layout.addWidget(self.labelImgTL,0,0,1,2, alignment=QtCore.Qt.AlignLeft)
+        # self.tabRegisterCorners.layout.addWidget(self.labelImgTR,0,2,1,2, alignment=QtCore.Qt.AlignRight)
+        # self.tabRegisterCorners.layout.addWidget(self.labelImageOriCorner,1,0,4,4)
+        # self.tabRegisterCorners.layout.addWidget(self.labelImgBL,5,0,1,2, alignment=QtCore.Qt.AlignLeft)
+        # self.tabRegisterCorners.layout.addWidget(self.labelImgBR,5,2,1,2, alignment=QtCore.Qt.AlignRight)
+        # self.tabRegisterCorners.layout.addWidget(self.labelImageAltCorner,6,0,4,4)
+
+        # self.tabRegisterCorners.layout.addWidget(self.labelTopLeft,3,5,1,1, alignment=QtCore.Qt.AlignLeft)
+        # self.tabRegisterCorners.layout.addWidget(self.FieldTL,3,6,1,2)
         
-        self.tabRegisterCorners.layout.addWidget(self.labelTopRight,4,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        self.tabRegisterCorners.layout.addWidget(self.FieldTR,4,6,1,2)
-        self.tabRegisterCorners.layout.addWidget(self.labelBottomRight,5,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        self.tabRegisterCorners.layout.addWidget(self.FieldBR,5,6,1,2)
-        self.tabRegisterCorners.layout.addWidget(self.labelBottomLeft,6,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        self.tabRegisterCorners.layout.addWidget(self.FieldBL,6,6,1,2)
-        self.tabRegisterCorners.layout.addWidget(self.btnSetForAll,7,5,1,1)
-        self.tabRegisterCorners.layout.addWidget(self.btnClearPoints,7,6,1,2)
-        self.tabRegisterCorners.layout.addWidget(self.btnDoneCorner,8,5,1,3)
+        # self.tabRegisterCorners.layout.addWidget(self.labelTopRight,4,5,1,1, alignment=QtCore.Qt.AlignLeft)
+        # self.tabRegisterCorners.layout.addWidget(self.FieldTR,4,6,1,2)
+        # self.tabRegisterCorners.layout.addWidget(self.labelBottomRight,5,5,1,1, alignment=QtCore.Qt.AlignLeft)
+        # self.tabRegisterCorners.layout.addWidget(self.FieldBR,5,6,1,2)
+        # self.tabRegisterCorners.layout.addWidget(self.labelBottomLeft,6,5,1,1, alignment=QtCore.Qt.AlignLeft)
+        # self.tabRegisterCorners.layout.addWidget(self.FieldBL,6,6,1,2)
+        # self.tabRegisterCorners.layout.addWidget(self.btnSetForAll,7,5,1,1)
+        # self.tabRegisterCorners.layout.addWidget(self.btnClearPoints,7,6,1,2)
+        # self.tabRegisterCorners.layout.addWidget(self.btnDoneCorner,8,5,1,3)
 
+        # v3
+        self.conjoinedLayout1 = QGridLayout()
+        self.conjoinedLayout1.addWidget(self.labelImgTL,0,0,1,1, alignment=QtCore.Qt.AlignLeft)
+        self.conjoinedLayout1.addWidget(self.labelImgTR,0,1,1,1, alignment=QtCore.Qt.AlignRight)
+
+        self.conjoinedLayout1Wid = QWidget()
+        self.conjoinedLayout1Wid.setLayout(self.conjoinedLayout1)
+
+        self.conjoinedLayout2 = QGridLayout()
+        self.conjoinedLayout2.addWidget(self.labelImgBL,0,0,1,1, alignment=QtCore.Qt.AlignLeft)
+        self.conjoinedLayout2.addWidget(self.labelImgBR,0,1,1,1, alignment=QtCore.Qt.AlignRight)
+
+        self.conjoinedLayout2Wid = QWidget()
+        self.conjoinedLayout2Wid.setLayout(self.conjoinedLayout2)
+
+        self.imageVerticalLayout = QVBoxLayout()
+        self.imageVerticalLayout.addWidget(self.conjoinedLayout1Wid)
+        self.imageVerticalLayout.addWidget(self.labelImageOriCorner)
+        self.imageVerticalLayout.addWidget(self.conjoinedLayout2Wid)
+        self.imageVerticalLayout.addWidget(self.labelImageAltCorner)
+
+        self.ImageandLabelWidgt = QWidget()
+        self.ImageandLabelWidgt.setLayout(self.imageVerticalLayout)
+
+        # self.LabelsandButtonsLayout = QGridLayout()
+        # self.LabelsandButtonsLayout.addWidget(self.ComboVidMenuCorner,0,0,1,2)
+        # self.LabelsandButtonsLayout.addWidget(self.btnChangeFrame,0,2,1,1) 
+        # self.LabelsandButtonsLayout.addWidget(self.spacingLabel6,1,0,1,3) 
+        # self.LabelsandButtonsLayout.addWidget(self.labelInstructions,2,0,1,3) 
+        
+        # self.LabelsandButtonsLayout.addWidget(self.labelTopLeft,3,0,1,1, alignment=QtCore.Qt.AlignLeft)
+        # self.LabelsandButtonsLayout.addWidget(self.FieldTL,3,1,1,2)
+        
+        # self.LabelsandButtonsLayout.addWidget(self.labelTopRight,4,0,1,1, alignment=QtCore.Qt.AlignLeft)
+        # self.LabelsandButtonsLayout.addWidget(self.FieldTR,4,1,1,2)
+        # self.LabelsandButtonsLayout.addWidget(self.labelBottomRight,5,0,1,1, alignment=QtCore.Qt.AlignLeft)
+        # self.LabelsandButtonsLayout.addWidget(self.FieldBR,5,1,1,2)
+        # self.LabelsandButtonsLayout.addWidget(self.labelBottomLeft,6,0,1,1, alignment=QtCore.Qt.AlignLeft)
+        # self.LabelsandButtonsLayout.addWidget(self.FieldBL,6,1,1,2)
+        # self.LabelsandButtonsLayout.addWidget(self.spacingLabel5,7,1,1,3)
+        # self.LabelsandButtonsLayout.addWidget(self.btnSetForAll,8,0,1,1)
+        # self.LabelsandButtonsLayout.addWidget(self.btnClearPoints,8,1,1,2)
+        # self.LabelsandButtonsLayout.addWidget(self.btnDoneCorner,9,0,1,3)
+
+        self.conjoinedLayout3 = QGridLayout()
+        self.conjoinedLayout3.addWidget(self.ComboVidMenuCorner,0,0,1,2)
+        self.conjoinedLayout3.addWidget(self.btnChangeFrame,0,2,1,1)
+        self.conjoinedLayout3.addWidget(self.spacingLabel6,1,0,1,3)
+
+        self.conjoinedLayout3Wid = QWidget()
+        self.conjoinedLayout3Wid.setLayout(self.conjoinedLayout3)
+
+        self.conjoinedLayoutTL = QGridLayout()
+        self.conjoinedLayoutTL.addWidget(self.labelTopLeft,0,0,1,2)
+        self.conjoinedLayoutTL.addWidget(self.FieldTL,0,2,1,1)
+
+        self.conjoinedLayoutTLWid = QWidget()
+        self.conjoinedLayoutTLWid.setLayout(self.conjoinedLayoutTL)
+
+        self.conjoinedLayoutTR = QGridLayout()
+        self.conjoinedLayoutTR.addWidget(self.labelTopRight,0,0,1,2)
+        self.conjoinedLayoutTR.addWidget(self.FieldTR,0,2,1,1)
+
+        self.conjoinedLayoutTRWid = QWidget()
+        self.conjoinedLayoutTRWid.setLayout(self.conjoinedLayoutTR)
+
+        self.conjoinedLayoutBR = QGridLayout()
+        self.conjoinedLayoutBR.addWidget(self.labelBottomRight,0,0,1,2)
+        self.conjoinedLayoutBR.addWidget(self.FieldBR,0,2,1,1)
+
+        self.conjoinedLayoutBRWid = QWidget()
+        self.conjoinedLayoutBRWid.setLayout(self.conjoinedLayoutBR)
+
+        self.conjoinedLayoutBL = QGridLayout()
+        self.conjoinedLayoutBL.addWidget(self.labelBottomLeft,0,0,1,2)
+        self.conjoinedLayoutBL.addWidget(self.FieldBL,0,2,1,1)
+
+        self.conjoinedLayoutBLWid = QWidget()
+        self.conjoinedLayoutBLWid.setLayout(self.conjoinedLayoutBL)
+
+        self.conjoinedLayoutBtn = QGridLayout()
+        self.conjoinedLayoutBtn.addWidget(self.spacingLabel5,0,0,1,3)
+        self.conjoinedLayoutBtn.addWidget(self.btnClearPoints,1,0,1,1)
+        self.conjoinedLayoutBtn.addWidget(self.btnSetForAll,1,1,1,2)
+
+        self.conjoinedLayoutBtnWid = QWidget()
+        self.conjoinedLayoutBtnWid.setLayout(self.conjoinedLayoutBtn)
+
+        self.labelsNBtnsVerticalLayout = QVBoxLayout()
+        self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayout3Wid)
+        self.labelsNBtnsVerticalLayout.addWidget(self.labelInstructions, alignment=QtCore.Qt.AlignCenter)
+        self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutTLWid)
+        self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutTRWid)
+        self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutBRWid)
+        self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutBLWid)
+        self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutBtnWid)
+        self.labelsNBtnsVerticalLayout.addWidget(self.btnDoneCorner)
+
+        
+
+
+        # self.LabelsandButtonsLayout.setVerticalSpacing(5)
+        # self.LabelsandButtonsLayout.setSpacing(0)
+        # self.LabelsandButtonsLayout.setContentsMargins(0,0,0,0)
+        # print(self.LabelsandButtonsLayout.horizontalSpacing())
+        # self.LabelsandButtonsLayout.
+        self.LabelsandButtonsWidget = QWidget()
+        self.LabelsandButtonsWidget.setLayout(self.labelsNBtnsVerticalLayout)
+
+        self.wholeCornerLayout = QHBoxLayout()
+        
+        self.wholeCornerLayout.addWidget(self.ImageandLabelWidgt)
+        self.wholeCornerLayout.addWidget(self.LabelsandButtonsWidget)
+        
+        
+
+        # self.tabRegisterCorners.layout.addLayout(self.imageVerticalLayout)
 
         # v1
         # self.tabRegisterCorners.layout.addWidget(self.ComboVidMenuCorner,0,0,1,2)
@@ -569,7 +695,8 @@ class MyTabWidget(QWidget):
 
 
 
-        self.tabRegisterCorners.setLayout(self.tabRegisterCorners.layout)
+        # self.tabRegisterCorners.setLayout(self.tabRegisterCorners.layout)
+        self.tabRegisterCorners.setLayout(self.wholeCornerLayout)
 
         # # Mess of tabs dont think are needed
         # # tab tabPointSelection
@@ -1338,7 +1465,7 @@ class MyTabWidget(QWidget):
         
         if self.ComboVidMenuCorner.count != 0 and os.path.exists(info["folderPath"]):
 
-            print(self.ComboVidMenu.currentText())
+            # print(self.ComboVidMenu.currentText())
             PROJECT_DIR = Path(info["folderPath"])
             cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidMenuCorner.currentText()))
             cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
@@ -1389,7 +1516,10 @@ class MyTabWidget(QWidget):
 
             # plt.imshow(frame)
             # self.labelImageOri.setText("Original Image Place Holder")
-
+            if "index" not in locals():
+                for i in range(len(info["videoPaths"])):
+                    if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                        index = i
            
             # Displays altered image
             if len(info["videoPaths"][index][1]) == 4:
@@ -1434,6 +1564,10 @@ class MyTabWidget(QWidget):
            
         else:
             self.labelImageOriCorner.setText("Original Image Place Holder")
+            self.labelImgBL.setText("")
+            self.labelImgBR.setText("")
+            self.labelImgTL.setText("")
+            self.labelImgTR.setText("")
 
 
 
