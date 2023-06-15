@@ -99,6 +99,7 @@ class MyTabWidget(QWidget):
         self.tabScoring = QWidget()
         self.tabValidation = QWidget()
         self.tabRegisterCorners = QWidget()
+        self.tabCreateSchema = QWidget()
         
         # Dont think I need most of these
         self.path = ""
@@ -296,10 +297,10 @@ class MyTabWidget(QWidget):
             self.FieldBoxHeight.setPlaceholderText("Box Height in mm")
         self.FieldBoxHeight.returnPressed.connect(self.boxHeightSave) 
 
-        self.btnCreateSchema = QPushButton("1. CREATE SCHEMA")
-        self.btnCreateSchema.clicked.connect(self.displayAltFrame)
+        self.btnCreateSchema = QPushButton("2. CREATE SCHEMA")
+        self.btnCreateSchema.clicked.connect(self.toRegisterSchema)
 
-        self.btnRegisterCorners = QPushButton("2. REGISTER CORNERS")
+        self.btnRegisterCorners = QPushButton("1. REGISTER CORNERS")
         self.btnRegisterCorners.clicked.connect(self.toRegisterCorners)
 
         self.btnVisualizeRegistrations = QPushButton("3. Visualize REGISTRATIONS")
@@ -318,8 +319,8 @@ class MyTabWidget(QWidget):
         self.tabPointSelection.layout.addWidget(self.labelBoxHeight,0,2,1,1, alignment=QtCore.Qt.AlignRight)      
         self.tabPointSelection.layout.addWidget(self.FieldBoxWidth,0,1,1,1)
         self.tabPointSelection.layout.addWidget(self.FieldBoxHeight,0,3,1,1)
-        self.tabPointSelection.layout.addWidget(self.btnCreateSchema,2,0,1,1)
-        self.tabPointSelection.layout.addWidget(self.btnRegisterCorners,2,1,1,1)
+        self.tabPointSelection.layout.addWidget(self.btnCreateSchema,2,1,1,1)
+        self.tabPointSelection.layout.addWidget(self.btnRegisterCorners,2,0,1,1)
         self.tabPointSelection.layout.addWidget(self.btnVisualizeRegistrations,2,2,1,1)
         self.tabPointSelection.layout.addWidget(self.ComboVidMenu,2,3,1,1)
         self.tabPointSelection.layout.addWidget(self.labelImageOri,3,0,1,2)
@@ -419,7 +420,7 @@ class MyTabWidget(QWidget):
         # self.labelInstructions.setAlignment(alignment=QtCore.Qt.AlignCenter)
 
         self.labelTopLeft= QLabel("Top Left:")
-        self.labelTopLeft.setFixedWidth(70)
+        self.labelTopLeft.setMinimumWidth(70)
         self.FieldTL = QLineEdit()
         self.FieldTL.setPlaceholderText("Enter Cordinate in x y form")
         # if len(info["BoxWidth"]) != 0 and (str(info["BoxWidth"])).isnumeric():
@@ -429,19 +430,20 @@ class MyTabWidget(QWidget):
         self.FieldTL.returnPressed.connect(self.FieldPointRegistrationTL) #Prob save x
 
         self.labelTopRight= QLabel("Top Right:")
-        self.labelTopRight.setFixedWidth(70)
+        self.labelTopRight.setMinimumWidth(70)
         self.FieldTR = QLineEdit()
         self.FieldTR.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldTR.returnPressed.connect(self.FieldPointRegistrationTR)
 
         self.labelBottomRight= QLabel("Bottom Right:")
-        self.labelBottomRight.setFixedWidth(70)
+        
+        self.labelBottomRight.setMinimumWidth(70)
         self.FieldBR = QLineEdit()
         self.FieldBR.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldBR.returnPressed.connect(self.FieldPointRegistrationBR)
 
         self.labelBottomLeft= QLabel("Bottom Left:")
-        self.labelBottomLeft.setFixedWidth(70)
+        self.labelBottomLeft.setMinimumWidth(70)
         self.FieldBL = QLineEdit()
         self.FieldBL.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldBL.returnPressed.connect(self.FieldPointRegistrationBL)
@@ -458,64 +460,17 @@ class MyTabWidget(QWidget):
         self.labelImageAltCorner = QLabel("Altered Image Place Holder\nWill be visble when 4 points are selected")
 
 
-        self.labelImgBL= QLabel("1")
-        self.labelImgBR= QLabel("2")
-        self.labelImgTL= QLabel("3")
-        self.labelImgTR= QLabel("4")
+        self.labelImgBL= QLabel("")
+        self.labelImgBR= QLabel("")
+        self.labelImgTL= QLabel("")
+        self.labelImgTR= QLabel("")
 
         self.spacingLabel1 = QLabel("")
         self.spacingLabel2 = QLabel("")
-        self.spacingLabel3 = QLabel("")
-        self.spacingLabel4 = QLabel("")
-        self.spacingLabel5 = QLabel("")
-        self.spacingLabel6 = QLabel("")
+        
 
        
 
-
-        # self.tabRegisterCorners.layout.addWidget(self.ComboVidMenuCorner,0,0,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.btnChangeFrame,0,2,1,1)      
-        # self.tabRegisterCorners.layout.addWidget(self.labelInstructions,0,3,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImageOriCorner,1,0,4,3)
-        # self.tabRegisterCorners.layout.addWidget(self.labelTopLeft,1,3,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldTL,1,4,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.labelTopRight,2,3,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldTR,2,4,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.labelBottomRight,3,3,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldBR,3,4,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.labelBottomLeft,4,3,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldBL,4,4,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.btnSetForAll,5,4,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.btnClearPoints,5,3,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.btnDoneCorner,5,0,1,3)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImageAltCorner,6,0)
-
-
-        # v4
-        # self.tabRegisterCorners.layout.addWidget(self.ComboVidMenuCorner,0,5,1,3)
-        # self.tabRegisterCorners.layout.addWidget(self.btnChangeFrame,1,5,1,3) 
-        # self.tabRegisterCorners.layout.addWidget(self.spacingLabel6,1,4,1,1) 
-
-        # self.tabRegisterCorners.layout.addWidget(self.labelInstructions,2,5,1,3)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgTL,0,0,1,2, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgTR,0,2,1,2, alignment=QtCore.Qt.AlignRight)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImageOriCorner,1,0,4,4)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgBL,5,0,1,2, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgBR,5,2,1,2, alignment=QtCore.Qt.AlignRight)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImageAltCorner,6,0,4,4)
-
-        # self.tabRegisterCorners.layout.addWidget(self.labelTopLeft,3,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldTL,3,6,1,2)
-        
-        # self.tabRegisterCorners.layout.addWidget(self.labelTopRight,4,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldTR,4,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.labelBottomRight,5,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldBR,5,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.labelBottomLeft,6,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldBL,6,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.btnSetForAll,7,5,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.btnClearPoints,7,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.btnDoneCorner,8,5,1,3)
 
         # v3
         self.conjoinedLayout1 = QGridLayout()
@@ -541,30 +496,10 @@ class MyTabWidget(QWidget):
         self.ImageandLabelWidgt = QWidget()
         self.ImageandLabelWidgt.setLayout(self.imageVerticalLayout)
 
-        # self.LabelsandButtonsLayout = QGridLayout()
-        # self.LabelsandButtonsLayout.addWidget(self.ComboVidMenuCorner,0,0,1,2)
-        # self.LabelsandButtonsLayout.addWidget(self.btnChangeFrame,0,2,1,1) 
-        # self.LabelsandButtonsLayout.addWidget(self.spacingLabel6,1,0,1,3) 
-        # self.LabelsandButtonsLayout.addWidget(self.labelInstructions,2,0,1,3) 
-        
-        # self.LabelsandButtonsLayout.addWidget(self.labelTopLeft,3,0,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.LabelsandButtonsLayout.addWidget(self.FieldTL,3,1,1,2)
-        
-        # self.LabelsandButtonsLayout.addWidget(self.labelTopRight,4,0,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.LabelsandButtonsLayout.addWidget(self.FieldTR,4,1,1,2)
-        # self.LabelsandButtonsLayout.addWidget(self.labelBottomRight,5,0,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.LabelsandButtonsLayout.addWidget(self.FieldBR,5,1,1,2)
-        # self.LabelsandButtonsLayout.addWidget(self.labelBottomLeft,6,0,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.LabelsandButtonsLayout.addWidget(self.FieldBL,6,1,1,2)
-        # self.LabelsandButtonsLayout.addWidget(self.spacingLabel5,7,1,1,3)
-        # self.LabelsandButtonsLayout.addWidget(self.btnSetForAll,8,0,1,1)
-        # self.LabelsandButtonsLayout.addWidget(self.btnClearPoints,8,1,1,2)
-        # self.LabelsandButtonsLayout.addWidget(self.btnDoneCorner,9,0,1,3)
-
         self.conjoinedLayout3 = QGridLayout()
         self.conjoinedLayout3.addWidget(self.ComboVidMenuCorner,0,0,1,2)
         self.conjoinedLayout3.addWidget(self.btnChangeFrame,0,2,1,1)
-        self.conjoinedLayout3.addWidget(self.spacingLabel6,1,0,1,3)
+        self.conjoinedLayout3.addWidget(self.spacingLabel1,1,0,1,3)
 
         self.conjoinedLayout3Wid = QWidget()
         self.conjoinedLayout3Wid.setLayout(self.conjoinedLayout3)
@@ -598,7 +533,7 @@ class MyTabWidget(QWidget):
         self.conjoinedLayoutBLWid.setLayout(self.conjoinedLayoutBL)
 
         self.conjoinedLayoutBtn = QGridLayout()
-        self.conjoinedLayoutBtn.addWidget(self.spacingLabel5,0,0,1,3)
+        self.conjoinedLayoutBtn.addWidget(self.spacingLabel2,0,0,1,3)
         self.conjoinedLayoutBtn.addWidget(self.btnClearPoints,1,0,1,1)
         self.conjoinedLayoutBtn.addWidget(self.btnSetForAll,1,1,1,2)
 
@@ -618,11 +553,7 @@ class MyTabWidget(QWidget):
         
 
 
-        # self.LabelsandButtonsLayout.setVerticalSpacing(5)
-        # self.LabelsandButtonsLayout.setSpacing(0)
-        # self.LabelsandButtonsLayout.setContentsMargins(0,0,0,0)
-        # print(self.LabelsandButtonsLayout.horizontalSpacing())
-        # self.LabelsandButtonsLayout.
+ 
         self.LabelsandButtonsWidget = QWidget()
         self.LabelsandButtonsWidget.setLayout(self.labelsNBtnsVerticalLayout)
 
@@ -633,115 +564,88 @@ class MyTabWidget(QWidget):
         
         
 
-        # self.tabRegisterCorners.layout.addLayout(self.imageVerticalLayout)
-
-        # v1
-        # self.tabRegisterCorners.layout.addWidget(self.ComboVidMenuCorner,0,0,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.btnChangeFrame,0,2,1,2) 
-
-        # self.tabRegisterCorners.layout.addWidget(self.labelInstructions,0,5,1,3)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgTL,1,0,1,2, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgTR,1,2,1,2, alignment=QtCore.Qt.AlignRight)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImageOriCorner,2,0,4,4)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgBL,6,0,1,2, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgBR,6,2,1,2, alignment=QtCore.Qt.AlignRight)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImageAltCorner,8,0,4,4)
-    
-        # self.tabRegisterCorners.layout.addWidget(self.labelTopLeft,1,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldTL,1,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.spacingLabel1,2,5,1,3)
-        # self.tabRegisterCorners.layout.addWidget(self.labelTopRight,3,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldTR,3,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.spacingLabel2,4,5,1,3)
-        # self.tabRegisterCorners.layout.addWidget(self.labelBottomRight,5,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldBR,5,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.spacingLabel3,6,5,1,3)
-        # self.tabRegisterCorners.layout.addWidget(self.labelBottomLeft,7,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldBL,7,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.spacingLabel4,8,5,1,3)
-        # self.tabRegisterCorners.layout.addWidget(self.btnSetForAll,9,5,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.btnClearPoints,9,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.btnDoneCorner,10,5,1,3)
-
-        # V2
-        # self.tabRegisterCorners.layout.addWidget(self.ComboVidMenuCorner,0,0,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.btnChangeFrame,0,2,1,2) 
-
-        # self.tabRegisterCorners.layout.addWidget(self.labelInstructions,0,5,1,3)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgTL,1,0,1,2, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgTR,1,2,1,2, alignment=QtCore.Qt.AlignRight)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImageOriCorner,2,0,4,4)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgBL,6,0,1,2, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImgBR,6,2,1,2, alignment=QtCore.Qt.AlignRight)
-        # self.tabRegisterCorners.layout.addWidget(self.labelImageAltCorner,8,0,4,4)
-
-        # self.tabRegisterCorners.layout.addWidget(self.labelTopLeft,1,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldTL,1,6,1,2)
-        
-        # self.tabRegisterCorners.layout.addWidget(self.labelTopRight,2,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldTR,2,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.labelBottomRight,3,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldBR,3,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.labelBottomLeft,4,5,1,1, alignment=QtCore.Qt.AlignLeft)
-        # self.tabRegisterCorners.layout.addWidget(self.FieldBL,4,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.btnSetForAll,6,5,1,1)
-        # self.tabRegisterCorners.layout.addWidget(self.btnClearPoints,6,6,1,2)
-        # self.tabRegisterCorners.layout.addWidget(self.btnDoneCorner,7,5,1,3)
-        
-       
-        
-
-
-
-
-
-        # self.tabRegisterCorners.setLayout(self.tabRegisterCorners.layout)
         self.tabRegisterCorners.setLayout(self.wholeCornerLayout)
 
-        # # Mess of tabs dont think are needed
-        # # tab tabPointSelection
-        # self.tabProcess.layout = QVBoxLayout()
+        self.tabCreateSchema.layout = QGridLayout()
+
+        self.ComboVidMenuSchema = QComboBox()
+        self.ComboVidMenuSchema.addItems(info["data"][" Videos"])
+
+        self.btnChangeFrameSchema = QPushButton("Change Frame")
+        self.btnChangeFrameSchema.clicked.connect(self.displayAltFrameSchema)
 
 
-        # self.instructionsPointsLabel = QLabel("Please select the points you wish to use in each of your videos")
-        # self.tabProcess.layout.addWidget(self.instructionsPointsLabel, alignment=QtCore.Qt.AlignCenter)
+        self.labelInstructionsSchema = QLabel("Enter in the measured length in mm for\neach of the sides of the box")
+        # self.labelInstructions.setAlignment(alignment=QtCore.Qt.AlignCenter)
 
-        # self.pointList = []
+        self.labelTopSchema= QLabel("Top width in mm:")
+        self.labelTopSchema.setMinimumWidth(70)
+        self.FieldTSchema = QLineEdit()
+        self.FieldTSchema.setPlaceholderText("Enter width in mm")
+        self.FieldTSchema.returnPressed.connect(self.FieldLengthRegistrationTop) #Prob save x
 
-        # # self.Frame = QFrame()
-        # self.labelPointVideo = QLabel("Dummy replacement for image")
-        # # self.labelPointVideo.setText("Dummy replacement for image")
-        # # self.labelPointVideo.set(True)
-        # # Prints position on label could be used for position on image to track points
-        # self.labelPointVideo.mousePressEvent = lambda event: self.locationInImage(event)
-        # # self.labelPointVideo.mousePressEvent = lambda event: self.pointList.append(event.pos())
-        # self.labelPointVideo.setStyleSheet("QLabel {background-color: grey; color: black;}")
-        # # self.labelPointVideo.mousePressEvent() = self.locationInImage
-        # # self.locationInImage(self.labelPointVideo.mousePressEvent())
-        # # self.Frame.show()
-
-        # self.labelPointList = QLabel("")
+        self.labelRightSchema= QLabel("Right length in mm:")
+        self.labelRightSchema.setMinimumWidth(70)
+        self.FieldRSchema = QLineEdit()
+        self.FieldRSchema.setPlaceholderText("Enter length in mm")
+        self.FieldRSchema.returnPressed.connect(self.FieldLengthRegistrationRight)
         
+        self.labelImageAltSchema = QLabel("Altered Image Place Holder")
 
-        # self.tabProcess.layout.addWidget(self.labelPointVideo, alignment=QtCore.Qt.AlignCenter)
-        # self.tabProcess.layout.addWidget(self.labelPointList, alignment=QtCore.Qt.AlignCenter)
-        # self.tabProcess.setLayout(self.tabProcess.layout)
-        # # tab tabPointSelection end
-
-
-        # # tab tabProcess 
+        self.labelBottomSchema= QLabel("Bottom length in mm:")
         
-        
-        # # self.btnCreateProj = QPushButton("Create Project")
-        # # self.btnCreateProj.clicked.connect(self.Create_DLC_Project)
-        # # self.btnCreateProj.setDisabled(True)
-        # # self.btnCreateProj.setStyleSheet('QPushButton {background-color: red; color: black;}')
-        # # self.tabProcess.layout.addWidget(self.btnCreateProj, alignment=QtCore.Qt.AlignCenter)
+        self.labelBottomSchema.setMinimumWidth(70)
+        self.FieldBSchema = QLineEdit()
+        self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
+        self.FieldBSchema.returnPressed.connect(self.FieldLengthRegistrationBottom)
 
-        # self.tabProcess.setLayout(self.tabProcess.layout)
+        self.labelLeftSchema = QLabel("Left length in mm:")
+        self.labelLeftSchema.setMinimumWidth(70)
+        self.FieldLSchema = QLineEdit()
+        self.FieldLSchema.setPlaceholderText("Enter length in mm")
+        self.FieldLSchema.returnPressed.connect(self.FieldLengthRegistrationLeft)
+
+        self.btnSetForAllSchema = QPushButton("Set For All")
+        self.btnSetForAllSchema.clicked.connect(self.setForAllLengths)
 
 
-        
+        self.btnClearMeasurementsSchema = QPushButton("Clear measurements")
+        self.btnClearMeasurementsSchema.clicked.connect(self.clearLengths)
+
+        self.btnDoneCornerSchema = QPushButton("Done")
+        self.btnDoneCornerSchema.clicked.connect(self.DoneRegisterCornersToBack)
+
+        self.spacingLabel1Schema = QLabel("")
+        self.spacingLabel2Schema = QLabel("")
+        self.spacingLabel3Schema = QLabel("")
+        self.spacingLabel4Schema = QLabel("")
+        self.spacingLabel5Schema = QLabel("")
+        self.spacingLabel6Schema = QLabel("")
+
+        self.tabCreateSchema.layout.addWidget(self.ComboVidMenuSchema,0,0,1,3) 
+        self.tabCreateSchema.layout.addWidget(self.btnChangeFrameSchema,0,3,1,1)
+        self.tabCreateSchema.layout.addWidget(self.labelInstructionsSchema,1,0,1,4, alignment=QtCore.Qt.AlignCenter) 
+        # self.tabCreateSchema.layout.addWidget(self.spacingLabel1Schema,2,0,1,1) 
+        # self.tabCreateSchema.layout.addWidget(self.labelTopSchema,2,1,1,1) 
+        # self.tabCreateSchema.layout.addWidget(self.FieldTSchema,2,2,1,1) 
+        self.tabCreateSchema.layout.addWidget(self.labelTopSchema,2,0,1,2, alignment=QtCore.Qt.AlignRight) 
+        self.tabCreateSchema.layout.addWidget(self.FieldTSchema,2,2,1,2, alignment=QtCore.Qt.AlignLeft) 
+        # self.tabCreateSchema.layout.addWidget(self.spacingLabel2Schema,2,3,1,1) 
+        self.tabCreateSchema.layout.addWidget(self.labelLeftSchema,3,0,1,1) 
+        self.tabCreateSchema.layout.addWidget(self.labelImageAltSchema,3,1,2,2) 
+        self.tabCreateSchema.layout.addWidget(self.labelRightSchema,3,3,1,1) 
+        self.tabCreateSchema.layout.addWidget(self.FieldLSchema,4,0,1,1)
+        self.tabCreateSchema.layout.addWidget(self.FieldRSchema,4,3,1,1) 
+        # self.tabCreateSchema.layout.addWidget(self.spacingLabel3Schema,5,0,1,1)
+        # self.tabCreateSchema.layout.addWidget(self.spacingLabel4Schema,5,3,1,1) 
+        self.tabCreateSchema.layout.addWidget(self.labelBottomSchema,5,0,1,2, alignment=QtCore.Qt.AlignRight) 
+        self.tabCreateSchema.layout.addWidget(self.FieldBSchema,5,2,1,2, alignment=QtCore.Qt.AlignLeft) 
+        self.tabCreateSchema.layout.addWidget(self.btnSetForAllSchema,6,0,1,2) 
+        self.tabCreateSchema.layout.addWidget(self.btnClearMeasurementsSchema,6,2,1,2) 
+        self.tabCreateSchema.layout.addWidget(self.btnDoneCornerSchema,7,0,1,4) 
+
+
+        self.tabCreateSchema.setLayout(self.tabCreateSchema.layout)
 
  
 
@@ -751,6 +655,7 @@ class MyTabWidget(QWidget):
         self.startTab.addTab(self.tabScoring, "Scoring")
         self.startTab.addTab(self.tabValidation, "Validation")
         self.startTab.addTab(self.tabRegisterCorners, "Register Corners")
+        self.startTab.addTab(self.tabCreateSchema,"Schema")
         
         # self.startTab.addTab(self.tabProcess, "Junk?")
         # # delete when real
@@ -784,7 +689,7 @@ class MyTabWidget(QWidget):
                
                 # print(fileList)
                 for i in range(len(fileList)):
-                    info["videoPaths"][i] = [info["videoPaths"][i],[]]
+                    info["videoPaths"][i] = [info["videoPaths"][i],[],{"Top":"","Bottom":"","Right":"","Left":""}]
 
                 
          
@@ -860,7 +765,7 @@ class MyTabWidget(QWidget):
 
                 info["videoPaths"] = fileList.copy()
                 for i in range(len(fileList)):
-                    info["videoPaths"][i] = [info["videoPaths"][i],[]]
+                    info["videoPaths"][i] = [info["videoPaths"][i],[],{"Top":"","Bottom":"","Right":"","Left":""}]
                 
                 info["data"] = {' Videos':fileList.copy()}
                
@@ -937,6 +842,12 @@ class MyTabWidget(QWidget):
 
         self.ComboVidValidationMenu.clear()
         self.ComboVidValidationMenu.addItems(info["data"][" Videos"])
+
+        self.ComboVidMenuCorner.clear()
+        self.ComboVidMenuCorner.addItems(info["data"][" Videos"])
+
+        self.ComboVidMenuSchema.clear()
+        self.ComboVidMenuSchema.addItems(info["data"][" Videos"])
 
         self.listVideoFoldersValidation.clear()
         self.listVideoFoldersValidation.addItems(info["data"][" Videos"])
@@ -1283,6 +1194,21 @@ class MyTabWidget(QWidget):
             pass
         self.startTab.addTab(self.tabRegisterCorners, "Register Corners")
 
+    def toRegisterSchema(self):
+        """Will continue from the Choose points tab and register corners button to register corners tab and remove everything"""
+        try:
+            self.startTab.removeTab(0)
+            self.startTab.removeTab(0)
+            self.startTab.removeTab(0)
+            self.startTab.removeTab(0)
+        except:
+            pass
+        self.startTab.addTab(self.tabCreateSchema,"Schema")
+        info = openYaml
+        self.ComboVidMenuSchema = QComboBox()
+        self.ComboVidMenuSchema.clear()
+        self.ComboVidMenuSchema.addItems(info["data"][" Videos"])
+
     def DoneRegisterCornersToBack(self):
         """Brings back all tabs and gets rid of register corners tab"""
         try:
@@ -1352,7 +1278,7 @@ class MyTabWidget(QWidget):
         """Displays 1st frame of the video"""
         info = openYaml(False)
         
-        if self.ComboVidMenu.count != 0 and os.path.exists(info["folderPath"]):
+        if self.ComboVidMenu.count() != 0 and os.path.exists(info["folderPath"]):
 
             # print(self.ComboVidMenu.currentText())
             PROJECT_DIR = Path(info["folderPath"])
@@ -1388,7 +1314,7 @@ class MyTabWidget(QWidget):
             if info["videoPaths"][i][0] == self.ComboVidMenu.currentText():
                 index = i
                 # print(index)
-        if self.ComboVidMenu.count != 0 and os.path.exists(info["folderPath"]) and len(info["videoPaths"][index][1]) == 4:
+        if self.ComboVidMenu.count() != 0 and os.path.exists(info["folderPath"]) and len(info["videoPaths"][index][1]) == 4:
 
             # print(self.ComboVidMenu.currentText())
             PROJECT_DIR = Path(info["folderPath"])
@@ -1433,7 +1359,7 @@ class MyTabWidget(QWidget):
         """Plays video? not yet"""
         info = openYaml(False)
         
-        if self.ComboVidValidationMenu.count != 0 and os.path.exists(info["folderPath"]):
+        if self.ComboVidValidationMenu.count() != 0 and os.path.exists(info["folderPath"]):
 
             # print(self.ComboVidValidationMenu.currentText())
             PROJECT_DIR = Path(info["folderPath"])
@@ -1463,7 +1389,7 @@ class MyTabWidget(QWidget):
         """Displays 1st frame of the video"""
         info = openYaml(False)
         
-        if self.ComboVidMenuCorner.count != 0 and os.path.exists(info["folderPath"]):
+        if self.ComboVidMenuCorner.count() != 0 and os.path.exists(info["folderPath"]):
 
             # print(self.ComboVidMenu.currentText())
             PROJECT_DIR = Path(info["folderPath"])
@@ -1522,7 +1448,7 @@ class MyTabWidget(QWidget):
                         index = i
            
             # Displays altered image
-            if len(info["videoPaths"][index][1]) == 4:
+            if ("index" in locals()) and len(info["videoPaths"][index][1]) == 4:
              
                 registration_points = np.array(
                 info["videoPaths"][index][1]
@@ -1569,6 +1495,188 @@ class MyTabWidget(QWidget):
             self.labelImgTL.setText("")
             self.labelImgTR.setText("")
 
+    def displayAltFrameSchema(self):
+        """Displays 1st frame of the altered video"""
+        # print("happened")
+        info = openYaml(False)
+        for i in range(len(info["videoPaths"])):
+            if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
+                index = i
+                # print(index)
+        print(self.ComboVidMenuSchema.count() , os.path.exists(info["folderPath"]) , ("index" in locals()) , len(info["videoPaths"][index][1]) )
+        if self.ComboVidMenuSchema.count() != 0 and os.path.exists(info["folderPath"]) and ("index" in locals()) and len(info["videoPaths"][index][1]) == 4:
+
+            # print(self.ComboVidMenu.currentText())
+            PROJECT_DIR = Path(info["folderPath"])
+            cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidMenuSchema.currentText()))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+            ret, frame = cap.read()
+            registration_points = np.array(
+                info["videoPaths"][index][1]
+            ).astype(np.float32)
+
+            x = registration_points[:,0]
+            y = registration_points[:,1]
+            w, h = 500, 500 # in mm
+            schema = np.array([
+                [0, 0],
+                [w, 0],
+                [w, h],
+                [0, h]
+            ]).astype(np.float32)
+            homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
+            frame = cv2.warpPerspective(frame, homogeneous_transform, (w, h))
+            
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = frame.shape
+            bytes_per_line = ch * w
+            image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+            image = image.scaled(300, 300, Qt.KeepAspectRatio)
+            pixmap = QPixmap(image)
+            
+            # pixmap = QPixmap(cap)
+            self.labelImageAltSchema.setPixmap(pixmap)
+            self.labelImageAltSchema.setScaledContents(True)
+            # plt.imshow(frame)
+            # self.labelImageOri.setText("Original Image Place Holder")
+            # print(info["videoPaths"][index][2]["Top"],str(info["videoPaths"][index][2]["Top"]).isnumeric(),len(str(info["videoPaths"][index][2]["Top"])))
+            if str(info["videoPaths"][index][2]["Top"]).isnumeric() and len(str(info["videoPaths"][index][2]["Top"])) != 0:
+                self.FieldTSchema.setText("")
+                self.FieldTSchema.setPlaceholderText(str(info["videoPaths"][index][2]["Top"]))
+            else:
+                self.FieldTSchema.setPlaceholderText("Enter enter width in mm")
+                self.FieldTSchema.setText("")
+            if str(info["videoPaths"][index][2]["Bottom"]).isnumeric() and len(str(info["videoPaths"][index][2]["Bottom"]))!= 0:
+                self.FieldBSchema.setText("")
+                self.FieldBSchema.setPlaceholderText(str(info["videoPaths"][index][2]["Bottom"]))
+            else:
+                self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
+                self.FieldBSchema.setText("")
+            if str(info["videoPaths"][index][2]["Right"]).isnumeric() and len(str(info["videoPaths"][index][2]["Right"])) != 0:
+                self.FieldRSchema.setText("")
+                self.FieldRSchema.setPlaceholderText(str(info["videoPaths"][index][2]["Right"]))
+            else:
+                self.FieldRSchema.setPlaceholderText("Enter enter length in mm")
+                self.FieldRSchema.setText("")
+            if str(info["videoPaths"][index][2]["Left"]).isnumeric() and len(str(info["videoPaths"][index][2]["Left"])) != 0:
+                self.FieldLSchema.setText("")
+                self.FieldLSchema.setPlaceholderText(str(info["videoPaths"][index][2]["Left"]))
+            else:
+                self.FieldLSchema.setPlaceholderText("Enter enter length in mm")
+                self.FieldLSchema.setText("")
+          
+            
+
+        else:
+            print("else")
+            self.labelImageAltSchema.setText("Altered Image Place Holder")
+            self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
+            self.FieldBSchema.setText("")
+            self.FieldTSchema.setPlaceholderText("Enter enter width in mm")
+            self.FieldTSchema.setText("")
+            self.FieldRSchema.setPlaceholderText("Enter enter length in mm")
+            self.FieldRSchema.setText("")
+            self.FieldLSchema.setPlaceholderText("Enter enter length in mm")
+            self.FieldLSchema.setText("")
+
+    def FieldLengthRegistrationTop(self):
+        """Saves the Top length"""
+        sender = self.sender()
+        info = openYaml()
+        # print(sender.text() + ' was pressed')
+        length = sender.text()
+        
+        if length.isnumeric() :
+            length = int(length)
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
+                    info["videoPaths"][i][2]["Top"] = length
+                    self.FieldTSchema.setText("")
+                    self.FieldTSchema.setPlaceholderText(str(length))
+                    
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False) 
+
+    def FieldLengthRegistrationRight(self):
+        """Saves the Right Length"""
+        sender = self.sender()
+        info = openYaml()
+        # print(sender.text() + ' was pressed')
+        length = sender.text()
+        
+        if length.isnumeric() :
+            length = int(length)
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
+                    info["videoPaths"][i][2]["Right"] = length
+                    self.FieldRSchema.setText("")
+                    self.FieldRSchema.setPlaceholderText(str(length))
+                    
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False)
+
+    def FieldLengthRegistrationLeft(self):
+        """Saves the Left Length"""
+        sender = self.sender()
+        info = openYaml()
+        # print(sender.text() + ' was pressed')
+        length = sender.text()
+        
+        if length.isnumeric() :
+            length = int(length)
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
+                    info["videoPaths"][i][2]["Left"] = length
+                    self.FieldLSchema.setText("")
+                    self.FieldLSchema.setPlaceholderText(str(length))
+                    
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False)
+
+    def FieldLengthRegistrationBottom(self):
+        """Saves the Bottom Length"""
+        sender = self.sender()
+        info = openYaml()
+        # print(sender.text() + ' was pressed')
+        length = sender.text()
+        
+        if length.isnumeric() :
+            length = int(length)
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
+                    info["videoPaths"][i][2]["Bottom"] = length
+                    self.FieldBSchema.setText("")
+                    self.FieldBSchema.setPlaceholderText(str(length))
+                    
+        with open('config.yaml', 'w') as file:
+            yaml.dump(info,file,default_flow_style=False)
+        
+
+    def clearLengths(self):
+        info = openYaml()
+        for i in range(len(info["videoPaths"])):
+            info["videoPaths"][i][2] = {"Top":"","Bottom":"","Right":"","Left":""}
+        self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
+        self.FieldBSchema.setText("")
+        self.FieldTSchema.setPlaceholderText("Enter enter width in mm")
+        self.FieldTSchema.setText("")
+        self.FieldRSchema.setPlaceholderText("Enter enter length in mm")
+        self.FieldRSchema.setText("")
+        self.FieldLSchema.setPlaceholderText("Enter enter length in mm")
+        self.FieldLSchema.setText("")
+
+        with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False) 
+
+    def setForAllLengths(self):
+        info = openYaml()
+        for j in range(len(info["videoPaths"])):
+            if info["videoPaths"][j][0] == self.ComboVidMenuSchema.currentText():
+                for i in range(len(info["videoPaths"])):
+                    info["videoPaths"][i][2] = info["videoPaths"][j][2]
+
+        with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False) 
 
 
         
