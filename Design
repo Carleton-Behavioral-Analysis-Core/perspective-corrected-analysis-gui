@@ -16,6 +16,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QMessageBox
 
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
+    
 def openYaml(rewrite=True):
     """Opens yaml file if file is messed with resets it to generic if not returns yaml info"""
     try:
@@ -35,7 +39,7 @@ def openYaml(rewrite=True):
                     'Feature 1': [],
                     'Feature 2': []}}
             with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False) 
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
     return info
 
 class pandasModel(QAbstractTableModel):
@@ -280,7 +284,7 @@ class MyTabWidget(QWidget):
         self.labelBoxWidth.setFixedHeight(10)
         
         self.FieldBoxWidth = QLineEdit()
-        if len(info["BoxWidth"]) != 0 and (str(info["BoxWidth"])).isnumeric():
+        if len(str(info["BoxWidth"])) != 0 and (str(info["BoxWidth"])).isnumeric():
             self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"]))
         else:
             self.FieldBoxWidth.setPlaceholderText("Box Width in mm")
@@ -291,7 +295,7 @@ class MyTabWidget(QWidget):
         self.labelBoxHeight.setFixedHeight(10)
 
         self.FieldBoxHeight = QLineEdit()
-        if len(info["BoxHeight"]) != 0 and (str(info["BoxHeight"])).isnumeric():
+        if len(str(info["BoxHeight"])) != 0 and (str(info["BoxHeight"])).isnumeric():
             self.FieldBoxHeight.setPlaceholderText(str(info["BoxHeight"]))
         else:
             self.FieldBoxHeight.setPlaceholderText("Box Height in mm")
@@ -676,8 +680,8 @@ class MyTabWidget(QWidget):
             if len(self.path) !=0:
                 info = openYaml()
                 info["folderPath"] = self.path
-                info["videoPaths"] = ["Clear"]
-                info["data"][' Videos'] = ["CLearedd"]
+                info["videoPaths"] = []
+                info["data"][' Videos'] = []
 
                 fileList = os.listdir(self.path)
                 x = len(fileList)
@@ -689,7 +693,7 @@ class MyTabWidget(QWidget):
                
                 # print(fileList)
                 for i in range(len(fileList)):
-                    info["videoPaths"][i] = [info["videoPaths"][i],[],{"Top":"","Bottom":"","Right":"","Left":""}]
+                    info["videoPaths"][i] = {"title":info["videoPaths"][i],"points":[],"lengths":{"Top":"","Bottom":"","Right":"","Left":""},"DLC":""}
 
                 
          
@@ -700,7 +704,7 @@ class MyTabWidget(QWidget):
          
                   
                 with open('config.yaml', 'w') as file:
-                    yaml.dump(info,file,default_flow_style=False)   
+                    yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)    
                 
                 self.yamlUpdateUI()
    
@@ -735,7 +739,7 @@ class MyTabWidget(QWidget):
             
                   
                 with open('config.yaml', 'w') as file:
-                    yaml.dump(info,file,default_flow_style=False)   
+                    yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)    
                 
                 self.yamlUpdateUI()
    
@@ -765,7 +769,7 @@ class MyTabWidget(QWidget):
 
                 info["videoPaths"] = fileList.copy()
                 for i in range(len(fileList)):
-                    info["videoPaths"][i] = [info["videoPaths"][i],[],{"Top":"","Bottom":"","Right":"","Left":""}]
+                    info["videoPaths"][i] = {"title":info["videoPaths"][i],"points":[],"lengths":{"Top":"","Bottom":"","Right":"","Left":""},"DLC":""}
                 
                 info["data"] = {' Videos':fileList.copy()}
                
@@ -778,7 +782,7 @@ class MyTabWidget(QWidget):
 
                                      
                 with open('config.yaml', 'w') as file:
-                    yaml.dump(info,file,default_flow_style=False) 
+                    yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
                    
                 self.yamlUpdateUI()  
 
@@ -805,7 +809,7 @@ class MyTabWidget(QWidget):
                         fileList.pop(x-(i+1))
                 info["DLCvideoPaths"] = fileList.copy()                      
                 with open('config.yaml', 'w') as file:
-                    yaml.dump(info,file,default_flow_style=False) 
+                    yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
                    
                 self.yamlUpdateUI()  
 
@@ -876,7 +880,7 @@ class MyTabWidget(QWidget):
             self.projNameField.setText("")
             self.projNameField.setPlaceholderText(str(name))
             with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False) 
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
         else:
             self.projNameField.setText("")
             
@@ -893,7 +897,7 @@ class MyTabWidget(QWidget):
             self.projLocFieldv2.setText("")
             self.projLocFieldv2.setPlaceholderText(str(loc))
             with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False) 
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
         else:
             self.projLocField.setText("")
             
@@ -909,7 +913,7 @@ class MyTabWidget(QWidget):
             self.projLocFieldv2.setText("")
             self.projLocFieldv2.setPlaceholderText(str(loc))
             with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False) 
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
         else:
             self.projLocFieldv2.setText("")
             
@@ -927,7 +931,7 @@ class MyTabWidget(QWidget):
                     self.projLocField.setPlaceholderText(self.path)
                     self.projLocFieldv2.setPlaceholderText(self.path)
                     with open('config.yaml', 'w') as file:
-                        yaml.dump(info,file,default_flow_style=False)   
+                        yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)    
                     
         except:
             print("Failed to choose valid path")
@@ -944,7 +948,7 @@ class MyTabWidget(QWidget):
             self.FieldBoxWidth.setText("")
             self.FieldBoxWidth.setPlaceholderText(str(bw))
             with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False) 
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
 
         # except:
         #     self.FieldBoxWidth.setText("Invalid Entry")
@@ -960,7 +964,7 @@ class MyTabWidget(QWidget):
             self.FieldBoxHeight.setText("")
             self.FieldBoxHeight.setPlaceholderText(str(bh))
             with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False) 
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
 
         except:
             self.FieldBoxHeight.setText("Invalid Entry")
@@ -987,7 +991,7 @@ class MyTabWidget(QWidget):
         #             'Feature 1': [],
         #             'Feature 2': []}}
         # with open('config.yaml', 'w') as file:
-        #     yaml.dump(info,file,default_flow_style=False) 
+        #     yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
         
         
 
@@ -1019,14 +1023,14 @@ class MyTabWidget(QWidget):
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
         for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
-                    info["videoPaths"][i][1].append(cord)
+                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                    info["videoPaths"][i]["points"].append(cord)
         
-        
+   
 
         
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
 
         self.displayFrameCorner()
           
@@ -1044,44 +1048,45 @@ class MyTabWidget(QWidget):
         """Clears points of the selected video"""
         info = openYaml()
         for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
-                    info["videoPaths"][i][1] = []
+                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                    info["videoPaths"][i]["points"] = []
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
         self.displayFrameCorner()
         
     def saveToAllCorner(self):
         """Takes the points of the currently selected image and will save the points to all the others"""
         info = openYaml()
         for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
-                    points = info["videoPaths"][i][1] 
+                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                    points = info["videoPaths"][i]["points"] 
         for j in range(len(info["videoPaths"])):
-            info["videoPaths"][j][1] = points
+            info["videoPaths"][j]["points"] = points.copy()
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
         self.displayFrameCorner()
 
     def fieldTextUpdater(self):
         """Updates field  goes from TL to TR to BR to BL"""
         info = openYaml()
-        for i in range(len(info["videoPaths"])):
-            if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
-                self.FieldTL.setPlaceholderText("Enter Cordinate in x y form")
-                self.FieldTL.setText("")
-                self.FieldTR.setPlaceholderText("Enter Cordinate in x y form")
-                self.FieldTR.setText("")
-                self.FieldBR.setPlaceholderText("Enter Cordinate in x y form")
-                self.FieldBR.setText("")
-                self.FieldBL.setPlaceholderText("Enter Cordinate in x y form")
-                self.FieldBL.setText("")
-                try:
-                    self.FieldTL.setPlaceholderText(str(info["videoPaths"][i][1][0][0]) + " " + str(info["videoPaths"][i][1][0][1]))
-                    self.FieldTR.setPlaceholderText(str(info["videoPaths"][i][1][1][0]) + " " + str(info["videoPaths"][i][1][1][1]))
-                    self.FieldBR.setPlaceholderText(str(info["videoPaths"][i][1][2][0]) + " " + str(info["videoPaths"][i][1][2][1]))
-                    self.FieldBL.setPlaceholderText(str(info["videoPaths"][i][1][3][0]) + " " + str(info["videoPaths"][i][1][3][1]))
-                except:
-                    pass
+        try:
+            for i in range(len(info["videoPaths"])):
+                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                    self.FieldTL.setPlaceholderText("Enter Cordinate in x y form")
+                    self.FieldTL.setText("")
+                    self.FieldTR.setPlaceholderText("Enter Cordinate in x y form")
+                    self.FieldTR.setText("")
+                    self.FieldBR.setPlaceholderText("Enter Cordinate in x y form")
+                    self.FieldBR.setText("")
+                    self.FieldBL.setPlaceholderText("Enter Cordinate in x y form")
+                    self.FieldBL.setText("")
+                    
+                    self.FieldTL.setPlaceholderText(str(info["videoPaths"][i]["points"][0][0]) + " " + str(info["videoPaths"][i]["points"][0][1]))
+                    self.FieldTR.setPlaceholderText(str(info["videoPaths"][i]["points"][1][0]) + " " + str(info["videoPaths"][i]["points"][1][1]))
+                    self.FieldBR.setPlaceholderText(str(info["videoPaths"][i]["points"][2][0]) + " " + str(info["videoPaths"][i]["points"][2][1]))
+                    self.FieldBL.setPlaceholderText(str(info["videoPaths"][i]["points"][3][0]) + " " + str(info["videoPaths"][i]["points"][3][1]))
+        except:
+            pass
 
         
 
@@ -1097,15 +1102,15 @@ class MyTabWidget(QWidget):
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
-                    if len(info["videoPaths"][i][1]) >= 4:
-                        info["videoPaths"][i][1][0] = cord
-                    elif len(info["videoPaths"][i][1]) == 0:
-                        info["videoPaths"][i][1] =  [cord]
-                    elif len(info["videoPaths"][i][1]) < 4:
-                        info["videoPaths"][i][1].insert(0,cord)
+                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                    if len(info["videoPaths"][i]["points"]) >= 4:
+                        info["videoPaths"][i]["points"][0] = cord
+                    elif len(info["videoPaths"][i]["points"]) == 0:
+                        info["videoPaths"][i]["points"] =  [cord]
+                    elif len(info["videoPaths"][i]["points"]) < 4:
+                        info["videoPaths"][i]["points"].insert(0,cord)
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
         self.displayFrameCorner()
 
     def FieldPointRegistrationTR(self):
@@ -1120,17 +1125,17 @@ class MyTabWidget(QWidget):
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
-                    if len(info["videoPaths"][i][1]) >= 4:
-                        info["videoPaths"][i][1][1] = cord
-                    elif len(info["videoPaths"][i][1]) == 0:
-                        info["videoPaths"][i][1] =  [cord]
-                    elif len(info["videoPaths"][i][1]) == 1:
-                        info["videoPaths"][i][1].append(cord)
-                    elif len(info["videoPaths"][i][1]) < 4:
-                        info["videoPaths"][i][1].insert(1,cord)
+                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                    if len(info["videoPaths"][i]["points"]) >= 4:
+                        info["videoPaths"][i]["points"][1] = cord
+                    elif len(info["videoPaths"][i]["points"]) == 0:
+                        info["videoPaths"][i]["points"] =  [cord]
+                    elif len(info["videoPaths"][i]["points"]) == 1:
+                        info["videoPaths"][i]["points"].append(cord)
+                    elif len(info["videoPaths"][i]["points"]) < 4:
+                        info["videoPaths"][i]["points"].insert(1,cord)
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
         self.displayFrameCorner()
     
     def FieldPointRegistrationBR(self):
@@ -1145,17 +1150,17 @@ class MyTabWidget(QWidget):
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
-                    if len(info["videoPaths"][i][1]) >= 4:
-                        info["videoPaths"][i][1][2] = cord
-                    elif len(info["videoPaths"][i][1]) == 0:
-                        info["videoPaths"][i][1] =  [cord]
-                    elif len(info["videoPaths"][i][1]) <= 2:
-                        info["videoPaths"][i][1].append(cord)
-                    elif len(info["videoPaths"][i][1]) < 4:
-                        info["videoPaths"][i][1].insert(2,cord)
+                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                    if len(info["videoPaths"][i]["points"]) >= 4:
+                        info["videoPaths"][i]["points"][2] = cord
+                    elif len(info["videoPaths"][i]["points"]) == 0:
+                        info["videoPaths"][i]["points"] =  [cord]
+                    elif len(info["videoPaths"][i]["points"]) <= 2:
+                        info["videoPaths"][i]["points"].append(cord)
+                    elif len(info["videoPaths"][i]["points"]) < 4:
+                        info["videoPaths"][i]["points"].insert(2,cord)
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
         self.displayFrameCorner()
 
     def FieldPointRegistrationBL(self):
@@ -1170,17 +1175,17 @@ class MyTabWidget(QWidget):
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
-                    if len(info["videoPaths"][i][1]) >= 4:
-                        info["videoPaths"][i][1][3] = cord
-                    elif len(info["videoPaths"][i][1]) == 0:
-                        info["videoPaths"][i][1] =  [cord]
-                    elif len(info["videoPaths"][i][1]) <= 3:
-                        info["videoPaths"][i][1].append(cord)
-                    elif len(info["videoPaths"][i][1]) < 4:
-                        info["videoPaths"][i][1].insert(3,cord)
+                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                    if len(info["videoPaths"][i]["points"]) >= 4:
+                        info["videoPaths"][i]["points"][3] = cord
+                    elif len(info["videoPaths"][i]["points"]) == 0:
+                        info["videoPaths"][i]["points"] =  [cord]
+                    elif len(info["videoPaths"][i]["points"]) <= 3:
+                        info["videoPaths"][i]["points"].append(cord)
+                    elif len(info["videoPaths"][i]["points"]) < 4:
+                        info["videoPaths"][i]["points"].insert(3,cord)
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
         self.displayFrameCorner()
         
     def toRegisterCorners(self):
@@ -1204,7 +1209,8 @@ class MyTabWidget(QWidget):
         except:
             pass
         self.startTab.addTab(self.tabCreateSchema,"Schema")
-        info = openYaml
+        info = openYaml()
+        # print(info["data"][" Videos"])
         self.ComboVidMenuSchema = QComboBox()
         self.ComboVidMenuSchema.clear()
         self.ComboVidMenuSchema.addItems(info["data"][" Videos"])
@@ -1311,10 +1317,10 @@ class MyTabWidget(QWidget):
         # print("happened")
         info = openYaml(False)
         for i in range(len(info["videoPaths"])):
-            if info["videoPaths"][i][0] == self.ComboVidMenu.currentText():
+            if info["videoPaths"][i]["title"] == self.ComboVidMenu.currentText():
                 index = i
                 # print(index)
-        if self.ComboVidMenu.count() != 0 and os.path.exists(info["folderPath"]) and len(info["videoPaths"][index][1]) == 4:
+        if self.ComboVidMenu.count() != 0 and os.path.exists(info["folderPath"]) and len(info["videoPaths"][index]["points"]) == 4:
 
             # print(self.ComboVidMenu.currentText())
             PROJECT_DIR = Path(info["folderPath"])
@@ -1322,20 +1328,23 @@ class MyTabWidget(QWidget):
             cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
             ret, frame = cap.read()
             registration_points = np.array(
-                info["videoPaths"][index][1]
+                info["videoPaths"][index]["points"]
             ).astype(np.float32)
 
             x = registration_points[:,0]
             y = registration_points[:,1]
-            w, h = 500, 500 # in mm
+            if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
+                wid, hei = info["BoxWidth"],info["BoxHeight"]  # in mm
+            else:
+                wid, hei = 500 , 500
             schema = np.array([
                 [0, 0],
-                [w, 0],
-                [w, h],
-                [0, h]
+                [wid, 0],
+                [wid, hei],
+                [0, hei]
             ]).astype(np.float32)
             homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
-            frame = cv2.warpPerspective(frame, homogeneous_transform, (w, h))
+            frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
             
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             h, w, ch = frame.shape
@@ -1417,16 +1426,16 @@ class MyTabWidget(QWidget):
             pixmap = QPixmap(image)
             # Sets points
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText() and len(info["videoPaths"][i][1]) != 0:
+                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText() and len(info["videoPaths"][i]["title"]) != 0:
                     index = i
-                    for j in range(len(info["videoPaths"][i][1])):
+                    for j in range(len(info["videoPaths"][i]["points"])):
                         painter = QtGui.QPainter(pixmap)
                         pen = QPen(Qt.red)
                         pen.setWidth(10)
                         
                         painter.setPen(pen) 
                         
-                        painter.drawPoint(int(info["videoPaths"][i][1][j][0]), int(info["videoPaths"][i][1][j][1]),)
+                        painter.drawPoint(int(info["videoPaths"][i]["points"][j][0]), int(info["videoPaths"][i]["points"][j][1]))
                         # painter.drawLine(10, 10, 300, 200)
                         painter.end()
                         # print(j)
@@ -1444,28 +1453,31 @@ class MyTabWidget(QWidget):
             # self.labelImageOri.setText("Original Image Place Holder")
             if "index" not in locals():
                 for i in range(len(info["videoPaths"])):
-                    if info["videoPaths"][i][0] == self.ComboVidMenuCorner.currentText():
+                    if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
                         index = i
            
             # Displays altered image
-            if ("index" in locals()) and len(info["videoPaths"][index][1]) == 4:
+            if ("index" in locals()) and len(info["videoPaths"][index]["points"]) == 4:
              
                 registration_points = np.array(
-                info["videoPaths"][index][1]
+                info["videoPaths"][index]["points"]
                 ).astype(np.float32)
 
                 x = registration_points[:,0]
                 y = registration_points[:,1]
-                w, h = 500, 500 # in mm
+                if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
+                    wid, hei = info["BoxWidth"],info["BoxHeight"]  # in mm
+                else:
+                    wid, hei = 500 , 500
                 schema = np.array([
                     [0, 0],
-                    [w, 0],
-                    [w, h],
-                    [0, h]
+                    [wid, 0],
+                    [wid, hei],
+                    [0, hei]
                 ]).astype(np.float32)
                 homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
             
-                frame = cv2.warpPerspective(frame, homogeneous_transform, (w, h))
+                frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
                 
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 h, w, ch = frame.shape
@@ -1500,11 +1512,11 @@ class MyTabWidget(QWidget):
         # print("happened")
         info = openYaml(False)
         for i in range(len(info["videoPaths"])):
-            if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
+            if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
                 index = i
                 # print(index)
-        print(self.ComboVidMenuSchema.count() , os.path.exists(info["folderPath"]) , ("index" in locals()) , len(info["videoPaths"][index][1]) )
-        if self.ComboVidMenuSchema.count() != 0 and os.path.exists(info["folderPath"]) and ("index" in locals()) and len(info["videoPaths"][index][1]) == 4:
+        print(self.ComboVidMenuSchema.count() , os.path.exists(info["folderPath"]) , ("index" in locals()) , len(info["videoPaths"][index]["points"]) )
+        if self.ComboVidMenuSchema.count() != 0 and os.path.exists(info["folderPath"]) and ("index" in locals()) and len(info["videoPaths"][index]["points"]) == 4:
 
             # print(self.ComboVidMenu.currentText())
             PROJECT_DIR = Path(info["folderPath"])
@@ -1512,20 +1524,23 @@ class MyTabWidget(QWidget):
             cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
             ret, frame = cap.read()
             registration_points = np.array(
-                info["videoPaths"][index][1]
+                info["videoPaths"][index]["points"]
             ).astype(np.float32)
 
             x = registration_points[:,0]
             y = registration_points[:,1]
-            w, h = 500, 500 # in mm
+            if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
+                wid, hei = info["BoxWidth"],info["BoxHeight"]  # in mm
+            else:
+                wid, hei = 500 , 500
             schema = np.array([
                 [0, 0],
-                [w, 0],
-                [w, h],
-                [0, h]
+                [wid, 0],
+                [wid, hei],
+                [0, hei]
             ]).astype(np.float32)
             homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
-            frame = cv2.warpPerspective(frame, homogeneous_transform, (w, h))
+            frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
             
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             h, w, ch = frame.shape
@@ -1539,28 +1554,28 @@ class MyTabWidget(QWidget):
             self.labelImageAltSchema.setScaledContents(True)
             # plt.imshow(frame)
             # self.labelImageOri.setText("Original Image Place Holder")
-            # print(info["videoPaths"][index][2]["Top"],str(info["videoPaths"][index][2]["Top"]).isnumeric(),len(str(info["videoPaths"][index][2]["Top"])))
-            if str(info["videoPaths"][index][2]["Top"]).isnumeric() and len(str(info["videoPaths"][index][2]["Top"])) != 0:
+            # print(info["videoPaths"][index]["lengths"]["Top"],str(info["videoPaths"][index]["lengths"]["Top"]).isnumeric(),len(str(info["videoPaths"][index]["lengths"]["Top"])))
+            if str(info["videoPaths"][index]["lengths"]["Top"]).isnumeric() and len(str(info["videoPaths"][index]["lengths"]["Top"])) != 0:
                 self.FieldTSchema.setText("")
-                self.FieldTSchema.setPlaceholderText(str(info["videoPaths"][index][2]["Top"]))
+                self.FieldTSchema.setPlaceholderText(str(info["videoPaths"][index]["lengths"]["Top"]))
             else:
                 self.FieldTSchema.setPlaceholderText("Enter enter width in mm")
                 self.FieldTSchema.setText("")
-            if str(info["videoPaths"][index][2]["Bottom"]).isnumeric() and len(str(info["videoPaths"][index][2]["Bottom"]))!= 0:
+            if str(info["videoPaths"][index]["lengths"]["Bottom"]).isnumeric() and len(str(info["videoPaths"][index]["lengths"]["Bottom"]))!= 0:
                 self.FieldBSchema.setText("")
-                self.FieldBSchema.setPlaceholderText(str(info["videoPaths"][index][2]["Bottom"]))
+                self.FieldBSchema.setPlaceholderText(str(info["videoPaths"][index]["lengths"]["Bottom"]))
             else:
                 self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
                 self.FieldBSchema.setText("")
-            if str(info["videoPaths"][index][2]["Right"]).isnumeric() and len(str(info["videoPaths"][index][2]["Right"])) != 0:
+            if str(info["videoPaths"][index]["lengths"]["Right"]).isnumeric() and len(str(info["videoPaths"][index]["lengths"]["Right"])) != 0:
                 self.FieldRSchema.setText("")
-                self.FieldRSchema.setPlaceholderText(str(info["videoPaths"][index][2]["Right"]))
+                self.FieldRSchema.setPlaceholderText(str(info["videoPaths"][index]["lengths"]["Right"]))
             else:
                 self.FieldRSchema.setPlaceholderText("Enter enter length in mm")
                 self.FieldRSchema.setText("")
-            if str(info["videoPaths"][index][2]["Left"]).isnumeric() and len(str(info["videoPaths"][index][2]["Left"])) != 0:
+            if str(info["videoPaths"][index]["lengths"]["Left"]).isnumeric() and len(str(info["videoPaths"][index]["lengths"]["Left"])) != 0:
                 self.FieldLSchema.setText("")
-                self.FieldLSchema.setPlaceholderText(str(info["videoPaths"][index][2]["Left"]))
+                self.FieldLSchema.setPlaceholderText(str(info["videoPaths"][index]["lengths"]["Left"]))
             else:
                 self.FieldLSchema.setPlaceholderText("Enter enter length in mm")
                 self.FieldLSchema.setText("")
@@ -1589,13 +1604,13 @@ class MyTabWidget(QWidget):
         if length.isnumeric() :
             length = int(length)
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
-                    info["videoPaths"][i][2]["Top"] = length
+                if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
+                    info["videoPaths"][i]["lengths"]["Top"] = length
                     self.FieldTSchema.setText("")
                     self.FieldTSchema.setPlaceholderText(str(length))
                     
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False) 
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
 
     def FieldLengthRegistrationRight(self):
         """Saves the Right Length"""
@@ -1607,13 +1622,13 @@ class MyTabWidget(QWidget):
         if length.isnumeric() :
             length = int(length)
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
-                    info["videoPaths"][i][2]["Right"] = length
+                if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
+                    info["videoPaths"][i]["lengths"]["Right"] = length
                     self.FieldRSchema.setText("")
                     self.FieldRSchema.setPlaceholderText(str(length))
                     
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False)
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
 
     def FieldLengthRegistrationLeft(self):
         """Saves the Left Length"""
@@ -1625,13 +1640,13 @@ class MyTabWidget(QWidget):
         if length.isnumeric() :
             length = int(length)
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
-                    info["videoPaths"][i][2]["Left"] = length
+                if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
+                    info["videoPaths"][i]["lengths"]["Left"] = length
                     self.FieldLSchema.setText("")
                     self.FieldLSchema.setPlaceholderText(str(length))
                     
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False)
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
 
     def FieldLengthRegistrationBottom(self):
         """Saves the Bottom Length"""
@@ -1643,19 +1658,19 @@ class MyTabWidget(QWidget):
         if length.isnumeric() :
             length = int(length)
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i][0] == self.ComboVidMenuSchema.currentText():
-                    info["videoPaths"][i][2]["Bottom"] = length
+                if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
+                    info["videoPaths"][i]["lengths"]["Bottom"] = length
                     self.FieldBSchema.setText("")
                     self.FieldBSchema.setPlaceholderText(str(length))
                     
         with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False)
+            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
         
 
     def clearLengths(self):
         info = openYaml()
         for i in range(len(info["videoPaths"])):
-            info["videoPaths"][i][2] = {"Top":"","Bottom":"","Right":"","Left":""}
+            info["videoPaths"][i]["lengths"] = {"Top":"","Bottom":"","Right":"","Left":""}
         self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
         self.FieldBSchema.setText("")
         self.FieldTSchema.setPlaceholderText("Enter enter width in mm")
@@ -1666,17 +1681,17 @@ class MyTabWidget(QWidget):
         self.FieldLSchema.setText("")
 
         with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False) 
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
 
     def setForAllLengths(self):
         info = openYaml()
         for j in range(len(info["videoPaths"])):
-            if info["videoPaths"][j][0] == self.ComboVidMenuSchema.currentText():
+            if info["videoPaths"][j]["title"] == self.ComboVidMenuSchema.currentText():
                 for i in range(len(info["videoPaths"])):
-                    info["videoPaths"][i][2] = info["videoPaths"][j][2]
+                    info["videoPaths"][i]["lengths"] = info["videoPaths"][j]["lengths"]
 
         with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False) 
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
 
 
         
