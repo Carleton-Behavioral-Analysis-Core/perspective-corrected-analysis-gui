@@ -17,6 +17,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QMessageBox
 
 class NoAliasDumper(yaml.SafeDumper):
+    """Prevents yaml from using id to save space (would potentially mess up certain functions)"""
     def ignore_aliases(self, data):
         return True
     
@@ -73,8 +74,8 @@ class App(QMainWindow):
         self.title = "Andre, Argel & Aidan's amazingly awesome array alignment"
         self.left = 0
         self.top = 0
-        self.width = 300
-        self.height = 200
+        self.width = 500
+        self.height = 400
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
@@ -91,10 +92,10 @@ class MyTabWidget(QWidget):
         self.layout = QVBoxLayout(self)
 
         self.startTab = QTabWidget()
-        self.tabCreateOrLoad = QWidget()
         self.startTab.resize(300, 200)
 
         # Initialize tab screen
+        self.tabCreateOrLoad = QWidget()
         self.tabCreate = QWidget()
         self.tabLoad = QWidget()
         self.tabFolderDisplay = QWidget()
@@ -111,6 +112,7 @@ class MyTabWidget(QWidget):
         self.cmd = ""
         self.title =""
         self.framechanges = 0
+        self.cornerImageDim = []
         info = openYaml()
 
         # Add tabs
@@ -407,7 +409,7 @@ class MyTabWidget(QWidget):
         self.tabValidation.setLayout(self.tabValidation.layout) 
 
 
-        # self.tabRegisterCorners
+        # register corners tab
         self.tabRegisterCorners.layout = QGridLayout()
 
 
@@ -476,7 +478,7 @@ class MyTabWidget(QWidget):
        
 
 
-        # v3
+        # trying to get layout to look decent
         self.conjoinedLayout1 = QGridLayout()
         self.conjoinedLayout1.addWidget(self.labelImgTL,0,0,1,1, alignment=QtCore.Qt.AlignLeft)
         self.conjoinedLayout1.addWidget(self.labelImgTR,0,1,1,1, alignment=QtCore.Qt.AlignRight)
@@ -570,6 +572,7 @@ class MyTabWidget(QWidget):
 
         self.tabRegisterCorners.setLayout(self.wholeCornerLayout)
 
+        # Create schema tab
         self.tabCreateSchema.layout = QGridLayout()
 
         self.ComboVidMenuSchema = QComboBox()
@@ -701,6 +704,22 @@ class MyTabWidget(QWidget):
                     info["data"]["Feature %d" % (j +1)] = []
                     for i in range (len(fileList)):
                         info["data"]["Feature %d" % (j +1)].append(0)
+
+                """If can connect to dataframe in dlc can use this code to display headings (not sure if tracking time in zone but could do by header is what I'm trying to say)
+                PROJECT_DIR = Path("C:/Users/avpet/OneDrive/Documents/Python code/DSRI/2023-06-15_sample-data/dlc_files")
+                df = pd.read_hdf(PROJECT_DIR / 'f1DLC_resnet50_agrpNov19shuffle1_400000.h5')
+ 
+                listdf = list(df)
+   
+                features = []
+                for i in range(len(listdf)):
+                    if i == 0 or features[len(features)-1] != listdf[i][1]:
+                        features.append(listdf[i][1])
+                    else:
+                        pass
+                    
+                    and list features would be a list of all the features"""
+                
          
                   
                 with open('config.yaml', 'w') as file:
@@ -733,6 +752,11 @@ class MyTabWidget(QWidget):
                     if not fileList[x-(i+1)].endswith(".h5"):
                         fileList.pop(x-(i+1))
                 info["DLCvideoPaths"] = fileList.copy()
+                for i in range(len(fileList)):
+                    for j in range(len(info["videoPaths"])):
+                        if fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
+                            info["videoPaths"][j]["DLC"] = fileList[i]
+                            
                
                 # print(fileList)
                 
@@ -807,7 +831,12 @@ class MyTabWidget(QWidget):
                 for i in range(x):
                     if not fileList[x-(i+1)].endswith(".h5"):
                         fileList.pop(x-(i+1))
-                info["DLCvideoPaths"] = fileList.copy()                      
+                
+                info["DLCvideoPaths"] = fileList.copy()  
+                for i in range(len(fileList)):
+                    for j in range(len(info["videoPaths"])):
+                        if fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
+                            info["videoPaths"][j]["DLC"] = fileList[i]
                 with open('config.yaml', 'w') as file:
                     yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
                    
@@ -1012,25 +1041,36 @@ class MyTabWidget(QWidget):
 
     def locationInImage(self,event):
         """When pressed will save place in image clicked and append to list however points won't be adjusted for the image so may not like what is imagined"""
-        pos = str(event.pos())
-        pos = pos.strip("PyQt5.QtCore.Qpoint")
-        pos = pos.strip("()")
-        info = openYaml()
-        if len(pos) == 0:
-            cord = [0,0]
-        else:
-            cord = pos.split(", ")
-            cord[0] = int(cord[0])
-            cord[1] = int(cord[1])
-        for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
-                    info["videoPaths"][i]["points"].append(cord)
-        
-   
+        # try:
+        if True:
+            if self.labelImageOriCorner.text() != "Original Image Place Holder":
+                pos = str(event.pos())
+                pos = pos.strip("PyQt5.QtCore.Qpoint")
+                pos = pos.strip("()")
+                # self.cornerImageDim
+                # self.labelImageOriCorner.width
+                # self.labelImageOriCorner.height
+                info = openYaml()
+                if len(pos) == 0:
+                    # cord = [0,0]
+                    pass
+                else:
+                    cord = pos.split(", ")
+                    cord[0] = int(int(cord[0]) * self.cornerImageDim[0] / self.labelImageOriCorner.width())
+                    cord[1] = int(int(cord[1]) * self.cornerImageDim[1] / self.labelImageOriCorner.height())
+                    for i in range(len(info["videoPaths"])):
+                            if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText() and len(info["videoPaths"][i]["points"]) < 4:
+                                info["videoPaths"][i]["points"].append(cord)
+                            elif info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText() and len(info["videoPaths"][i]["points"]) == 4:
+                                info["videoPaths"][i]["points"][3] = cord
+                    
+            
 
-        
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+                    
+                    with open('config.yaml', 'w') as file:
+                        yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+        # except:
+        #     print("fail")
 
         self.displayFrameCorner()
           
@@ -1411,6 +1451,7 @@ class MyTabWidget(QWidget):
             ret, frame = cap.read()
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             h, w, ch = frame.shape
+            # self.frame = frame
 
             
             bytes_per_line = ch * w
@@ -1422,7 +1463,7 @@ class MyTabWidget(QWidget):
             self.labelImgBR.setText(str(imwidth) +","+ str(imheight))
             self.labelImgTL.setText("0,0")
             self.labelImgTR.setText(str(imwidth) + ",0")
-          
+            self.cornerImageDim = [imwidth,imheight]
             pixmap = QPixmap(image)
             # Sets points
             for i in range(len(info["videoPaths"])):
