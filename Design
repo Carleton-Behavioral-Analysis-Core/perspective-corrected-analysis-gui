@@ -84,6 +84,80 @@ class App(QMainWindow):
   
         self.show()
 
+# creates video thread
+class ThreadOpenCV(QThread):
+    # https://stackoverflow.com/questions/67488022/how-do-i-run-a-video-in-a-pyqt-container
+    changePixmap = pyqtSignal(QImage)
+
+    def __init__(self, source):
+        super().__init__()
+        info = openYaml()
+        for i in range(len(info["videoPaths"])):
+            if source == info["videoPaths"][i]["title"]:
+                self.index = i
+        PROJECT_DIR = Path(info["DLCfolderPath"])
+        # cap = cv2.VideoCapture(str(PROJECT_DIR / info["videoPaths"][index]["DLC.mp4"]))
+        self.source = str(PROJECT_DIR / info["videoPaths"][self.index]["DLC.mp4"])
+        self.running = True
+        self.count = 0
+        
+    def run(self):
+        # print('start')
+        # try:
+        #     self.count
+        # except:
+        info = openYaml() 
+        cap = cv2.VideoCapture(self.source)
+        fps = float(cap.get(cv2.CAP_PROP_FPS))
+
+        self.running = True
+        
+        while self.running:
+            time.sleep(1/fps)
+            ret, frame = cap.read()
+
+            if ret:
+                if len(info["videoPaths"][self.index]["points"]) == 4:
+                    registration_points = np.array(
+                    info["videoPaths"][self.index]["points"]
+                    ).astype(np.float32)
+
+             
+                    if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
+                        wid, hei = info["BoxWidth"],info["BoxHeight"]  # in mm
+                    else:
+                        wid, hei = 500 , 500
+                    schema = np.array([
+                        [0, 0],
+                        [wid, 0],
+                        [wid, hei],
+                        [0, hei]
+                    ]).astype(np.float32)
+
+                    homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
+                
+                    frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
+                
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+             
+                
+
+                h, w, ch = frame.shape
+                bytes_per_line = ch * w   # PEP8: `lower_case_names` for variables
+                
+                image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+                image = image.scaled(640, 480, Qt.KeepAspectRatio)
+
+                         
+
+                self.changePixmap.emit(image)
+                
+            
+        cap.release()
+        # print('stop')
+        
+    def stop(self):
+        self.running = False
 
 # Creating tab widgets
 class MyTabWidget(QWidget):
@@ -113,6 +187,7 @@ class MyTabWidget(QWidget):
         self.title =""
         self.framechanges = 0
         self.cornerImageDim = []
+        self.vidPlayingVal = ""
         info = openYaml()
 
         # Add tabs
@@ -386,7 +461,7 @@ class MyTabWidget(QWidget):
         self.FieldTimeValidation = QLineEdit()
         self.FieldTimeValidation.setPlaceholderText("Enter Time")
         # SHouldnt be connected to thisjust for test
-        self.FieldTimeValidation.returnPressed.connect(self.displayVideo) 
+        self.FieldTimeValidation.returnPressed.connect(self.ValidationPlayVid) 
 
         self.ComboVidValidationMenu = QComboBox()
         self.ComboVidValidationMenu.addItems(info["data"][" Videos"])
@@ -395,6 +470,14 @@ class MyTabWidget(QWidget):
         self.PlayBackSpeedValidationMenu.addItems(["0.5","1","2","5","10","30"])
         
         self.labelVideoValidation = QLabel("Place Holder for Video")
+
+        self.btnPlayVal = QPushButton("PLAY")
+        self.btnPlayVal.clicked.connect(self.playVideo)
+        
+
+        self.btnStopVal = QPushButton("STOP")
+        self.btnStopVal.clicked.connect(self.stopVideo)
+        
 
         # self.tabValidation.layout.addWidget(self.labelValidationVideoHeading,0,0,1,2)
         # self.tabValidation.layout.addWidget(self.labelValidationFeatureHeading,0,2,1,2)
@@ -405,6 +488,8 @@ class MyTabWidget(QWidget):
         self.tabValidation.layout.addWidget(self.ComboVidValidationMenu,4,4,1,1) 
         self.tabValidation.layout.addWidget(self.PlayBackSpeedValidationMenu,5,4,1,1) 
         self.tabValidation.layout.addWidget(self.labelVideoValidation,4,0,3,3)
+        self.tabValidation.layout.addWidget(self.btnPlayVal,6,3,1,1) 
+        self.tabValidation.layout.addWidget(self.btnStopVal,6,4,1,1) 
         
         self.tabValidation.setLayout(self.tabValidation.layout) 
 
@@ -696,7 +781,7 @@ class MyTabWidget(QWidget):
                
                 # print(fileList)
                 for i in range(len(fileList)):
-                    info["videoPaths"][i] = {"title":info["videoPaths"][i],"points":[],"lengths":{"Top":"","Bottom":"","Right":"","Left":""},"DLC":""}
+                    info["videoPaths"][i] = {"title":info["videoPaths"][i],"points":[],"lengths":{"Top":"","Bottom":"","Right":"","Left":""},"DLC":"","DLC.mp4":""}
 
                 
          
@@ -771,7 +856,7 @@ class MyTabWidget(QWidget):
                             features.append(listdf[i][1])
                         else:
                             pass
-                    print("features" , features)
+                    # print("features" , features)
                     info["data"] = {' Videos':info["data"][' Videos']}
                     # adding generic data
                     zeros = []
@@ -780,7 +865,16 @@ class MyTabWidget(QWidget):
                     for i in range(len(features)):
                         info["data"][str(features[i])] = zeros
                     
-
+                M4fileList = os.listdir(self.path)
+                # print(M4fileList)
+              
+                for i in range(x):
+                    if not M4fileList[x-(i+1)].endswith(".mp4"):
+                        M4fileList.pop(x-(i+1))
+                for i in range(len(M4fileList)):
+                    for j in range(len(info["videoPaths"])):
+                        if M4fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
+                            info["videoPaths"][j]["DLC.mp4"] = M4fileList[i]
                             
                
                 # print(fileList)
@@ -818,7 +912,7 @@ class MyTabWidget(QWidget):
 
                 info["videoPaths"] = fileList.copy()
                 for i in range(len(fileList)):
-                    info["videoPaths"][i] = {"title":info["videoPaths"][i],"points":[],"lengths":{"Top":"","Bottom":"","Right":"","Left":""},"DLC":""}
+                    info["videoPaths"][i] = {"title":info["videoPaths"][i],"points":[],"lengths":{"Top":"","Bottom":"","Right":"","Left":""},"DLC":"","DLC.mp4":""}
                 
                 info["data"] = {' Videos':fileList.copy()}
                
@@ -877,7 +971,7 @@ class MyTabWidget(QWidget):
                             features.append(listdf[i][1])
                         else:
                             pass
-                    print("features" , features)
+                    # print("features" , features)
                     info["data"] = {' Videos':info["data"][' Videos']}
                     # adding generic data
                     zeros = []
@@ -885,6 +979,17 @@ class MyTabWidget(QWidget):
                         zeros.append(0)
                     for i in range(len(features)):
                         info["data"][str(features[i])] = zeros
+
+                M4fileList = os.listdir(self.path)
+
+              
+                for i in range(x):
+                    if not M4fileList[x-(i+1)].endswith(".mp4"):
+                        M4fileList.pop(x-(i+1))
+                for i in range(len(M4fileList)):
+                    for j in range(len(info["videoPaths"])):
+                        if M4fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
+                            info["videoPaths"][j]["DLC.mp4"] = M4fileList[i]
 
                 with open('config.yaml', 'w') as file:
                     yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
@@ -1453,35 +1558,35 @@ class MyTabWidget(QWidget):
             self.labelImageAlt.setText("Altered Image Place Holder")
 
 
-    def displayVideo(self):
-        """Plays video? not yet"""
-        info = openYaml(False)
+    # def displayVideo(self):
+    #     """Plays video? not yet"""
+    #     info = openYaml(False)
         
-        if self.ComboVidValidationMenu.count() != 0 and os.path.exists(info["folderPath"]):
+    #     if self.ComboVidValidationMenu.count() != 0 and os.path.exists(info["folderPath"]):
 
-            # print(self.ComboVidValidationMenu.currentText())
-            PROJECT_DIR = Path(info["folderPath"])
-            cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidValidationMenu.currentText()))
-            cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
-            ret, frame = cap.read()
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = frame.shape
-            bytes_per_line = ch * w
-            image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
-            image = image.scaled(300, 300, Qt.KeepAspectRatio)
-            pixmap = QPixmap(image)
+    #         # print(self.ComboVidValidationMenu.currentText())
+    #         PROJECT_DIR = Path(info["folderPath"])
+    #         cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidValidationMenu.currentText()))
+    #         cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+    #         ret, frame = cap.read()
+    #         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #         h, w, ch = frame.shape
+    #         bytes_per_line = ch * w
+    #         image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+    #         image = image.scaled(300, 300, Qt.KeepAspectRatio)
+    #         pixmap = QPixmap(image)
             
-            # pixmap = QPixmap(cap)
-            self.labelVideoValidation.setPixmap(pixmap)
-            self.labelVideoValidation.setMinimumSize(300,300)
-            self.labelVideoValidation.setMaximumSize(600,600)
-            self.labelVideoValidation.setScaledContents(True)
-            # plt.imshow(frame)
-            # self.labelImageOri.setText("Original Image Place Holder")
+    #         # pixmap = QPixmap(cap)
+    #         self.labelVideoValidation.setPixmap(pixmap)
+    #         self.labelVideoValidation.setMinimumSize(300,300)
+    #         self.labelVideoValidation.setMaximumSize(600,600)
+    #         self.labelVideoValidation.setScaledContents(True)
+    #         # plt.imshow(frame)
+    #         # self.labelImageOri.setText("Original Image Place Holder")
 
            
-        else:
-            self.labelVideoValidation.setText("Original Image Place Holder")
+    #     else:
+    #         self.labelVideoValidation.setText("Original Image Place Holder")
 
     def displayFrameCorner(self):
         """Displays 1st frame of the video"""
@@ -1782,6 +1887,45 @@ class MyTabWidget(QWidget):
 
         with open('config.yaml', 'w') as file:
                 yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+
+    def ValidationPlayVid(self):
+        print("1")
+        
+        
+        if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
+            try:
+                del self.threadVal
+            except:
+                pass
+            self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
+            self.threadVal.changePixmap.connect(self.setImage) 
+                     
+        else:
+            self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
+            self.threadVal.changePixmap.connect(self.setImage)  
+        print(self.vidPlayingVal , self.ComboVidValidationMenu.currentText())
+        self.vidPlayingVal = self.ComboVidValidationMenu.currentText()
+    def playVideo(self):
+        try:
+            if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
+                x = 1/0
+            self.threadVal.start()
+        except:
+            self.ValidationPlayVid()
+            self.threadVal.start()
+
+    def stopVideo(self):
+        try:
+            if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
+                x = 1/0
+            self.threadVal.running = False
+        except:
+            self.ValidationPlayVid()
+             
+
+    def setImage(self, image):
+        self.labelVideoValidation.setPixmap(QPixmap.fromImage(image))
+    
 
 
         
