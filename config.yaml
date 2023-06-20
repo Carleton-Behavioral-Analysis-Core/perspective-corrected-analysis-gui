@@ -1,94 +1,14 @@
-BoxHeight: 100.0
-BoxWidth: 100.0
-DLCfolderPath: C:/Users/avpet/OneDrive/Documents/Python code/DSRI/2023-06-15_sample-data/dlc_files
-DLCvideoPaths:
-- f1DLC_resnet50_agrpNov19shuffle1_400000.h5
-- f2DLC_resnet50_agrpNov19shuffle1_400000.h5
-- f3DLC_resnet50_agrpNov19shuffle1_400000.h5
-- f4DLC_resnet50_agrpNov19shuffle1_400000.h5
+BoxHeight: ''
+BoxWidth: ''
+DLCfolderPath: ''
+DLCvideoPaths: []
 Name: ''
 Path: ''
 data:
-  ' Videos':
-  - f1.mp4
-  - f2.mp4
-  - f3.mp4
-  - f4.mp4
-  left_ear:
-  - 0
-  - 0
-  - 0
-  - 0
-  midbody1:
-  - 0
-  - 0
-  - 0
-  - 0
-  midbody2:
-  - 0
-  - 0
-  - 0
-  - 0
-  nose:
-  - 0
-  - 0
-  - 0
-  - 0
-  right_ear:
-  - 0
-  - 0
-  - 0
-  - 0
-  tailbase:
-  - 0
-  - 0
-  - 0
-  - 0
-folderPath: C:/Users/avpet/OneDrive/Documents/Python code/DSRI/2023-06-15_sample-data/videos
+  ' Videos': []
+  Feature 1: []
+  Feature 2: []
+folderPath: ''
 numFeatures: '2'
 points: []
-videoPaths:
-- DLC: f1DLC_resnet50_agrpNov19shuffle1_400000.h5
-  DLC.mp4: f1DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
-  lengths:
-    Bottom: ''
-    Left: ''
-    Right: ''
-    Top: ''
-  points:
-  - - 239
-    - 116
-  - - 690
-    - 115
-  - - 719
-    - 460
-  - - 217
-    - 483
-  title: f1.mp4
-- DLC: f2DLC_resnet50_agrpNov19shuffle1_400000.h5
-  DLC.mp4: f2DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
-  lengths:
-    Bottom: ''
-    Left: ''
-    Right: ''
-    Top: ''
-  points: []
-  title: f2.mp4
-- DLC: f3DLC_resnet50_agrpNov19shuffle1_400000.h5
-  DLC.mp4: f3DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
-  lengths:
-    Bottom: ''
-    Left: ''
-    Right: ''
-    Top: ''
-  points: []
-  title: f3.mp4
-- DLC: f4DLC_resnet50_agrpNov19shuffle1_400000.h5
-  DLC.mp4: f4DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
-  lengths:
-    Bottom: ''
-    Left: ''
-    Right: ''
-    Top: ''
-  points: []
-  title: f4.mp4
+videoPaths: []
