@@ -700,10 +700,10 @@ class MyTabWidget(QWidget):
 
                 
          
-                for j in range(int(info["numFeatures"])):
-                    info["data"]["Feature %d" % (j +1)] = []
-                    for i in range (len(fileList)):
-                        info["data"]["Feature %d" % (j +1)].append(0)
+                # for j in range(int(info["numFeatures"])):
+                #     info["data"]["Feature %d" % (j +1)] = []
+                #     for i in range (len(fileList)):
+                #         info["data"]["Feature %d" % (j +1)].append(0)
 
                 """If can connect to dataframe in dlc can use this code to display headings (not sure if tracking time in zone but could do by header is what I'm trying to say)
                 PROJECT_DIR = Path("C:/Users/avpet/OneDrive/Documents/Python code/DSRI/2023-06-15_sample-data/dlc_files")
@@ -756,6 +756,31 @@ class MyTabWidget(QWidget):
                     for j in range(len(info["videoPaths"])):
                         if fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
                             info["videoPaths"][j]["DLC"] = fileList[i]
+
+                # Assumes that all the h5 files collect the same features
+                if len(fileList) > 0:
+                    
+                    PROJECT_DIR = Path(self.path)
+                    df = pd.read_hdf(PROJECT_DIR / fileList[0])
+                    # print(df.head(5))
+                    listdf = list(df)
+                    # print(listdf)
+                    features = []
+                    for i in range(len(listdf)): 
+                        if i == 0 or features[len(features)-1] != listdf[i][1]:
+                            features.append(listdf[i][1])
+                        else:
+                            pass
+                    print("features" , features)
+                    info["data"] = {' Videos':info["data"][' Videos']}
+                    # adding generic data
+                    zeros = []
+                    for i in range(len(info["videoPaths"])):
+                        zeros.append(0)
+                    for i in range(len(features)):
+                        info["data"][str(features[i])] = zeros
+                    
+
                             
                
                 # print(fileList)
@@ -797,10 +822,10 @@ class MyTabWidget(QWidget):
                 
                 info["data"] = {' Videos':fileList.copy()}
                
-                for j in range(int(info["numFeatures"])):
-                    info["data"]["Feature %d" % (j +1)] = []
-                    for i in range (len(fileList)):
-                        info["data"]["Feature %d" % (j +1)].append(0)
+                # for j in range(int(info["numFeatures"])):
+                #     info["data"]["Feature %d" % (j +1)] = []
+                #     for i in range (len(fileList)):
+                #         info["data"]["Feature %d" % (j +1)].append(0)
             
                     
 
@@ -837,6 +862,30 @@ class MyTabWidget(QWidget):
                     for j in range(len(info["videoPaths"])):
                         if fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
                             info["videoPaths"][j]["DLC"] = fileList[i]
+
+
+                if len(fileList) > 0:
+                    
+                    PROJECT_DIR = Path(self.path)
+                    df = pd.read_hdf(PROJECT_DIR / fileList[0])
+                    # print(df.head(5))
+                    listdf = list(df)
+                    # print(listdf)
+                    features = []
+                    for i in range(len(listdf)): 
+                        if i == 0 or features[len(features)-1] != listdf[i][1]:
+                            features.append(listdf[i][1])
+                        else:
+                            pass
+                    print("features" , features)
+                    info["data"] = {' Videos':info["data"][' Videos']}
+                    # adding generic data
+                    zeros = []
+                    for i in range(len(info["videoPaths"])):
+                        zeros.append(0)
+                    for i in range(len(features)):
+                        info["data"][str(features[i])] = zeros
+
                 with open('config.yaml', 'w') as file:
                     yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
                    
