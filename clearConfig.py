@@ -2,7 +2,7 @@
 import yaml
 
 
-info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "points":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":"","numFeatures":"2",
+info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "zone":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":"","numFeatures":"2",
                 "data":
                 {' Videos':[],
                     'Feature 1': [],

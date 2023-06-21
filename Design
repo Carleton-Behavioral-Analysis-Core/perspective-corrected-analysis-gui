@@ -16,6 +16,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QMessageBox
 
+from PIL import Image
+from PIL import ImageDraw
+
 class NoAliasDumper(yaml.SafeDumper):
     """Prevents yaml from using id to save space (would potentially mess up certain functions)"""
     def ignore_aliases(self, data):
@@ -34,7 +37,7 @@ def openYaml(rewrite=True):
     # if False:
         if rewrite:
             print("rewrite")
-            info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "points":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":"","numFeatures":"2",
+            info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "zone":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":"","numFeatures":"2",
                 "data":
                 {' Videos':[],
                     'Feature 1': [],
@@ -117,6 +120,8 @@ class ThreadOpenCV(QThread):
             ret, frame = cap.read()
 
             if ret:
+                
+
                 if len(info["videoPaths"][self.index]["points"]) == 4:
                     registration_points = np.array(
                     info["videoPaths"][self.index]["points"]
@@ -137,7 +142,25 @@ class ThreadOpenCV(QThread):
                     homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
                 
                     frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
+                    
+                # Draws shape
+                # if len(info["zone"]) == 4:
+                #     zone_points = np.array([
+                #     info["zone"]
+                #     ])
+                # else:
+                #     zone_points = np.array([
+                #         [100, 100],
+                #         [400, 100],
+                #         [400, 400],
+                #         [100, 400]
+                #     ])
+                # center_zone = plt.Polygon(zone_points, alpha=0.5)
                 
+                # frame.add_patch(center_zone)
+
+                
+
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
              
                 
@@ -146,6 +169,46 @@ class ThreadOpenCV(QThread):
                 bytes_per_line = ch * w   # PEP8: `lower_case_names` for variables
                 
                 image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+
+                # Trying to draw shape
+                
+            
+                if len(info["zone"]) == 4:
+                    # print("1")
+                    painter = QPainter(image)
+                    pixmap = QPixmap(image)
+                    painter.drawPixmap(image.height(),image.width(), pixmap)
+                    brush = QBrush(QColor(0, 0, 150,127))
+                    # color = 
+                    # brush.setColor(color)
+                   
+                    
+                    # x,y= [],[]
+                    
+                    # for i in range(len(info["zone"])):
+                    #     x.append(info["zone"][i][0])
+                    #     y.append(info["zone"][i][1])
+                    # x = map(int, x)
+                    # y = map(int, y)
+                    # # polygon = QPolygon([(x[0], y[0]), (x[1], y[1]), (x[2], y[2]), (x[0], y[2])])
+
+                    # # points = QPolygon([QPoint(info["zone"][0][0],info["zone"][0][1]),QPoint(info["zone"][1][0],info["zone"][1][1]),QPoint(info["zone"][2][0],info["zone"][2][1]),QPoint(info["zone"][3][0],info["zone"][3][1])])
+                    # # painter.drawPolygon(polygon , fill=(QColor(0, 255, 255), 0.4)) 
+                    points = QPolygon([QPoint(info["zone"][0][0],info["zone"][0][1]),QPoint(info["zone"][1][0],info["zone"][1][1]),QPoint(info["zone"][2][0],info["zone"][2][1]),QPoint(info["zone"][3][0],info["zone"][3][1])])
+                    
+                    painter.setBrush(brush)
+                    painter.drawPolygon(points) 
+                    del painter
+                    del brush
+                else:
+                    # print("2")
+                    pass
+                    # points = QPointF([QPointF(50,50),QPointF(100,50),QPointF(100,100),QPointF(50,100)])
+                
+               
+                # painter.drawPolygon(points)   
+                # del painter
+                # del pen
                 image = image.scaled(640, 480, Qt.KeepAspectRatio)
 
                          
