@@ -37,12 +37,31 @@ def openYaml(rewrite=True):
     # if False:
         if rewrite:
             print("rewrite")
+            print(1/0)
             info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "zone":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":"","numFeatures":"2",
                 "data":
                 {' Videos':[],
                     'Feature 1': [],
                     'Feature 2': []}}
             with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+    return info
+
+def openHelperYaml(rewrite=True):
+    """Opens yaml file if file is messed with resets it to generic if not returns yaml info"""
+    try:
+    # if True:
+        with open('helper.yaml', 'r') as file:
+            info = yaml.safe_load(file)
+            # print(len(info))
+            if len(info) != 2:
+                x = 1/0
+    except:
+    # if False:
+        if rewrite:
+            print("rewrite helper")
+            info= {"ValidationVideoSettings":{"PlayBackSpeed":1,"Frame":0,"FPS":30},"PartsOfIntrest":[]}
+            with open('helper.yaml', 'w') as file:
                 yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
     return info
 
@@ -95,6 +114,7 @@ class ThreadOpenCV(QThread):
     def __init__(self, source):
         super().__init__()
         info = openYaml()
+    
         for i in range(len(info["videoPaths"])):
             if source == info["videoPaths"][i]["title"]:
                 self.index = i
@@ -110,14 +130,18 @@ class ThreadOpenCV(QThread):
         #     self.count
         # except:
         info = openYaml() 
+        helper = openHelperYaml()
         cap = cv2.VideoCapture(self.source)
         fps = float(cap.get(cv2.CAP_PROP_FPS))
-
+        
         self.running = True
         
         while self.running:
-            time.sleep(1/fps)
+            cap.set(cv2.CAP_PROP_POS_FRAMES, helper["ValidationVideoSettings"]["Frame"])
+            
             ret, frame = cap.read()
+            
+            # cap.set(cv2.CAP_PROP_POS_FRAMES,helper["ValidationVideoSettings"]["Frame"]) #Doesn't work as anticipated
 
             if ret:
                 
@@ -209,7 +233,14 @@ class ThreadOpenCV(QThread):
                 # painter.drawPolygon(points)   
                 # del painter
                 # del pen
+
                 image = image.scaled(640, 480, Qt.KeepAspectRatio)
+                time.sleep(((1/fps)/(helper["ValidationVideoSettings"]["PlayBackSpeed"]))/2)
+                helper["ValidationVideoSettings"]["FPS"] = fps
+                helper["ValidationVideoSettings"]["Frame"] = helper["ValidationVideoSettings"]["Frame"] + 1
+                # print(helper["ValidationVideoSettings"]["Frame"])
+                with open('helper.yaml', 'w') as file:
+                    yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
 
                          
 
@@ -524,13 +555,14 @@ class MyTabWidget(QWidget):
         self.FieldTimeValidation = QLineEdit()
         self.FieldTimeValidation.setPlaceholderText("Enter Time")
         # SHouldnt be connected to thisjust for test
-        self.FieldTimeValidation.returnPressed.connect(self.ValidationPlayVid) 
+        self.FieldTimeValidation.returnPressed.connect(self.FrameSet) 
 
         self.ComboVidValidationMenu = QComboBox()
         self.ComboVidValidationMenu.addItems(info["data"][" Videos"])
 
         self.PlayBackSpeedValidationMenu = QComboBox()
         self.PlayBackSpeedValidationMenu.addItems(["0.5","1","2","5","10","30"])
+        self.PlayBackSpeedValidationMenu.setCurrentIndex(1)
         
         self.labelVideoValidation = QLabel("Place Holder for Video")
 
@@ -1966,18 +1998,22 @@ class MyTabWidget(QWidget):
         else:
             self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
             self.threadVal.changePixmap.connect(self.setImage)  
-        print(self.vidPlayingVal , self.ComboVidValidationMenu.currentText())
+        # print(self.vidPlayingVal , self.ComboVidValidationMenu.currentText())
         self.vidPlayingVal = self.ComboVidValidationMenu.currentText()
     def playVideo(self):
+        """Plays the video"""
         try:
             if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
+                self.threadVal.running = False
                 x = 1/0
             self.threadVal.start()
         except:
+            
             self.ValidationPlayVid()
             self.threadVal.start()
 
     def stopVideo(self):
+        """stop the video"""
         try:
             if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
                 x = 1/0
@@ -1987,7 +2023,28 @@ class MyTabWidget(QWidget):
              
 
     def setImage(self, image):
+        """Sets frame """
+        helper = openHelperYaml()
+        print(helper["ValidationVideoSettings"]["Frame"])
+        
+        helper["ValidationVideoSettings"]["PlayBackSpeed"] = float(self.PlayBackSpeedValidationMenu.currentText()) #Doesn't seem to change speed when playing, when done resets video
+        self.FieldTimeValidation.setPlaceholderText(str(round(helper["ValidationVideoSettings"]["Frame"]/helper["ValidationVideoSettings"]["FPS"],2)))
+        # helper["ValidationVideoSettings"]["Frame"] = helper["ValidationVideoSettings"]["Frame"] + 1 #Doesn't work as anticipated
+        with open('helper.yaml', 'w') as file:
+            yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
+
         self.labelVideoValidation.setPixmap(QPixmap.fromImage(image))
+    
+    def FrameSet(self):
+        """Will change the frame to the designated frame"""
+        if self.FieldTimeValidation.text().isnumeric():
+            helper = openHelperYaml()
+            helper["ValidationVideoSettings"]["Frame"] = int(round(float(self.FieldTimeValidation.text()),0) * helper["ValidationVideoSettings"]["FPS"])
+            self.FieldTimeValidation.setPlaceholderText(str(round(helper["ValidationVideoSettings"]["Frame"]/helper["ValidationVideoSettings"]["FPS"],2)))
+            self.FieldTimeValidation.setText("")
+            with open('helper.yaml', 'w') as file:
+                yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
+
     
 
 
