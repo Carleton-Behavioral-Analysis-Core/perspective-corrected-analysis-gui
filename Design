@@ -7,6 +7,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
+import pyqtgraph as pg
+from pyqtgraph import ViewBox
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QSlider
 
 # from PyQt5.QtWidgets import QApplication, QTableView
 # from PyQt5.QtCore import QAbstractTableModel, Qt
@@ -60,7 +64,7 @@ def openHelperYaml(rewrite=True):
     # if False:
         if rewrite:
             print("rewrite helper")
-            info= {"ValidationVideoSettings":{"PlayBackSpeed":1,"Frame":0,"FPS":30},"PartsOfIntrest":[]}
+            info= {"ValidationVideoSettings":{"PlayBackSpeed":1,"Frame":0,"FPS":30},"PartsOfInterest":[]}
             with open('helper.yaml', 'w') as file:
                 yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
     return info
@@ -109,6 +113,22 @@ class pandasModel(QAbstractTableModel):
             return self._data.columns[col]
         return None
 
+def show_popup():
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Confirmation")
+        msg.setText("Are you sure you want to set these points for all videos?")
+        msg.setIcon(QtWidgets.QMessageBox.warning)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        msg.setDefaultButton(QtWidgets.QMessageBox.No)
+        # msg.buttonClicked.connect(popup_button_clicked)
+
+        x = msg.exec_()
+        print(x)
+        return x
+
+def popup_button_clicked(i):
+    # print(i.text(), "click")
+    return i.text()
 
 # Creating the main window
 class App(QMainWindow):
@@ -154,6 +174,7 @@ class ThreadOpenCV(QThread):
         helper = openHelperYaml()
         cap = cv2.VideoCapture(self.source)
         fps = float(cap.get(cv2.CAP_PROP_FPS))
+        video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         
         self.running = True
         
@@ -174,7 +195,7 @@ class ThreadOpenCV(QThread):
 
              
                     if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
-                        wid, hei = info["BoxWidth"],info["BoxHeight"]  # in mm
+                        wid, hei = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
                     else:
                         wid, hei = 500 , 500
                     schema = np.array([
@@ -257,9 +278,15 @@ class ThreadOpenCV(QThread):
 
                 image = image.scaled(640, 480, Qt.KeepAspectRatio)
                 # print(((1/fps)/(helper["ValidationVideoSettings"]["PlayBackSpeed"])))
-                time.sleep(((1/fps)/(helper["ValidationVideoSettings"]["PlayBackSpeed"])))
+                x = (1/fps)/(helper["ValidationVideoSettings"]["PlayBackSpeed"])
+                if 0.02 < x:
+                    time.sleep(x - 0.02)
+                # time.sleep(((1/fps)/(helper["ValidationVideoSettings"]["PlayBackSpeed"])))
+                # print(time.time())
                 helper["ValidationVideoSettings"]["FPS"] = fps
                 helper["ValidationVideoSettings"]["Frame"] = helper["ValidationVideoSettings"]["Frame"] + 1
+                helper["ValidationVideoSettings"]["TotalFrames"] = video_length
+
                 # print(helper["ValidationVideoSettings"]["Frame"])
                 with open('helper.yaml', 'w') as file:
                     yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
@@ -298,10 +325,7 @@ class MyTabWidget(QWidget):
         
         # Dont think I need most of these
         self.path = ""
-        self.vidPath = ""
-        self.cmd = ""
         self.title =""
-        self.framechanges = 0
         self.cornerImageDim = []
         self.vidPlayingVal = ""
         info = openYaml()
@@ -535,7 +559,7 @@ class MyTabWidget(QWidget):
 
 
         self.btnScoreVid = QPushButton("SCORE VIDEOS")
-        self.btnScoreVid.clicked.connect(self.placeHodlerBtn)
+        self.btnScoreVid.clicked.connect(self.inzone) #should be place holder but using it to test inzone
 
         self.btnCreateVis = QPushButton("CREATE VISUALS")
         self.btnCreateVis.clicked.connect(self.placeHodlerBtn)
@@ -597,6 +621,19 @@ class MyTabWidget(QWidget):
 
         self.btnStopVal = QPushButton("STOP")
         self.btnStopVal.clicked.connect(self.stopVideo)
+
+        self.labelGraphValidation = pg.PlotWidget()
+
+
+        self.sliderVal = QSlider(Qt.Orientation.Horizontal, self)
+        self.sliderVal.sliderReleased.connect(self.changeFrameSlider)
+        self.sliderVal.setRange(0, 10)
+        
+        # self.slider = QSlider(Qt.Horizontal)
+
+        # # Connect the sliderMoved signal to the set_position function
+        # self.slider.sliderMoved.connect(self.placeHodlerBtn)
+        
         
 
         # self.tabValidation.layout.addWidget(self.labelValidationVideoHeading,0,0,1,2)
@@ -610,6 +647,8 @@ class MyTabWidget(QWidget):
         self.tabValidation.layout.addWidget(self.labelVideoValidation,4,0,3,3)
         self.tabValidation.layout.addWidget(self.btnPlayVal,6,3,1,1) 
         self.tabValidation.layout.addWidget(self.btnStopVal,6,4,1,1) 
+        self.tabValidation.layout.addWidget(self.sliderVal,10,0,3,1)
+        self.tabValidation.layout.addWidget(self.labelGraphValidation,7,0,3,3)
         
         self.tabValidation.setLayout(self.tabValidation.layout) 
 
@@ -1383,15 +1422,17 @@ class MyTabWidget(QWidget):
         
     def saveToAllCorner(self):
         """Takes the points of the currently selected image and will save the points to all the others"""
-        info = openYaml()
-        for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
-                    points = info["videoPaths"][i]["points"] 
-        for j in range(len(info["videoPaths"])):
-            info["videoPaths"][j]["points"] = points.copy()
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
-        self.displayFrameCorner()
+        if str(show_popup()) == "16384":
+            # print("16384 pass")
+            info = openYaml()
+            for i in range(len(info["videoPaths"])):
+                    if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                        points = info["videoPaths"][i]["points"] 
+            for j in range(len(info["videoPaths"])):
+                info["videoPaths"][j]["points"] = points.copy()
+            with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
+            self.displayFrameCorner()
 
     def fieldTextUpdater(self):
         """Updates field  goes from TL to TR to BR to BL"""
@@ -1588,24 +1629,25 @@ class MyTabWidget(QWidget):
             self.loadhelplabel.setText("You need to enter a project path")
 
 
-    def show_popup(self):
-        """pop up dont think is nessary"""
-        msg = QMessageBox()
-        msg.setWindowTitle("Warning")
-        msg.setText("Previously saved project may be deleted\nWould you like to proceed?")
-        msg.setIcon(QMessageBox.Warning)
-        msg.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
-        msg.setDefaultButton(QMessageBox.No)
+    # def show_popup(self):
+    #     """pop up dont think is nessary"""
+    #     msg = QMessageBox()
+    #     msg.setWindowTitle("Warning")
+    #     msg.setText("Previously saved project may be deleted\nWould you like to proceed?")
+    #     msg.setIcon(QMessageBox.Warning)
+    #     msg.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
+    #     msg.setDefaultButton(QMessageBox.No)
         
-        msg.setDetailedText("may overide yaml file if stored in same location")
+    #     msg.setDetailedText("may overide yaml file if stored in same location")
 
-        msg.buttonClicked.connect(self.popup_button)
-        return msg
+    #     msg.buttonClicked.connect(self.popup_button)
+    #     return msg
 
-    def popup_button(self, i):
-        """to connect to the pop up but doesnt seem to work not really important """
-        print(i.text())
-        # not yet connected to actual yer or no
+    # def popup_button(self, i):
+    #     """to connect to the pop up but doesnt seem to work not really important """
+    #     print(i.text())
+    #     # not yet connected to actual yer or no
+    
 
     def displayFrame(self):
         """Displays 1st frame of the video"""
@@ -1661,7 +1703,7 @@ class MyTabWidget(QWidget):
             x = registration_points[:,0]
             y = registration_points[:,1]
             if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
-                wid, hei = info["BoxWidth"],info["BoxHeight"]  # in mm
+                wid, hei = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
             else:
                 wid, hei = 500 , 500
             schema = np.array([
@@ -1794,7 +1836,7 @@ class MyTabWidget(QWidget):
                 x = registration_points[:,0]
                 y = registration_points[:,1]
                 if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
-                    wid, hei = info["BoxWidth"],info["BoxHeight"]  # in mm
+                    wid, hei = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
                 else:
                     wid, hei = 500 , 500
                 schema = np.array([
@@ -1858,7 +1900,7 @@ class MyTabWidget(QWidget):
             x = registration_points[:,0]
             y = registration_points[:,1]
             if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
-                wid, hei = info["BoxWidth"],info["BoxHeight"]  # in mm
+                wid, hei = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
             else:
                 wid, hei = 500 , 500
             schema = np.array([
@@ -2023,6 +2065,7 @@ class MyTabWidget(QWidget):
 
     def ValidationPlayVid(self):
         print("1")
+        helper = openHelperYaml()
         
         
         if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
@@ -2032,6 +2075,7 @@ class MyTabWidget(QWidget):
                 pass
             self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
             self.threadVal.changePixmap.connect(self.setImage) 
+            
                      
         else:
             self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
@@ -2062,17 +2106,29 @@ class MyTabWidget(QWidget):
 
     def setImage(self, image):
         """Sets frame """
+        # print("2")
         helper = openHelperYaml()
         # print(helper["ValidationVideoSettings"]["Frame"])
         
         helper["ValidationVideoSettings"]["PlayBackSpeed"] = float(self.PlayBackSpeedValidationMenu.currentText()) #Doesn't seem to change speed when playing, when done resets video
         self.FieldTimeValidation.setPlaceholderText(str(round(helper["ValidationVideoSettings"]["Frame"]/helper["ValidationVideoSettings"]["FPS"],2)))
+        self.sliderVal.setRange(0,helper["ValidationVideoSettings"]["TotalFrames"]) 
+        self.sliderVal.setSliderPosition(helper["ValidationVideoSettings"]["Frame"])
         # helper["ValidationVideoSettings"]["Frame"] = helper["ValidationVideoSettings"]["Frame"] + 1 #Doesn't work as anticipated
         with open('helper.yaml', 'w') as file:
             yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
 
         self.labelVideoValidation.setPixmap(QPixmap.fromImage(image))
-    
+
+    def changeFrameSlider(self):
+        helper = openHelperYaml()
+        self.stopVideo()
+        helper["ValidationVideoSettings"]["Frame"] = self.sliderVal.value()
+        with open('helper.yaml', 'w') as file:
+            yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
+        
+        self.playVideo()  
+
     def FrameSet(self):
         """Will change the frame to the designated frame"""
         if self.FieldTimeValidation.text().isnumeric():
@@ -2080,6 +2136,7 @@ class MyTabWidget(QWidget):
             helper["ValidationVideoSettings"]["Frame"] = int(round(float(self.FieldTimeValidation.text()),0) * helper["ValidationVideoSettings"]["FPS"])
             self.FieldTimeValidation.setPlaceholderText(str(round(helper["ValidationVideoSettings"]["Frame"]/helper["ValidationVideoSettings"]["FPS"],2)))
             self.FieldTimeValidation.setText("")
+            # self.labelGraphValidation.getPlotItem().setLabel(bottom='Frame Frame #'+ str(helper["ValidationVideoSettings"]["Frame"])) #doesnt seem to work
             with open('helper.yaml', 'w') as file:
                 yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
 
@@ -2088,15 +2145,16 @@ class MyTabWidget(QWidget):
     
          # Transform image frame
         info = openYaml()
-        try:
-            w, h = info["BoxWidth"],info["BoxHeight"]  # in mm
+        # try:
+        if True:
+            w, h = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
             schema = np.array([
                 [0, 0],
                 [w, 0],
                 [w, h],
                 [0, h]
             ]).astype(np.float32)
-
+          
             for i in range(len(info["videoPaths"])):
                 if len(info["videoPaths"][i]["points"]) == 4 and info["DLCvideoPaths"][i]["h5"] == info["videoPaths"][i]["DLC"]:
                     registration_points = np.array([
@@ -2114,7 +2172,7 @@ class MyTabWidget(QWidget):
                     transformed_df = transform_dataframe_to_perspective(df, homogeneous_transform)
 
                 
-
+                    features = []
                     # How to select specific bodyparts and get a centroid
                     for key in info["DLCvideoPaths"][i]["bodyparts"]:
                         bodyparts_of_interest = [str(key)]
@@ -2131,10 +2189,71 @@ class MyTabWidget(QWidget):
                         mouse_points = centroid[['x','y']].values
                         is_in_center = center_zone.contains_points(mouse_points)
                         info["DLCvideoPaths"][i]["bodyparts"][str(key)][1] = int(is_in_center.sum())
-                with open('config.yaml', 'w') as file:
-                    yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
-        except:
-            print("fail")
+                        
+                        features.append(key)
+                            
+                       
+                if self.ComboVidValidationMenu.currentText() == info["videoPaths"][i]["title"]:
+                
+                    centroid = transformed_df.loc[:, pd.IndexSlice[:, features]].groupby(level='coords', axis=1).mean()
+                    
+                  # When is the mouse inside?
+                    center_zone = plt.Polygon(zone_points, alpha=0.5)
+                    mouse_points = centroid[['x','y']].values
+                    is_in_center = center_zone.contains_points(mouse_points)
+                
+                    
+                    # labels = ["True","False"]
+                
+                    # fig = plt.figure()
+                    # ax = fig.add_subplot(111)
+                    # ax.imshow(is_in_center)
+                    # ax.set_yticks(np.arange(len(labels)))
+                    # ax.set_yticklabels(labels)
+                    # plt.plot(is_in_center)
+                    # plt.yticks(np.arange(min(is_in_center), max(is_in_center)+1, 1))
+                    # plt.show()
+                    # fig = plt.figure()
+                    # fig.plot(is_in_center)
+                    # fig.yticks(np.arange(min(is_in_center), max(is_in_center)+1, 1))
+                    try:
+                        
+                        self.labelGraphValidation.removeItem
+                        
+                    except:
+                        pass
+                    # self.labelGraphValidation = pg.PlotWidget()
+                    # self.labelGraphValidation.re
+
+                    # Generate some example data
+                    x = np.arange(len(is_in_center))
+                    y = np.array(is_in_center)
+
+                    
+
+                    # # Add the scatter plot item to the graph widget
+                    # self.labelGraphValidation.addItem(scatter)
+                    plot = self.labelGraphValidation.plot(x=x, y=y)
+
+         # Set the pen
+                    plot.setPen(pg.mkPen('g', width=2))
+                    
+                    self.labelGraphValidation.setXRange(0, len(is_in_center), padding=0)
+
+                    # self.labelGraphValidation.setYRange(0, 1, padding=0)
+                    self.labelGraphValidation.getPlotItem().getViewBox().setMouseEnabled(y=False)
+                    self.labelGraphValidation.getPlotItem().setLabels(title='Frame inside zone', left='1 Means in zone 0 Outside zone', bottom='Frame')
+                    self.labelGraphValidation.getPlotItem().getViewBox() #unclear how to loop back to change color
+                    # self.labelGraphValidation.getPlotItem().
+                    # yTicks = [0, 1]
+                    # self.labelGraphValidation.getPlotItem().getAxis("left").setTicks([yTicks])
+                    # self.labelGraphValidation.getPlotItem().getViewBox().setMouseEnabled(x=False)
+                   
+
+            with open('config.yaml', 'w') as file:
+                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+        # except:
+        #     print("fail")
 
         
 if __name__ == '__main__':
