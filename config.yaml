@@ -10,5 +10,6 @@ data:
   Feature 2: []
 folderPath: ''
 numFeatures: '2'
+uncertainty: 0.6
 videoPaths: []
 zone: []

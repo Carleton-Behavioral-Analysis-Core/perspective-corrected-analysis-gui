@@ -35,8 +35,8 @@ def openYaml(rewrite=True):
         with open('config.yaml', 'r') as file:
             info = yaml.safe_load(file)
             # print(len(info))
-            if len(info) != 11:
-                x = 1/0
+            if len(info) != 12:
+                x = 1/0 
     except:
     # if False:
         if rewrite:
@@ -46,7 +46,8 @@ def openYaml(rewrite=True):
                 "data":
                 {' Videos':[],
                     'Feature 1': [],
-                    'Feature 2': []}}
+                    'Feature 2': []},
+                "uncertainty":0.6}
             with open('config.yaml', 'w') as file:
                 yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
     return info
@@ -57,14 +58,15 @@ def openHelperYaml(rewrite=True):
     # if True:
         with open('helper.yaml', 'r') as file:
             helper = yaml.safe_load(file)
-            # print(len(info))
+            
             if len(helper) != 2:
+                print(len(helper))
                 x = 1/0
     except:
     # if False:
         if rewrite:
             print("rewrite helper")
-            helper= {"ValidationVideoSettings":{"PlayBackSpeed":1,"Frame":0,"FPS":30},"PartsOfInterest":[]}
+            helper= {"ValidationVideoSettings":{"PlayBackSpeed":1,"Frame":0,"FPS":30,"TotalFrames":1},"PartsOfInterest":[]}
             with open('helper.yaml', 'w') as file:
                 yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
     return helper
@@ -130,6 +132,24 @@ def popup_button_clicked(i):
     # print(i.text(), "click")
     return i.text()
 
+def ValidationWarning_popup():
+        """How to get videos to reset instructions"""
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Confirmation")
+        msg.setText("When changing videos hit stop then play to reset video")
+        msg.setIcon(QtWidgets.QMessageBox.warning)
+        msg.exec_()
+
+def ValidationSlider_popup():
+        """How to get videos to reset instructions"""
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Confirmation")
+        msg.setText("To change slider for other videos changing video in dropdown,\nthen hit stop, then play and then move slider")
+        msg.setIcon(QtWidgets.QMessageBox.warning)  
+        msg.setStandardButtons(QtWidgets.QMessageBox.Okay )
+        msg.setDefaultButton(QtWidgets.QMessageBox.Okay)
+        msg.exec_()  
+
 # Creating the main window
 class App(QMainWindow):
     def __init__(self):
@@ -179,7 +199,10 @@ class ThreadOpenCV(QThread):
         self.running = True
         
         while self.running:
-            cap.set(cv2.CAP_PROP_POS_FRAMES, helper["ValidationVideoSettings"]["Frame"])
+            if helper["ValidationVideoSettings"]["Frame"] <= video_length:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, helper["ValidationVideoSettings"]["Frame"])
+            else:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
             
             ret, frame = cap.read()
             
@@ -329,6 +352,7 @@ class MyTabWidget(QWidget):
         self.cornerImageDim = []
         self.vidPlayingVal = ""
         info = openYaml()
+        helper = openHelperYaml()
 
         # Add tabs
         self.startTab.addTab(self.tabCreateOrLoad, "Load/Create")
@@ -599,7 +623,8 @@ class MyTabWidget(QWidget):
         hheader.setStyleSheet("::section {background-color: grey; color: black;}")
         
 
-        self.labelValidationTimeHeading = QLabel("Time (s)")
+        # self.labelValidationTimeHeading = QLabel("Time (s)") #for time
+        self.labelValidationTimeHeading = QLabel("Frame #")
 
         self.FieldTimeValidation = QLineEdit()
         self.FieldTimeValidation.setPlaceholderText("Enter Time")
@@ -622,7 +647,7 @@ class MyTabWidget(QWidget):
         self.btnStopVal = QPushButton("STOP")
         self.btnStopVal.clicked.connect(self.stopVideo)
 
-        self.labelGraphValidation = pg.PlotWidget()
+        self.GraphValidation = pg.PlotWidget()
 
 
         self.sliderVal = QSlider(Qt.Orientation.Horizontal, self)
@@ -631,6 +656,10 @@ class MyTabWidget(QWidget):
 
         self.GraphValidationMenu = QComboBox()
         self.GraphValidationMenu.addItems(["In zone","Distance"])
+
+        self.GraphValidationLabelMenu = QLabel("Visualize metric")
+
+        self.GraphTitleValidationLabel = QLabel("Graph")
         
         # self.slider = QSlider(Qt.Horizontal)
 
@@ -650,10 +679,13 @@ class MyTabWidget(QWidget):
         self.tabValidation.layout.addWidget(self.labelVideoValidation,4,0,3,3)
         self.tabValidation.layout.addWidget(self.btnPlayVal,6,3,1,1) 
         self.tabValidation.layout.addWidget(self.btnStopVal,6,4,1,1) 
-        self.tabValidation.layout.addWidget(self.sliderVal,10,0,3,1)
-        self.tabValidation.layout.addWidget(self.labelGraphValidation,7,0,3,3)
-        self.tabValidation.layout.addWidget(self.GraphValidationMenu,7,3,2,1)
-        
+        self.tabValidation.layout.addWidget(self.sliderVal,11,0,3,1)
+        self.tabValidation.layout.addWidget(self.GraphValidation,8,0,3,3)
+        self.tabValidation.layout.addWidget(self.GraphValidationMenu,7,4,1,1)
+        self.tabValidation.layout.addWidget(self.GraphValidationLabelMenu,7,3,1,1)
+        self.tabValidation.layout.addWidget(self.GraphTitleValidationLabel,7,0,1,3, alignment=QtCore.Qt.AlignCenter)
+
+
         self.tabValidation.setLayout(self.tabValidation.layout) 
 
 
@@ -902,7 +934,17 @@ class MyTabWidget(QWidget):
 
         self.tabCreateSchema.setLayout(self.tabCreateSchema.layout)
 
- 
+        
+        try:
+            int(helper["ValidationVideoSettings"]["Frame"])
+            int(helper["ValidationVideoSettings"]["TotalFrames"])
+        except:
+            helper["ValidationVideoSettings"]["Frame"] = 0
+            helper["ValidationVideoSettings"]["TotalFrames"] = 1
+            
+            with open('helper.yaml', 'w') as file:
+                yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper) 
+
 
         # Delete when real
         self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
@@ -2074,11 +2116,14 @@ class MyTabWidget(QWidget):
         
         if breaker or self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
             try:
+                self.threadVal.running = False
                 del self.threadVal
             except:
                 pass
             self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
             self.threadVal.changePixmap.connect(self.setImage) 
+            self.sliderVal.setRange(0,helper["ValidationVideoSettings"]["TotalFrames"]) 
+            self.inzone()
             
                      
         else:
@@ -2092,21 +2137,24 @@ class MyTabWidget(QWidget):
         try:
             if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
                 self.threadVal.running = False
+                del self.threadVal
                 x = 1/0
             self.threadVal.start()
         except:
             
-            self.ValidationPlayVid()
+            self.ValidationPlayVid(True)
             self.threadVal.start()
 
     def stopVideo(self):
         """stop the video"""
         try:
             if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
+                print("pass")
+                # del self.threadVal
                 x = 1/0
             self.threadVal.running = False
         except:
-            self.ValidationPlayVid()
+            self.ValidationPlayVid(True)
              
 
     def setImage(self, image):
@@ -2115,32 +2163,83 @@ class MyTabWidget(QWidget):
         helper = openHelperYaml()
         # print(helper["ValidationVideoSettings"]["Frame"])
         
-        helper["ValidationVideoSettings"]["PlayBackSpeed"] = float(self.PlayBackSpeedValidationMenu.currentText()) #Doesn't seem to change speed when playing, when done resets video
+       
         # self.FieldTimeValidation.setPlaceholderText(str(round(helper["ValidationVideoSettings"]["Frame"]/helper["ValidationVideoSettings"]["FPS"],2))) #for seconds
         self.FieldTimeValidation.setPlaceholderText(str(helper["ValidationVideoSettings"]["Frame"]))
-        self.sliderVal.setRange(0,helper["ValidationVideoSettings"]["TotalFrames"]) 
+        
         self.sliderVal.setSliderPosition(helper["ValidationVideoSettings"]["Frame"])
         # helper["ValidationVideoSettings"]["Frame"] = helper["ValidationVideoSettings"]["Frame"] + 1 #Doesn't work as anticipated
-        with open('helper.yaml', 'w') as file:
-            yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
+        if helper["ValidationVideoSettings"]["PlayBackSpeed"] != float(self.PlayBackSpeedValidationMenu.currentText()):
+            helper["ValidationVideoSettings"]["PlayBackSpeed"] = float(self.PlayBackSpeedValidationMenu.currentText())#Doesn't seem to change speed when playing, when done resets video
+            with open('helper.yaml', 'w') as file: #No new info to be saved
+                yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
 
         self.labelVideoValidation.setPixmap(QPixmap.fromImage(image))
 
     def changeFrameSlider(self):
-        helper = openHelperYaml()
+        """Slider will change the frame but it will mess up if you switch the video then scroll (trying to fix)"""
         self.stopVideo()
+        helper = openHelperYaml()
+        
+        # Original maybe semi work
         helper["ValidationVideoSettings"]["Frame"] = self.sliderVal.value()
         with open('helper.yaml', 'w') as file:
             yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
-        
-        self.playVideo()  
+
+        self.playVideo()
+
+        # attmept 2 fail
+        # try:
+        #     del self.threadVal
+        # except:
+        #     pass
+        # self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
+        # self.threadVal.changePixmap.connect(self.setImage) 
+        # self.sliderVal.setRange(0,helper["ValidationVideoSettings"]["TotalFrames"]) 
+        # self.inzone()
+        # try:
+        #     helper["ValidationVideoSettings"]["Frame"] = self.sliderVal.value()
+        # except:
+        #     helper["ValidationVideoSettings"]["Frame"] = 0
+
+        # with open('helper.yaml', 'w') as file:
+        #     yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
+
+
+
+        # Attempt 1 fail 
+        # helper = openHelperYaml()
+        # self.stopVideo()
+       
+        # print(self.vidPlayingVal , self.ComboVidValidationMenu.currentText())
+        # if self.vidPlayingVal == self.ComboVidValidationMenu.currentText():
+        #     helper["ValidationVideoSettings"]["Frame"] = self.sliderVal.value()
+        #     with open('helper.yaml', 'w') as file:
+        #         yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
+            
+        #     self.ValidationPlayVid()  
+        # else:
+        #     print("oebg")
+            # try:
+            #     del self.threadVal
+            # except:
+            #     pass
+            # self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
+            # self.threadVal.changePixmap.connect(self.setImage) 
+            # self.sliderVal.setRange(0,helper["ValidationVideoSettings"]["TotalFrames"]) 
+            # self.inzone()
+            # try:
+            #     helper["ValidationVideoSettings"]["Frame"] = self.sliderVal.value()
+            # except:
+            #     helper["ValidationVideoSettings"]["Frame"] = 0
+        # show_popup()
 
     def FrameSet(self):
         """Will change the frame to the designated frame"""
         # print(self.FieldTimeValidation.text().isnumeric())
         if self.FieldTimeValidation.text().isnumeric():
             self.stopVideo()
-            time.sleep(0.001)
+            # time.sleep(0.001)
             helper = openHelperYaml()
             helper["ValidationVideoSettings"]["Frame"] = int(round(float(self.FieldTimeValidation.text())))
             # self.FieldTimeValidation.setPlaceholderText(str(round(helper["ValidationVideoSettings"]["Frame"]/helper["ValidationVideoSettings"]["FPS"],2))) #In regard to seconds
@@ -2148,7 +2247,7 @@ class MyTabWidget(QWidget):
 
             self.FieldTimeValidation.setText("")
            
-            # self.labelGraphValidation.getPlotItem().setLabel(bottom='Frame Frame #'+ str(helper["ValidationVideoSettings"]["Frame"])) #doesnt seem to work
+            # self.GraphValidation.getPlotItem().setLabel(bottom='Frame Frame #'+ str(helper["ValidationVideoSettings"]["Frame"])) #doesnt seem to work
             with open('helper.yaml', 'w') as file:
                 yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
             self.ValidationPlayVid(True)
@@ -2232,14 +2331,15 @@ class MyTabWidget(QWidget):
                     # fig.yticks(np.arange(min(is_in_center), max(is_in_center)+1, 1))
                     try:
                         
-                        self.labelGraphValidation.removeItem
+                        self.GraphValidation.getPlotItem().clearPlots()
                         
                     except:
                         pass
 
                     if self.GraphValidationMenu.currentText() == "In zone":
-                        # self.labelGraphValidation = pg.PlotWidget()
-                        # self.labelGraphValidation.re
+                        self.GraphTitleValidationLabel.setText("Mouse inside zone per frame \n(1 means inside zone 0 means outside)")
+                        # self.GraphValidation = pg.PlotWidget()
+                        # self.GraphValidation.re
 
                         # Generate some example data
                         x = np.arange(len(is_in_center))
@@ -2248,25 +2348,25 @@ class MyTabWidget(QWidget):
                         
 
                         # # Add the scatter plot item to the graph widget
-                        # self.labelGraphValidation.addItem(scatter)
-                        plot = self.labelGraphValidation.plot(x=x, y=y)
+                        # self.GraphValidation.addItem(scatter)
+                        plot = self.GraphValidation.plot(x=x, y=y)
 
             # Set the pen
                         plot.setPen(pg.mkPen('g', width=2))
                         
-                        self.labelGraphValidation.setXRange(0, len(is_in_center), padding=0)
+                        self.GraphValidation.setXRange(0, len(is_in_center), padding=0)
 
-                        # self.labelGraphValidation.setYRange(0, 1, padding=0)
-                        self.labelGraphValidation.getPlotItem().getViewBox().setMouseEnabled(y=False)
-                        self.labelGraphValidation.getPlotItem().setLabels( left='1 Means in zone 0 Outside zone', bottom='Frame')
-                        self.labelGraphValidation.getPlotItem().getViewBox() #unclear how to loop back to change color
-                        # self.labelGraphValidation.getPlotItem().getViewBox()
-                        # self.labelGraphValidation.getPlotItem().
+                        # self.GraphValidation.setYRange(0, 1, padding=0)
+                        self.GraphValidation.getPlotItem().getViewBox().setMouseEnabled(y=False)
+                        self.GraphValidation.getPlotItem().setLabels( left='Inside zone', bottom='Frame')
+                        self.GraphValidation.getPlotItem().getViewBox() #unclear how to loop back to change color
+                        # self.GraphValidation.getPlotItem().getViewBox()
+                        # self.GraphValidation.getPlotItem().
                         # yTicks = [0, 1]
-                        # self.labelGraphValidation.getPlotItem().getAxis("left").setTicks([yTicks])
-                        # self.labelGraphValidation.getPlotItem().getViewBox().setMouseEnabled(x=False)
+                        # self.GraphValidation.getPlotItem().getAxis("left").setTicks([yTicks])
+                        # self.GraphValidation.getPlotItem().getViewBox().setMouseEnabled(x=False)
                     elif self.GraphValidationMenu.currentText() == "Distance":
-                        
+                        self.GraphTitleValidationLabel.setText("Distance traveled per frame")
                         
                         bodyparts_of_interest = features
                         centroid = transformed_df.loc[:, pd.IndexSlice[:, bodyparts_of_interest]].groupby(level='coords', axis=1).mean()
@@ -2280,13 +2380,13 @@ class MyTabWidget(QWidget):
                         distance[distance > threshold] = np.nan
                         x = np.arange(len(distance))
                         y = np.array(distance)
-                        plot = self.labelGraphValidation.plot(x=x, y=y)
+                        plot = self.GraphValidation.plot(x=x, y=y)
 
                          # Set the pen
                         plot.setPen(pg.mkPen('g', width=2))
                         
-                        self.labelGraphValidation.setXRange(0, len(distance), padding=0)
-                        self.labelGraphValidation.getPlotItem().setLabels( left='Distance moved per frame (mm)', bottom='Frame')
+                        self.GraphValidation.setXRange(0, len(distance), padding=0)
+                        self.GraphValidation.getPlotItem().setLabels( left='Distance moved per frame (mm)', bottom='Frame')
             
                    
 

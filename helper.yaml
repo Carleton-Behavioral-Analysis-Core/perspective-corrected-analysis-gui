@@ -1,7 +1,6 @@
 PartsOfInterest: []
 ValidationVideoSettings:
-  FPS: 30.0
+  FPS: 30
   Frame: 0
-  PlayBackSpeed: 1.0
-  TotalFrames: 18175
-
+  PlayBackSpeed: 1
+  TotalFrames: 1
