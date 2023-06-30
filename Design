@@ -34,7 +34,7 @@ def openYaml(rewrite=True):
     # if True:
         with open('config.yaml', 'r') as file:
             info = yaml.safe_load(file)
-            # print(len(info))
+            # print("past safe load")
             if len(info) != 12:
                 x = 1/0 
     except:
@@ -115,18 +115,25 @@ class pandasModel(QAbstractTableModel):
             return self._data.columns[col]
         return None
 
-def show_popup():
-        msg = QtWidgets.QMessageBox()
-        msg.setWindowTitle("Confirmation")
-        msg.setText("Are you sure you want to set these points for all videos?")
-        msg.setIcon(QtWidgets.QMessageBox.warning)
-        msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-        msg.setDefaultButton(QtWidgets.QMessageBox.No)
-        # msg.buttonClicked.connect(popup_button_clicked)
+def SetForAllVideos_popup():
+    """SHows a warning for setting the points for all the videos and makes sure choice is confirmed"""
+    msg = QtWidgets.QMessageBox()
+    msg.setWindowTitle("Confirmation")
+    msg.setText("Are you sure you want to set these points for all videos?")
+    msg.setInformativeText('If you proceed all other points will be erased and replaced with the currently choosen points')
+    msg.setIcon(QMessageBox.Warning)
+    msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+    msg.setDefaultButton(QtWidgets.QMessageBox.No)
+    # msg = QMessageBox()
+    # msg.setIcon(QMessageBox.Critical)
+    # msg.setText("Error")
+    
+    # msg.setWindowTitle("Error")
+    # msg.buttonClicked.connect(popup_button_clicked())
 
-        x = msg.exec_()
-        print(x)
-        return x
+    x = msg.exec_()
+    print(x)
+    return x
 
 def popup_button_clicked(i):
     # print(i.text(), "click")
@@ -351,6 +358,7 @@ class MyTabWidget(QWidget):
         self.title =""
         self.cornerImageDim = []
         self.vidPlayingVal = ""
+        self.videoTrackerIndex = 0
         info = openYaml()
         helper = openHelperYaml()
 
@@ -1468,7 +1476,7 @@ class MyTabWidget(QWidget):
         
     def saveToAllCorner(self):
         """Takes the points of the currently selected image and will save the points to all the others"""
-        if str(show_popup()) == "16384":
+        if str(SetForAllVideos_popup()) == "16384":
             # print("16384 pass")
             info = openYaml()
             for i in range(len(info["videoPaths"])):
@@ -2168,6 +2176,75 @@ class MyTabWidget(QWidget):
         self.FieldTimeValidation.setPlaceholderText(str(helper["ValidationVideoSettings"]["Frame"]))
         
         self.sliderVal.setSliderPosition(helper["ValidationVideoSettings"]["Frame"])
+        # try:
+            # self.GraphValidation.plot([helper["ValidationVideoSettings"]["Frame"]], [-1], pen='black', symbol='o')
+            # print(self.GraphValidation.plotItem.listDataItems().index(0))
+            # x_data, y_data = self.GraphValidation.listDataItems()[0].getData()
+            # print(y_data)
+            # # point = self.GraphValidation.plot([helper["ValidationVideoSettings"]["Frame"] -1], [-1], pen='r', symbol='o')
+            # self.GraphValidation.removeItem([helper["ValidationVideoSettings"]["Frame"] -1], [-1])
+            # # point[0].remove()
+            
+
+            # Not working
+            # x_data, y_data = self.GraphValidation.listDataItems()[0].getData()
+
+            # # Find the index of the point to remove
+            # index_to_remove = None
+            # for i, (x, y) in enumerate(zip(x_data, y_data)):
+                
+            #     if  y < 0:
+            #         index_to_remove = i
+            #         print(i)
+            #         break
+
+            # # Remove the point from the data
+            # if index_to_remove is not None:
+            #     x_data = np.delete(x_data, index_to_remove)
+            #     y_data = np.delete(y_data, index_to_remove)
+            #     print(index_to_remove)
+
+            # # Update the plot with the modified data
+            # self.GraphValidation.listDataItems()[0].setData(x_data, y_data)
+
+
+         
+
+
+            # x_data, y_data = self.GraphValidation.listDataItems()[0].getData()
+
+            # # Find the index of the point to remove
+            # index_to_remove = None
+            # for i, (x, y) in enumerate(zip(x_data, y_data)):
+                
+            #     if  y < 0:
+            #         index_to_remove = i
+            #         print(i)
+            #         break
+
+            # # Remove the point from the data
+            # if index_to_remove is not None:
+            #     x_data = np.delete(x_data, index_to_remove)
+            #     y_data = np.delete(y_data, index_to_remove)
+            #     print(index_to_remove)
+
+            # Update the plot with the modified data
+            # self.GraphValidation.listDataItems()[0].setData([1,2,3,4,5], [2,34,5,6,7])
+            # plot_widget.removeItem(self.videoTrackerIndex)
+            
+
+            
+        # except:
+        #     print("failekjkg")
+        
+
+
+        # Keeps track of currentlocation but currently won't delete the last point so kinda useless
+        # self.GraphValidation.plot([helper["ValidationVideoSettings"]["Frame"]], [-1], pen='r', symbol='o')
+        # self.videoTrackerIndex = helper["ValidationVideoSettings"]["Frame"]
+
+
+
         # helper["ValidationVideoSettings"]["Frame"] = helper["ValidationVideoSettings"]["Frame"] + 1 #Doesn't work as anticipated
         if helper["ValidationVideoSettings"]["PlayBackSpeed"] != float(self.PlayBackSpeedValidationMenu.currentText()):
             helper["ValidationVideoSettings"]["PlayBackSpeed"] = float(self.PlayBackSpeedValidationMenu.currentText())#Doesn't seem to change speed when playing, when done resets video
@@ -2307,8 +2384,23 @@ class MyTabWidget(QWidget):
                             
                        
                 if self.ComboVidValidationMenu.currentText() == info["videoPaths"][i]["title"]:
-                
+                    likelihood = transformed_df.xs('likelihood', level='coords', axis=1)
+                    transformed_df = transformed_df.where(likelihood > info["uncertainty"]) #Will leave gap for distance measurment and wil assume false for inzone
                     centroid = transformed_df.loc[:, pd.IndexSlice[:, features]].groupby(level='coords', axis=1).mean()
+
+
+                    # print(centroid)
+                    # listdf = list(centroid)
+                    # # print(listdf)
+                    # lowCertainty = []
+                    # for i in range(len(listdf)): 
+                        
+                    #     if i == 0 or lowCertainty[len(lowCertainty)-1] != listdf[i][1]:
+                    #         lowCertainty.append(listdf[i][1])
+                    #         print(lowCertainty[len(lowCertainty)-1])
+                            
+                    #     else:
+                    #         pass
                     
                   # When is the mouse inside?
                     center_zone = plt.Polygon(zone_points, alpha=0.5)
@@ -2332,6 +2424,7 @@ class MyTabWidget(QWidget):
                     try:
                         
                         self.GraphValidation.getPlotItem().clearPlots()
+                     
                         
                     except:
                         pass
@@ -2342,6 +2435,7 @@ class MyTabWidget(QWidget):
                         # self.GraphValidation.re
 
                         # Generate some example data
+                        print(is_in_center)
                         x = np.arange(len(is_in_center))
                         y = np.array(is_in_center)
 
