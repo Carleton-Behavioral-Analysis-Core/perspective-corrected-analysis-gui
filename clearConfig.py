@@ -15,7 +15,7 @@ with open('config.yaml', 'w') as file:
     yaml.dump(info,file,default_flow_style=False) 
 
 
-helper= {"ValidationVideoSettings":{"PlayBackSpeed":1,"Frame":0,"FPS":30,"TotalFrames":1},"PartsOfInterest":[]}
+helper=  {"ValidationVideoSettings":{"PlayBackSpeed":1,"Frame":0,"FPS":30,"TotalFrames":1},"PartsOfInterest":[], "points" : []}
 print(len(helper))
 with open('helper.yaml', 'w') as file:
     yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper) 

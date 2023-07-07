@@ -23,53 +23,75 @@ from PyQt5.QtWidgets import QMessageBox
 from PIL import Image
 from PIL import ImageDraw
 
+
 class NoAliasDumper(yaml.SafeDumper):
     """Prevents yaml from using id to save space (would potentially mess up certain functions)"""
+
     def ignore_aliases(self, data):
         return True
-    
+
+
 def openYaml(rewrite=True):
     """Opens yaml file if file is messed with resets it to generic if not returns yaml info"""
     try:
-    # if True:
-        with open('config.yaml', 'r') as file:
+        # if True:
+        with open("config.yaml", "r") as file:
             info = yaml.safe_load(file)
             # print("past safe load")
             if len(info) != 12:
-                x = 1/0 
+                x = 1 / 0
     except:
-    # if False:
+        # if False:
         if rewrite:
             print("rewrite")
-            print(1/0)
-            info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "zone":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":"","numFeatures":"2",
-                "data":
-                {' Videos':[],
-                    'Feature 1': [],
-                    'Feature 2': []},
-                "uncertainty":0.6}
-            with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+
+            info = {
+                "folderPath": "",
+                "DLCfolderPath": "",
+                "videoPaths": [],
+                "DLCvideoPaths": [],
+                "zone": [],
+                "BoxHeight": "",
+                "BoxWidth": "",
+                "Name": "",
+                "Path": "",
+                "numFeatures": "2",
+                "data": {" Videos": [], "Feature 1": [], "Feature 2": []},
+                "uncertainty": 0.6,
+            }
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
     return info
 
+
 def openHelperYaml(rewrite=True):
-    """Opens yaml file if file is messed with resets it to generic if not returns yaml info"""
+    """Opens yaml file if file is messed with resets it to generic if not returns yaml (acts like a support file)"""
     try:
-    # if True:
-        with open('helper.yaml', 'r') as file:
+        # if True:
+        with open("helper.yaml", "r") as file:
             helper = yaml.safe_load(file)
-            
-            if len(helper) != 2:
+
+            if len(helper) != 3:
                 print(len(helper))
-                x = 1/0
+                x = 1 / 0
     except:
-    # if False:
+        # if False:
         if rewrite:
             print("rewrite helper")
-            helper= {"ValidationVideoSettings":{"PlayBackSpeed":1,"Frame":0,"FPS":30,"TotalFrames":1},"PartsOfInterest":[]}
-            with open('helper.yaml', 'w') as file:
-                yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
+            helper = {
+                "ValidationVideoSettings": {
+                    "PlayBackSpeed": 1,
+                    "Frame": 0,
+                    "FPS": 30,
+                    "TotalFrames": 1,
+                },
+                "PartsOfInterest": [],
+                "points": [],
+            }
+            with open("helper.yaml", "w") as file:
+                yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
     return helper
+
 
 def transform_dataframe_to_perspective(df, T):
     """Transform the coordinate dataframes to be in the box's frame of reference"""
@@ -92,12 +114,14 @@ def transform_dataframe_to_perspective(df, T):
     df.loc[:, pd.IndexSlice[:, :, "y"]] = ty
     return df
 
+
 class pandasModel(QAbstractTableModel):
-# https://learndataanalysis.org/display-pandas-dataframe-with-pyqt5-qtableview-widget/ Creatng data frame table
+    """Allows a visual display of a dictonary to be seen"""
+    # https://learndataanalysis.org/display-pandas-dataframe-with-pyqt5-qtableview-widget/ Creatng data frame table
     def __init__(self, data):
         QAbstractTableModel.__init__(self)
         self._data = data
-        
+
     def rowCount(self, parent=None):
         return self._data.shape[0]
 
@@ -115,50 +139,81 @@ class pandasModel(QAbstractTableModel):
             return self._data.columns[col]
         return None
 
+
 def SetForAllVideos_popup():
     """SHows a warning for setting the points for all the videos and makes sure choice is confirmed"""
     msg = QtWidgets.QMessageBox()
     msg.setWindowTitle("Confirmation")
     msg.setText("Are you sure you want to set these points for all videos?")
-    msg.setInformativeText('If you proceed all other points will be erased and replaced with the currently choosen points')
+    msg.setInformativeText(
+        "If you proceed all other points will be erased and replaced with the currently choosen points"
+    )
     msg.setIcon(QMessageBox.Warning)
     msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
     msg.setDefaultButton(QtWidgets.QMessageBox.No)
     # msg = QMessageBox()
     # msg.setIcon(QMessageBox.Critical)
     # msg.setText("Error")
-    
+
     # msg.setWindowTitle("Error")
     # msg.buttonClicked.connect(popup_button_clicked())
 
     x = msg.exec_()
-    print(x)
+    # print(x)
+    return x
+
+def ClearConfig_popup():
+    """SHows a warning for setting the points for all the videos and makes sure choice is confirmed"""
+    msg = QtWidgets.QMessageBox()
+    msg.setWindowTitle("Confirmation")
+    msg.setText("Proceeding with this action may erase saved data")
+    msg.setInformativeText(
+        "If you proceed the previouslty saved data may be erased"
+    )
+    msg.setIcon(QMessageBox.Warning)
+    msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+    msg.setDefaultButton(QtWidgets.QMessageBox.No)
+    # msg = QMessageBox()
+    # msg.setIcon(QMessageBox.Critical)
+    # msg.setText("Error")
+
+    # msg.setWindowTitle("Error")
+    # msg.buttonClicked.connect(popup_button_clicked())
+
+    x = msg.exec_()
+    # print(x)
     return x
 
 def popup_button_clicked(i):
     # print(i.text(), "click")
     return i.text()
 
+
 def ValidationWarning_popup():
-        """How to get videos to reset instructions"""
-        msg = QtWidgets.QMessageBox()
-        msg.setWindowTitle("Confirmation")
-        msg.setText("When changing videos hit stop then play to reset video")
-        msg.setIcon(QtWidgets.QMessageBox.warning)
-        msg.exec_()
+    """How to get videos to reset instructions"""
+    msg = QtWidgets.QMessageBox()
+    msg.setWindowTitle("Confirmation")
+    msg.setText("When changing videos hit stop then play to reset video")
+    msg.setIcon(QtWidgets.QMessageBox.warning)
+    msg.exec_()
+
 
 def ValidationSlider_popup():
-        """How to get videos to reset instructions"""
-        msg = QtWidgets.QMessageBox()
-        msg.setWindowTitle("Confirmation")
-        msg.setText("To change slider for other videos changing video in dropdown,\nthen hit stop, then play and then move slider")
-        msg.setIcon(QtWidgets.QMessageBox.warning)  
-        msg.setStandardButtons(QtWidgets.QMessageBox.Okay )
-        msg.setDefaultButton(QtWidgets.QMessageBox.Okay)
-        msg.exec_()  
+    """How to get videos to reset instructions (not used)"""
+    msg = QtWidgets.QMessageBox()
+    msg.setWindowTitle("Confirmation")
+    msg.setText(
+        "To change slider for other videos changing video in dropdown,\nthen hit stop, then play and then move slider"
+    )
+    msg.setIcon(QtWidgets.QMessageBox.warning)
+    msg.setStandardButtons(QtWidgets.QMessageBox.Okay)
+    msg.setDefaultButton(QtWidgets.QMessageBox.Okay)
+    msg.exec_()
+
 
 # Creating the main window
 class App(QMainWindow):
+    """THe main window"""
     def __init__(self):
         super().__init__()
         self.title = "Andre, Argel & Aidan's amazingly awesome array alignment"
@@ -171,18 +226,21 @@ class App(QMainWindow):
 
         self.tab_widget = MyTabWidget(self)
         self.setCentralWidget(self.tab_widget)
-  
+
         self.show()
+
 
 # creates video thread
 class ThreadOpenCV(QThread):
+    """The thread for playing the video"""
     # https://stackoverflow.com/questions/67488022/how-do-i-run-a-video-in-a-pyqt-container
     changePixmap = pyqtSignal(QImage)
 
     def __init__(self, source):
+        """Initializes"""
         super().__init__()
         info = openYaml()
-    
+
         for i in range(len(info["videoPaths"])):
             if source == info["videoPaths"][i]["title"]:
                 self.index = i
@@ -191,149 +249,119 @@ class ThreadOpenCV(QThread):
         self.source = str(PROJECT_DIR / info["videoPaths"][self.index]["DLC.mp4"])
         self.running = True
         self.count = 0
-        
+
     def run(self):
-        # print('start')
-        # try:
-        #     self.count
-        # except:
-        info = openYaml() 
+        """Plays the video"""
+        info = openYaml()
         helper = openHelperYaml()
         cap = cv2.VideoCapture(self.source)
         fps = float(cap.get(cv2.CAP_PROP_FPS))
         video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        
+
         self.running = True
-        
+
         while self.running:
+            # Sets the frame
             if helper["ValidationVideoSettings"]["Frame"] <= video_length:
-                cap.set(cv2.CAP_PROP_POS_FRAMES, helper["ValidationVideoSettings"]["Frame"])
+                cap.set(
+                    cv2.CAP_PROP_POS_FRAMES, helper["ValidationVideoSettings"]["Frame"]
+                )
             else:
                 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            
+
             ret, frame = cap.read()
-            
-            # cap.set(cv2.CAP_PROP_POS_FRAMES,helper["ValidationVideoSettings"]["Frame"]) #Doesn't work as anticipated
 
             if ret:
-                
-
                 if len(info["videoPaths"][self.index]["points"]) == 4:
                     registration_points = np.array(
-                    info["videoPaths"][self.index]["points"]
+                        info["videoPaths"][self.index]["points"]
                     ).astype(np.float32)
 
-             
-                    if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
-                        wid, hei = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
+                    if (
+                        str(info["BoxWidth"]).isnumeric()
+                        and str(info["BoxHeight"]).isnumeric()
+                    ):
+                        wid, hei = int(info["BoxWidth"]), int(
+                            info["BoxHeight"]
+                        )  # in mm
                     else:
-                        wid, hei = 500 , 500
-                    schema = np.array([
-                        [0, 0],
-                        [wid, 0],
-                        [wid, hei],
-                        [0, hei]
-                    ]).astype(np.float32)
+                        wid, hei = 500, 500
+                    schema = np.array([[0, 0], [wid, 0], [wid, hei], [0, hei]]).astype(
+                        np.float32
+                    )
 
-                    homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
-                
-                    frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
-                    
-                # Draws shape
-                # if len(info["zone"]) == 4:
-                #     zone_points = np.array([
-                #     info["zone"]
-                #     ])
-                # else:
-                #     zone_points = np.array([
-                #         [100, 100],
-                #         [400, 100],
-                #         [400, 400],
-                #         [100, 400]
-                #     ])
-                # center_zone = plt.Polygon(zone_points, alpha=0.5)
-                
-                # frame.add_patch(center_zone)
+                    homogeneous_transform = cv2.getPerspectiveTransform(
+                        registration_points, schema
+                    )
 
-                
+                    frame = cv2.warpPerspective(
+                        frame, homogeneous_transform, (wid, hei)
+                    )
 
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-             
-                
 
                 h, w, ch = frame.shape
-                bytes_per_line = ch * w   # PEP8: `lower_case_names` for variables
-                
+                bytes_per_line = ch * w  # PEP8: `lower_case_names` for variables
+
                 image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
 
                 # Trying to draw shape
-                
-            
+
                 if len(info["zone"]) == 4:
-                    # print("1")
                     painter = QPainter(image)
                     pixmap = QPixmap(image)
-                    painter.drawPixmap(image.height(),image.width(), pixmap)
-                    brush = QBrush(QColor(0, 0, 150,127))
-                    # color = 
-                    # brush.setColor(color)
-                   
-                    
-                    # x,y= [],[]
-                    
-                    # for i in range(len(info["zone"])):
-                    #     x.append(info["zone"][i][0])
-                    #     y.append(info["zone"][i][1])
-                    # x = map(int, x)
-                    # y = map(int, y)
-                    # # polygon = QPolygon([(x[0], y[0]), (x[1], y[1]), (x[2], y[2]), (x[0], y[2])])
+                    painter.drawPixmap(image.height(), image.width(), pixmap)
+                    brush = QBrush(QColor(0, 0, 150, 127))
 
-                    # # points = QPolygon([QPoint(info["zone"][0][0],info["zone"][0][1]),QPoint(info["zone"][1][0],info["zone"][1][1]),QPoint(info["zone"][2][0],info["zone"][2][1]),QPoint(info["zone"][3][0],info["zone"][3][1])])
-                    # # painter.drawPolygon(polygon , fill=(QColor(0, 255, 255), 0.4)) 
-                    points = QPolygon([QPoint(info["zone"][0][0],info["zone"][0][1]),QPoint(info["zone"][1][0],info["zone"][1][1]),QPoint(info["zone"][2][0],info["zone"][2][1]),QPoint(info["zone"][3][0],info["zone"][3][1])])
-                    
+                    points = QPolygon(
+                        [
+                            QPoint(info["zone"][0][0], info["zone"][0][1]),
+                            QPoint(info["zone"][1][0], info["zone"][1][1]),
+                            QPoint(info["zone"][2][0], info["zone"][2][1]),
+                            QPoint(info["zone"][3][0], info["zone"][3][1]),
+                        ]
+                    )
+
                     painter.setBrush(brush)
-                    painter.drawPolygon(points) 
+                    painter.drawPolygon(points)
                     del painter
                     del brush
                 else:
-                    # print("2")
                     pass
-                    # points = QPointF([QPointF(50,50),QPointF(100,50),QPointF(100,100),QPointF(50,100)])
-                
-               
-                # painter.drawPolygon(points)   
-                # del painter
-                # del pen
 
                 image = image.scaled(640, 480, Qt.KeepAspectRatio)
-                # print(((1/fps)/(helper["ValidationVideoSettings"]["PlayBackSpeed"])))
-                x = (1/fps)/(helper["ValidationVideoSettings"]["PlayBackSpeed"])
+                x = (1 / fps) / (helper["ValidationVideoSettings"]["PlayBackSpeed"])
                 if 0.02 < x:
                     time.sleep(x - 0.02)
-                # time.sleep(((1/fps)/(helper["ValidationVideoSettings"]["PlayBackSpeed"])))
-                # print(time.time())
                 helper["ValidationVideoSettings"]["FPS"] = fps
-                helper["ValidationVideoSettings"]["Frame"] = helper["ValidationVideoSettings"]["Frame"] + 1
+                helper["ValidationVideoSettings"]["Frame"] = (
+                    helper["ValidationVideoSettings"]["Frame"] + 1
+                )
                 helper["ValidationVideoSettings"]["TotalFrames"] = video_length
 
-                # print(helper["ValidationVideoSettings"]["Frame"])
-                with open('helper.yaml', 'w') as file:
-                    yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
-
-                         
-
-                self.changePixmap.emit(image)
+                with open("helper.yaml", "w") as file:
+                    yaml.dump(
+                        helper, file, default_flow_style=False, Dumper=NoAliasDumper
+                    )
                 
-            
+                self.changePixmap.emit(image)
+        try:
+            # Should I be deleting the helper info after every open?
+            del helper
+            del info
+        except:
+            pass
         cap.release()
         # print('stop')
-        
+
     def stop(self):
+        """sets self.running to false which stops video"""
         self.running = False
+
 
 # Creating tab widgets
 class MyTabWidget(QWidget):
+    """The tab that is set on the main window"""
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.layout = QVBoxLayout(self)
@@ -347,26 +375,26 @@ class MyTabWidget(QWidget):
         self.tabLoad = QWidget()
         self.tabFolderDisplay = QWidget()
         self.tabPointSelection = QWidget()
-        self.tabProcess = QWidget()
         self.tabScoring = QWidget()
         self.tabValidation = QWidget()
         self.tabRegisterCorners = QWidget()
         self.tabCreateSchema = QWidget()
-        
+
         # Dont think I need most of these
         self.path = ""
-        self.title =""
+        self.title = ""
         self.cornerImageDim = []
         self.vidPlayingVal = ""
         self.videoTrackerIndex = 0
         info = openYaml()
         helper = openHelperYaml()
 
-        # Add tabs
+        # Add tabs (only start with this one)
         self.startTab.addTab(self.tabCreateOrLoad, "Load/Create")
-        
+
         # Styles
-        self.startTab.setStyleSheet("""
+        self.startTab.setStyleSheet(
+            """
                         QTabBar::tab {
                             background-color: silver;
                             color: black;
@@ -375,46 +403,45 @@ class MyTabWidget(QWidget):
                             background-color: white;
                             color: black; 
                             }
-                            """)
+                            """
+        )
 
- 
         # load or create tab
         self.tabCreateOrLoad.layout = QHBoxLayout()
 
-
         self.btnCreateProj = QPushButton("Create Project")
         self.btnCreateProj.clicked.connect(self.Create_DLC_Project)
-        
-        
-        self.btnCreateProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
-        
+
+        self.btnCreateProj.setStyleSheet(
+            "QPushButton {background-color: lime; color: black;}"
+        )
 
         self.btnOpenProj = QPushButton("Load Project")
         self.btnOpenProj.clicked.connect(self.Open_DLC_Project)
-        self.btnOpenProj.setStyleSheet('QPushButton {background-color: lime; color: black;}')
+        self.btnOpenProj.setStyleSheet(
+            "QPushButton {background-color: lime; color: black;}"
+        )
 
         self.tabCreateOrLoad.layout.addWidget(self.btnCreateProj)
         self.tabCreateOrLoad.layout.addWidget(self.btnOpenProj)
 
         self.tabCreateOrLoad.setLayout(self.tabCreateOrLoad.layout)
 
-
-        # Create taab
+        # Create tab
         self.tabCreate.layout = QGridLayout()
 
-        
         self.labelName = QLabel("Project Name:")
-        
+
         self.projNameField = QLineEdit()
         self.projNameField.setPlaceholderText("Enter the Project Name")
-        self.projNameField.returnPressed.connect(self.StoreProjName) 
+        self.projNameField.returnPressed.connect(self.StoreProjName)
 
         self.labelProjPath = QLabel("Project Path:")
 
         self.projLocField = QLineEdit()
         self.projLocField.setPlaceholderText("Enter the project path")
-        self.projLocField.returnPressed.connect(self.StoreProjLocation) 
-        
+        self.projLocField.returnPressed.connect(self.StoreProjLocation)
+
         self.btnProjPath = QPushButton("Project Path")
         self.btnProjPath.clicked.connect(self.PathSearch)
 
@@ -423,27 +450,25 @@ class MyTabWidget(QWidget):
 
         self.createhelplabel = QLabel("")
 
-        self.tabCreate.layout.addWidget(self.labelName,0,0,1,1)   
-        self.tabCreate.layout.addWidget(self.projNameField,0,1,1,3)
-        self.tabCreate.layout.addWidget(self.labelProjPath,1,0,1,1)
-        self.tabCreate.layout.addWidget(self.projLocField,1,1,1,2)   
-        self.tabCreate.layout.addWidget(self.btnProjPath,1,3,1,1)
-        self.tabCreate.layout.addWidget(self.btnCreate,2,0,1,4)
-        self.tabCreate.layout.addWidget(self.createhelplabel,3,0,1,4)
+        self.tabCreate.layout.addWidget(self.labelName, 0, 0, 1, 1)
+        self.tabCreate.layout.addWidget(self.projNameField, 0, 1, 1, 3)
+        self.tabCreate.layout.addWidget(self.labelProjPath, 1, 0, 1, 1)
+        self.tabCreate.layout.addWidget(self.projLocField, 1, 1, 1, 2)
+        self.tabCreate.layout.addWidget(self.btnProjPath, 1, 3, 1, 1)
+        self.tabCreate.layout.addWidget(self.btnCreate, 2, 0, 1, 4)
+        self.tabCreate.layout.addWidget(self.createhelplabel, 3, 0, 1, 4)
 
-        self.tabCreate.setLayout(self.tabCreate.layout) 
-        
+        self.tabCreate.setLayout(self.tabCreate.layout)
 
         # Load tab
         self.tabLoad.layout = QGridLayout()
-
 
         self.labelProjPathv2 = QLabel("Project Path:")
 
         self.projLocFieldv2 = QLineEdit()
         self.projLocFieldv2.setPlaceholderText("Enter the project path")
-        self.projLocFieldv2.returnPressed.connect(self.StoreProjLocationv2) 
-        
+        self.projLocFieldv2.returnPressed.connect(self.StoreProjLocationv2)
+
         self.btnProjPathv2 = QPushButton("Project Path")
         self.btnProjPathv2.clicked.connect(self.PathSearch)
 
@@ -452,40 +477,40 @@ class MyTabWidget(QWidget):
 
         self.loadhelplabel = QLabel("")
 
-        self.tabLoad.layout.addWidget(self.labelProjPathv2,0,0,1,1)
-        self.tabLoad.layout.addWidget(self.projLocFieldv2,0,1,1,2)   
-        self.tabLoad.layout.addWidget(self.btnProjPathv2,0,3,1,1)
-        self.tabLoad.layout.addWidget(self.btnLoad,1,0,1,4)
-        self.tabLoad.layout.addWidget(self.loadhelplabel,2,0,1,4)
+        self.tabLoad.layout.addWidget(self.labelProjPathv2, 0, 0, 1, 1)
+        self.tabLoad.layout.addWidget(self.projLocFieldv2, 0, 1, 1, 2)
+        self.tabLoad.layout.addWidget(self.btnProjPathv2, 0, 3, 1, 1)
+        self.tabLoad.layout.addWidget(self.btnLoad, 1, 0, 1, 4)
+        self.tabLoad.layout.addWidget(self.loadhelplabel, 2, 0, 1, 4)
 
-        self.tabLoad.setLayout(self.tabLoad.layout) 
-
+        self.tabLoad.setLayout(self.tabLoad.layout)
 
         # Folder Display tab
         self.tabFolderDisplay.layout = QGridLayout()
 
-
         self.labelVideoFolder = QLabel("Video Folder")
-        
+
         self.searchField = QLineEdit()
         if len(info["folderPath"]) != 0 and os.path.exists(str(info["folderPath"])):
             self.searchField.setPlaceholderText(str(info["folderPath"]))
         else:
             self.searchField.setPlaceholderText("Enter Folder Path")
-        self.searchField.returnPressed.connect(self.FolderSearchField) 
-# Folder search function may have to be changed maybe to something involving yaml for opening folder (not new)
-        
+        self.searchField.returnPressed.connect(self.FolderSearchField)
+        # Folder search function may have to be changed maybe to something involving yaml for opening folder (not new)
+
         self.btnSearchVideoFolder = QPushButton("OPEN")
         self.btnSearchVideoFolder.clicked.connect(self.FolderSearch)
 
         self.labelDLCVideoFolder = QLabel("DeepLabCut Analysis Folder")
-       
+
         self.searchFieldDLC = QLineEdit()
-        if len(info["DLCfolderPath"]) != 0 and os.path.exists(str(info["DLCfolderPath"])):
+        if len(info["DLCfolderPath"]) != 0 and os.path.exists(
+            str(info["DLCfolderPath"])
+        ):
             self.searchFieldDLC.setPlaceholderText(str(info["DLCfolderPath"]))
         else:
             self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
-        self.searchFieldDLC.returnPressed.connect(self.DLCFolderSearchField) 
+        self.searchFieldDLC.returnPressed.connect(self.DLCFolderSearchField)
 
         self.btnSearchVideoDLCFolder = QPushButton("OPEN")
         self.btnSearchVideoDLCFolder.clicked.connect(self.DLCFolderSearch)
@@ -493,14 +518,13 @@ class MyTabWidget(QWidget):
         self.labelVidToDLC = QLabel("Video to DLC Label Matching")
 
         self.listVideoFolders = QListWidget()
-        
+
         self.labelListVideoTitle = QLabel("Videos")
-       
+
         self.labelListDLCTitle = QLabel("DeepLabCut Files")
         # print((info["data"][" Videos"]))
         if len(info["data"][" Videos"]) != 0:
             self.listVideoFolders.addItems(info["data"][" Videos"])
-        
 
         self.listDLCVideoFolders = QListWidget()
         if len(info["DLCvideoPaths"]) != 0:
@@ -510,40 +534,52 @@ class MyTabWidget(QWidget):
         self.labelSpacer1 = QLabel("")
         self.labelSpacer2 = QLabel("")
 
-        self.tabFolderDisplay.layout.addWidget(self.labelVideoFolder,0,0,1,4, alignment=QtCore.Qt.AlignCenter)   
-        self.tabFolderDisplay.layout.addWidget(self.searchField,1,0,1,3)
-        self.tabFolderDisplay.layout.addWidget(self.btnSearchVideoFolder,1,3,1,1)
-        self.tabFolderDisplay.layout.addWidget(self.labelSpacer1,2,0,1,4, alignment=QtCore.Qt.AlignCenter) 
-        self.tabFolderDisplay.layout.addWidget(self.labelDLCVideoFolder,3,0,1,4, alignment=QtCore.Qt.AlignCenter)   
-        self.tabFolderDisplay.layout.addWidget(self.searchFieldDLC,4,0,1,3)
-        self.tabFolderDisplay.layout.addWidget(self.btnSearchVideoDLCFolder,4,3,1,1)
-        self.tabFolderDisplay.layout.addWidget(self.labelSpacer2,5,0,1,4, alignment=QtCore.Qt.AlignCenter) 
-        self.tabFolderDisplay.layout.addWidget(self.labelVidToDLC,6,0,1,4, alignment=QtCore.Qt.AlignCenter) 
-        self.tabFolderDisplay.layout.addWidget(self.labelListVideoTitle,7,0,1,2, alignment=QtCore.Qt.AlignCenter)
-        self.tabFolderDisplay.layout.addWidget(self.labelListDLCTitle,7,2,1,2, alignment=QtCore.Qt.AlignCenter)  
-        self.tabFolderDisplay.layout.addWidget(self.listVideoFolders,8,0,1,2)
-        self.tabFolderDisplay.layout.addWidget(self.listDLCVideoFolders,8,2,1,2)
+        self.tabFolderDisplay.layout.addWidget(
+            self.labelVideoFolder, 0, 0, 1, 4, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabFolderDisplay.layout.addWidget(self.searchField, 1, 0, 1, 3)
+        self.tabFolderDisplay.layout.addWidget(self.btnSearchVideoFolder, 1, 3, 1, 1)
+        self.tabFolderDisplay.layout.addWidget(
+            self.labelSpacer1, 2, 0, 1, 4, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabFolderDisplay.layout.addWidget(
+            self.labelDLCVideoFolder, 3, 0, 1, 4, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabFolderDisplay.layout.addWidget(self.searchFieldDLC, 4, 0, 1, 3)
+        self.tabFolderDisplay.layout.addWidget(self.btnSearchVideoDLCFolder, 4, 3, 1, 1)
+        self.tabFolderDisplay.layout.addWidget(
+            self.labelSpacer2, 5, 0, 1, 4, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabFolderDisplay.layout.addWidget(
+            self.labelVidToDLC, 6, 0, 1, 4, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabFolderDisplay.layout.addWidget(
+            self.labelListVideoTitle, 7, 0, 1, 2, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabFolderDisplay.layout.addWidget(
+            self.labelListDLCTitle, 7, 2, 1, 2, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabFolderDisplay.layout.addWidget(self.listVideoFolders, 8, 0, 1, 2)
+        self.tabFolderDisplay.layout.addWidget(self.listDLCVideoFolders, 8, 2, 1, 2)
 
         self.tabFolderDisplay.setLayout(self.tabFolderDisplay.layout)
 
-
-        
-        #Point selection tab 
+        # Point selection tab
         self.tabPointSelection.layout = QGridLayout()
-        
+
         self.labelBoxWidth = QLabel("Box Width [mm]:")
-        self.labelBoxWidth.setSizePolicy(30,10)
+        self.labelBoxWidth.setSizePolicy(30, 10)
         self.labelBoxWidth.setFixedHeight(10)
-        
+
         self.FieldBoxWidth = QLineEdit()
         if len(str(info["BoxWidth"])) != 0 and (str(info["BoxWidth"])).isnumeric():
             self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"]))
         else:
             self.FieldBoxWidth.setPlaceholderText("Box Width in mm")
-        self.FieldBoxWidth.returnPressed.connect(self.boxWidthSave) 
+        self.FieldBoxWidth.returnPressed.connect(self.boxWidthSave)
 
         self.labelBoxHeight = QLabel("Box Height [mm]:")
-        self.labelBoxHeight.setSizePolicy(30,10)
+        self.labelBoxHeight.setSizePolicy(30, 10)
         self.labelBoxHeight.setFixedHeight(10)
 
         self.FieldBoxHeight = QLineEdit()
@@ -551,7 +587,7 @@ class MyTabWidget(QWidget):
             self.FieldBoxHeight.setPlaceholderText(str(info["BoxHeight"]))
         else:
             self.FieldBoxHeight.setPlaceholderText("Box Height in mm")
-        self.FieldBoxHeight.returnPressed.connect(self.boxHeightSave) 
+        self.FieldBoxHeight.returnPressed.connect(self.boxHeightSave)
 
         self.btnCreateSchema = QPushButton("2. CREATE SCHEMA")
         self.btnCreateSchema.clicked.connect(self.toRegisterSchema)
@@ -570,51 +606,54 @@ class MyTabWidget(QWidget):
 
         self.labelImageAlt = QLabel("Altered Image Place Holder")
 
-
-        self.tabPointSelection.layout.addWidget(self.labelBoxWidth,0,0,1,1, alignment=QtCore.Qt.AlignRight)
-        self.tabPointSelection.layout.addWidget(self.labelBoxHeight,0,2,1,1, alignment=QtCore.Qt.AlignRight)      
-        self.tabPointSelection.layout.addWidget(self.FieldBoxWidth,0,1,1,1)
-        self.tabPointSelection.layout.addWidget(self.FieldBoxHeight,0,3,1,1)
-        self.tabPointSelection.layout.addWidget(self.btnCreateSchema,2,1,1,1)
-        self.tabPointSelection.layout.addWidget(self.btnRegisterCorners,2,0,1,1)
-        self.tabPointSelection.layout.addWidget(self.btnVisualizeRegistrations,2,2,1,1)
-        self.tabPointSelection.layout.addWidget(self.ComboVidMenu,2,3,1,1)
-        self.tabPointSelection.layout.addWidget(self.labelImageOri,3,0,1,2)
-        self.tabPointSelection.layout.addWidget(self.labelImageAlt,3,2,1,2)
+        self.tabPointSelection.layout.addWidget(
+            self.labelBoxWidth, 0, 0, 1, 1, alignment=QtCore.Qt.AlignRight
+        )
+        self.tabPointSelection.layout.addWidget(
+            self.labelBoxHeight, 0, 2, 1, 1, alignment=QtCore.Qt.AlignRight
+        )
+        self.tabPointSelection.layout.addWidget(self.FieldBoxWidth, 0, 1, 1, 1)
+        self.tabPointSelection.layout.addWidget(self.FieldBoxHeight, 0, 3, 1, 1)
+        self.tabPointSelection.layout.addWidget(self.btnCreateSchema, 2, 1, 1, 1)
+        self.tabPointSelection.layout.addWidget(self.btnRegisterCorners, 2, 0, 1, 1)
+        self.tabPointSelection.layout.addWidget(self.btnVisualizeRegistrations, 2, 2, 1, 1)
+        self.tabPointSelection.layout.addWidget(self.ComboVidMenu, 2, 3, 1, 1)
+        self.tabPointSelection.layout.addWidget(self.labelImageOri, 3, 0, 1, 2)
+        self.tabPointSelection.layout.addWidget(self.labelImageAlt, 3, 2, 1, 2)
 
         self.tabPointSelection.setLayout(self.tabPointSelection.layout)
-       
-
 
         # scoring tab start
         self.tabScoring.layout = QGridLayout()
 
-
         self.btnScoreVid = QPushButton("SCORE VIDEOS")
-        self.btnScoreVid.clicked.connect(self.inzone) #should be place holder but using it to test inzone
+        self.btnScoreVid.clicked.connect(
+            self.inzone
+        )  # should be place holder but using it to test inzone
 
         self.btnCreateVis = QPushButton("CREATE VISUALS")
         self.btnCreateVis.clicked.connect(self.placeHodlerBtn)
 
-        self.labeltitleVisualScoring = QLabel("Visualizations of Scoring Parameters and Results")
+        self.labeltitleVisualScoring = QLabel(
+            "Visualizations of Scoring Parameters and Results"
+        )
 
         self.labelImageAltScore = QLabel("Altered Image Place Holder")
 
-        self.tabScoring.layout.addWidget(self.btnScoreVid,0,0,1,2)
-        self.tabScoring.layout.addWidget(self.btnCreateVis,0,2,1,2)
-        self.tabScoring.layout.addWidget(self.labeltitleVisualScoring,1,0,1,4, alignment=QtCore.Qt.AlignCenter) 
-        self.tabScoring.layout.addWidget(self.labelImageAltScore,2,0,1,4) 
+        self.tabScoring.layout.addWidget(self.btnScoreVid, 0, 0, 1, 2)
+        self.tabScoring.layout.addWidget(self.btnCreateVis, 0, 2, 1, 2)
+        self.tabScoring.layout.addWidget(
+            self.labeltitleVisualScoring, 1, 0, 1, 4, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabScoring.layout.addWidget(self.labelImageAltScore, 2, 0, 1, 4)
 
         self.tabScoring.setLayout(self.tabScoring.layout)
-      
-
 
         # Validation tab
         self.tabValidation.layout = QGridLayout()
 
-
         self.labelVideo = QLabel()
-       
+
         self.labelValidationVideoHeading = QLabel("Video")
 
         self.labelValidationFeatureHeading = QLabel("cool")
@@ -622,84 +661,97 @@ class MyTabWidget(QWidget):
         self.listVideoFoldersValidation = QListWidget()
         if len(info["data"][" Videos"]) != 0:
             self.listVideoFoldersValidation.addItems(info["data"][" Videos"])
-        
+
         self.featuresDataDisplay = QTableView()
+        if len(info["data"][" Videos"]) >=3:
+            self.featuresDataDisplay.setMinimumHeight(115)
+        elif len(info["data"][" Videos"]) == 2:
+            self.featuresDataDisplay.setMinimumHeight(85)
+        elif len(info["data"][" Videos"]) == 1:
+            self.featuresDataDisplay.setMinimumHeight(55)
+        # self.featuresDataDisplay.setMaximumHeight(len(info["data"][" Videos"]) + 25)
         self.featuresDataDisplay.setModel(pandasModel(pd.DataFrame(info["data"])))
         self.featuresDataDisplay.resizeColumnsToContents()
         hheader = self.featuresDataDisplay.horizontalHeader()
         hheader.setSectionResizeMode(QHeaderView.Stretch)
         hheader.setStyleSheet("::section {background-color: grey; color: black;}")
-        
 
         # self.labelValidationTimeHeading = QLabel("Time (s)") #for time
         self.labelValidationTimeHeading = QLabel("Frame #")
 
         self.FieldTimeValidation = QLineEdit()
-        self.FieldTimeValidation.setPlaceholderText("Enter Time")
-        # SHouldnt be connected to thisjust for test
-        self.FieldTimeValidation.returnPressed.connect(self.FrameSet) 
+        self.FieldTimeValidation.setPlaceholderText("Enter Frame")
+        self.FieldTimeValidation.returnPressed.connect(self.FrameSet)
 
         self.ComboVidValidationMenu = QComboBox()
         self.ComboVidValidationMenu.addItems(info["data"][" Videos"])
 
         self.PlayBackSpeedValidationMenu = QComboBox()
-        self.PlayBackSpeedValidationMenu.addItems(["0.5","1","2","5","10","30"])
+        self.PlayBackSpeedValidationMenu.addItems(["0.5", "1", "2", "5", "10", "30"])
         self.PlayBackSpeedValidationMenu.setCurrentIndex(1)
-        
+
         self.labelVideoValidation = QLabel("Place Holder for Video")
+        self.labelVideoValidation.setScaledContents(True)  # allows video to chage size
 
         self.btnPlayVal = QPushButton("PLAY")
         self.btnPlayVal.clicked.connect(self.playVideo)
-        
 
         self.btnStopVal = QPushButton("STOP")
         self.btnStopVal.clicked.connect(self.stopVideo)
 
         self.GraphValidation = pg.PlotWidget()
 
-
         self.sliderVal = QSlider(Qt.Orientation.Horizontal, self)
         self.sliderVal.sliderReleased.connect(self.changeFrameSlider)
         self.sliderVal.setRange(0, 10)
 
         self.GraphValidationMenu = QComboBox()
-        self.GraphValidationMenu.addItems(["In zone","Distance"])
+        self.GraphValidationMenu.addItems(["In zone", "Distance"])
 
         self.GraphValidationLabelMenu = QLabel("Visualize metric")
 
         self.GraphTitleValidationLabel = QLabel("Graph")
-        
+
+        self.btnResetVal = QPushButton("Reset")
+        self.btnResetVal.clicked.connect(self.ResetValidation)
+
+        self.btnExportData = QPushButton("Export")
+        self.btnExportData.clicked.connect(self.ExportData)
+
         # self.slider = QSlider(Qt.Horizontal)
 
         # # Connect the sliderMoved signal to the set_position function
         # self.slider.sliderMoved.connect(self.placeHodlerBtn)
-        
-        
 
         # self.tabValidation.layout.addWidget(self.labelValidationVideoHeading,0,0,1,2)
         # self.tabValidation.layout.addWidget(self.labelValidationFeatureHeading,0,2,1,2)
-        # self.tabValidation.layout.addWidget(self.listVideoFoldersValidation,1,0,2,1) 
-        self.tabValidation.layout.addWidget(self.featuresDataDisplay,0,0,2,5) 
-        self.tabValidation.layout.addWidget(self.labelValidationTimeHeading,4,3,1,1, alignment=QtCore.Qt.AlignCenter)
-        self.tabValidation.layout.addWidget(self.FieldTimeValidation,5,3,1,1) 
-        self.tabValidation.layout.addWidget(self.ComboVidValidationMenu,4,4,1,1) 
-        self.tabValidation.layout.addWidget(self.PlayBackSpeedValidationMenu,5,4,1,1) 
-        self.tabValidation.layout.addWidget(self.labelVideoValidation,4,0,3,3)
-        self.tabValidation.layout.addWidget(self.btnPlayVal,6,3,1,1) 
-        self.tabValidation.layout.addWidget(self.btnStopVal,6,4,1,1) 
-        self.tabValidation.layout.addWidget(self.sliderVal,11,0,3,1)
-        self.tabValidation.layout.addWidget(self.GraphValidation,8,0,3,3)
-        self.tabValidation.layout.addWidget(self.GraphValidationMenu,7,4,1,1)
-        self.tabValidation.layout.addWidget(self.GraphValidationLabelMenu,7,3,1,1)
-        self.tabValidation.layout.addWidget(self.GraphTitleValidationLabel,7,0,1,3, alignment=QtCore.Qt.AlignCenter)
-
-
-        self.tabValidation.setLayout(self.tabValidation.layout) 
-
+        # self.tabValidation.layout.addWidget(self.listVideoFoldersValidation,1,0,2,1)
+        self.tabValidation.layout.addWidget(self.featuresDataDisplay, 0, 0, 3, 5)
+        self.tabValidation.layout.addWidget(
+            self.labelValidationTimeHeading, 5, 3, 1, 1, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabValidation.layout.addWidget(self.FieldTimeValidation, 6, 3, 1, 1)
+        self.tabValidation.layout.addWidget(self.ComboVidValidationMenu, 5, 4, 1, 1)
+        self.tabValidation.layout.addWidget(
+            self.PlayBackSpeedValidationMenu, 6, 4, 1, 1
+        )
+        self.tabValidation.layout.addWidget(self.labelVideoValidation, 5, 0, 3, 3)
+        self.tabValidation.layout.addWidget(self.btnPlayVal, 7, 3, 1, 1)
+        self.tabValidation.layout.addWidget(self.btnStopVal, 7, 4, 1, 1)
+        self.tabValidation.layout.addWidget(self.sliderVal, 12, 0, 3, 1)
+        self.tabValidation.layout.addWidget(self.GraphValidation, 9, 0, 3, 3)
+        self.tabValidation.layout.addWidget(self.GraphValidationMenu, 8, 4, 1, 1)
+        self.tabValidation.layout.addWidget(self.GraphValidationLabelMenu, 8, 3, 1, 1)
+        self.tabValidation.layout.addWidget(
+            self.GraphTitleValidationLabel, 8, 0, 1, 3, alignment=QtCore.Qt.AlignCenter
+        )
+        self.tabValidation.layout.addWidget(self.btnResetVal, 9, 3, 1, 1)
+    
+        self.tabValidation.layout.addWidget(self.btnExportData, 9, 4, 1, 1)
+        self.tabValidation.setLayout(self.tabValidation.layout)
 
         # register corners tab
         self.tabRegisterCorners.layout = QGridLayout()
-
 
         self.ComboVidMenuCorner = QComboBox()
         self.ComboVidMenuCorner.addItems(info["data"][" Videos"])
@@ -708,35 +760,37 @@ class MyTabWidget(QWidget):
         self.btnChangeFrame.clicked.connect(self.displayFrameCorner)
 
         self.labelImageOriCorner = QLabel("Original Image Place Holder")
-        self.labelImageOriCorner.mousePressEvent = lambda event: self.locationInImage(event)
+        self.labelImageOriCorner.mousePressEvent = lambda event: self.locationInImage(
+            event
+        )
 
-        self.labelInstructions = QLabel("Either enter x y coordinates seperated\nby single space or press on image")
-        # self.labelInstructions.setAlignment(alignment=QtCore.Qt.AlignCenter)
-
-        self.labelTopLeft= QLabel("Top Left:")
+        self.labelInstructions = QLabel(
+            "Either enter x y coordinates seperated\nby single space or press on image"
+        )
+  
+        self.labelTopLeft = QLabel("Top Left:")
+        self.labelTopLeft.setStyleSheet("QLabel {color: red;}")
         self.labelTopLeft.setMinimumWidth(70)
         self.FieldTL = QLineEdit()
         self.FieldTL.setPlaceholderText("Enter Cordinate in x y form")
-        # if len(info["BoxWidth"]) != 0 and (str(info["BoxWidth"])).isnumeric():
-        #     self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"]))
-        # else:
-        #     self.FieldBoxWidth.setPlaceholderText("Box Width in mm")
-        self.FieldTL.returnPressed.connect(self.FieldPointRegistrationTL) #Prob save x
+        self.FieldTL.returnPressed.connect(self.FieldPointRegistrationTL)  # Prob save x
 
-        self.labelTopRight= QLabel("Top Right:")
+        self.labelTopRight = QLabel("Top Right:")
+        self.labelTopRight.setStyleSheet("QLabel {color: magenta;}")
         self.labelTopRight.setMinimumWidth(70)
         self.FieldTR = QLineEdit()
         self.FieldTR.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldTR.returnPressed.connect(self.FieldPointRegistrationTR)
 
-        self.labelBottomRight= QLabel("Bottom Right:")
-        
+        self.labelBottomRight = QLabel("Bottom Right:")
+        self.labelBottomRight.setStyleSheet("QLabel {color: cyan;}")
         self.labelBottomRight.setMinimumWidth(70)
         self.FieldBR = QLineEdit()
         self.FieldBR.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldBR.returnPressed.connect(self.FieldPointRegistrationBR)
 
-        self.labelBottomLeft= QLabel("Bottom Left:")
+        self.labelBottomLeft = QLabel("Bottom Left:")
+        self.labelBottomLeft.setStyleSheet("QLabel {color: lime;}")
         self.labelBottomLeft.setMinimumWidth(70)
         self.FieldBL = QLineEdit()
         self.FieldBL.setPlaceholderText("Enter Cordinate in x y form")
@@ -748,35 +802,45 @@ class MyTabWidget(QWidget):
         self.btnClearPoints = QPushButton("Clear Points")
         self.btnClearPoints.clicked.connect(self.clearPointsCorner)
 
-        self.btnDoneCorner = QPushButton("Done")
-        self.btnDoneCorner.clicked.connect(self.DoneRegisterCornersToBack)
+        self.btnDoneCorner = QPushButton("Save Changes")
+        self.btnDoneCorner.clicked.connect(lambda: self.DoneRegisterCornersToBack(True))
 
-        self.labelImageAltCorner = QLabel("Altered Image Place Holder\nWill be visble when 4 points are selected")
+        self.btnNoSaveCorner = QPushButton("Don't Save changes")
+        self.btnNoSaveCorner.clicked.connect(
+            lambda: self.DoneRegisterCornersToBack(False)
+        ) 
 
+        self.labelImageAltCorner = QLabel(
+            "Altered Image Place Holder\nWill be visble when 4 points are selected"
+        )
 
-        self.labelImgBL= QLabel("")
-        self.labelImgBR= QLabel("")
-        self.labelImgTL= QLabel("")
-        self.labelImgTR= QLabel("")
+        self.labelImgBL = QLabel("")
+        self.labelImgBR = QLabel("")
+        self.labelImgTL = QLabel("")
+        self.labelImgTR = QLabel("")
 
         self.spacingLabel1 = QLabel("")
         self.spacingLabel2 = QLabel("")
-        
 
-       
-
-
-        # trying to get layout to look decent
+        # trying to get layout to look decent (creating sub layouts think it could have been done much easier)
         self.conjoinedLayout1 = QGridLayout()
-        self.conjoinedLayout1.addWidget(self.labelImgTL,0,0,1,1, alignment=QtCore.Qt.AlignLeft)
-        self.conjoinedLayout1.addWidget(self.labelImgTR,0,1,1,1, alignment=QtCore.Qt.AlignRight)
+        self.conjoinedLayout1.addWidget(
+            self.labelImgTL, 0, 0, 1, 1, alignment=QtCore.Qt.AlignLeft
+        )
+        self.conjoinedLayout1.addWidget(
+            self.labelImgTR, 0, 1, 1, 1, alignment=QtCore.Qt.AlignRight
+        )
 
         self.conjoinedLayout1Wid = QWidget()
         self.conjoinedLayout1Wid.setLayout(self.conjoinedLayout1)
 
         self.conjoinedLayout2 = QGridLayout()
-        self.conjoinedLayout2.addWidget(self.labelImgBL,0,0,1,1, alignment=QtCore.Qt.AlignLeft)
-        self.conjoinedLayout2.addWidget(self.labelImgBR,0,1,1,1, alignment=QtCore.Qt.AlignRight)
+        self.conjoinedLayout2.addWidget(
+            self.labelImgBL, 0, 0, 1, 1, alignment=QtCore.Qt.AlignLeft
+        )
+        self.conjoinedLayout2.addWidget(
+            self.labelImgBR, 0, 1, 1, 1, alignment=QtCore.Qt.AlignRight
+        )
 
         self.conjoinedLayout2Wid = QWidget()
         self.conjoinedLayout2Wid.setLayout(self.conjoinedLayout2)
@@ -791,76 +855,75 @@ class MyTabWidget(QWidget):
         self.ImageandLabelWidgt.setLayout(self.imageVerticalLayout)
 
         self.conjoinedLayout3 = QGridLayout()
-        self.conjoinedLayout3.addWidget(self.ComboVidMenuCorner,0,0,1,2)
-        self.conjoinedLayout3.addWidget(self.btnChangeFrame,0,2,1,1)
-        self.conjoinedLayout3.addWidget(self.spacingLabel1,1,0,1,3)
+        self.conjoinedLayout3.addWidget(self.ComboVidMenuCorner, 0, 0, 1, 2)
+        self.conjoinedLayout3.addWidget(self.btnChangeFrame, 0, 2, 1, 1)
+        self.conjoinedLayout3.addWidget(self.spacingLabel1, 1, 0, 1, 3)
 
         self.conjoinedLayout3Wid = QWidget()
         self.conjoinedLayout3Wid.setLayout(self.conjoinedLayout3)
 
         self.conjoinedLayoutTL = QGridLayout()
-        self.conjoinedLayoutTL.addWidget(self.labelTopLeft,0,0,1,2)
-        self.conjoinedLayoutTL.addWidget(self.FieldTL,0,2,1,1)
+        self.conjoinedLayoutTL.addWidget(self.labelTopLeft, 0, 0, 1, 2)
+        self.conjoinedLayoutTL.addWidget(self.FieldTL, 0, 2, 1, 1)
 
         self.conjoinedLayoutTLWid = QWidget()
         self.conjoinedLayoutTLWid.setLayout(self.conjoinedLayoutTL)
 
         self.conjoinedLayoutTR = QGridLayout()
-        self.conjoinedLayoutTR.addWidget(self.labelTopRight,0,0,1,2)
-        self.conjoinedLayoutTR.addWidget(self.FieldTR,0,2,1,1)
+        self.conjoinedLayoutTR.addWidget(self.labelTopRight, 0, 0, 1, 2)
+        self.conjoinedLayoutTR.addWidget(self.FieldTR, 0, 2, 1, 1)
 
         self.conjoinedLayoutTRWid = QWidget()
         self.conjoinedLayoutTRWid.setLayout(self.conjoinedLayoutTR)
 
         self.conjoinedLayoutBR = QGridLayout()
-        self.conjoinedLayoutBR.addWidget(self.labelBottomRight,0,0,1,2)
-        self.conjoinedLayoutBR.addWidget(self.FieldBR,0,2,1,1)
+        self.conjoinedLayoutBR.addWidget(self.labelBottomRight, 0, 0, 1, 2)
+        self.conjoinedLayoutBR.addWidget(self.FieldBR, 0, 2, 1, 1)
 
         self.conjoinedLayoutBRWid = QWidget()
         self.conjoinedLayoutBRWid.setLayout(self.conjoinedLayoutBR)
 
         self.conjoinedLayoutBL = QGridLayout()
-        self.conjoinedLayoutBL.addWidget(self.labelBottomLeft,0,0,1,2)
-        self.conjoinedLayoutBL.addWidget(self.FieldBL,0,2,1,1)
+        self.conjoinedLayoutBL.addWidget(self.labelBottomLeft, 0, 0, 1, 2)
+        self.conjoinedLayoutBL.addWidget(self.FieldBL, 0, 2, 1, 1)
 
         self.conjoinedLayoutBLWid = QWidget()
         self.conjoinedLayoutBLWid.setLayout(self.conjoinedLayoutBL)
 
         self.conjoinedLayoutBtn = QGridLayout()
-        self.conjoinedLayoutBtn.addWidget(self.spacingLabel2,0,0,1,3)
-        self.conjoinedLayoutBtn.addWidget(self.btnClearPoints,1,0,1,1)
-        self.conjoinedLayoutBtn.addWidget(self.btnSetForAll,1,1,1,2)
+        self.conjoinedLayoutBtn.addWidget(self.spacingLabel2, 0, 0, 1, 3)
+        self.conjoinedLayoutBtn.addWidget(self.btnClearPoints, 1, 0, 1, 1)
+        self.conjoinedLayoutBtn.addWidget(self.btnSetForAll, 1, 1, 1, 2)
+        self.conjoinedLayoutBtn.addWidget(self.btnNoSaveCorner, 2, 0, 1, 1)
+        self.conjoinedLayoutBtn.addWidget(self.btnDoneCorner, 2, 1, 1, 2)
 
         self.conjoinedLayoutBtnWid = QWidget()
         self.conjoinedLayoutBtnWid.setLayout(self.conjoinedLayoutBtn)
 
         self.labelsNBtnsVerticalLayout = QVBoxLayout()
         self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayout3Wid)
-        self.labelsNBtnsVerticalLayout.addWidget(self.labelInstructions, alignment=QtCore.Qt.AlignCenter)
+        self.labelsNBtnsVerticalLayout.addWidget(
+            self.labelInstructions, alignment=QtCore.Qt.AlignCenter
+        )
         self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutTLWid)
         self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutTRWid)
         self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutBRWid)
         self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutBLWid)
         self.labelsNBtnsVerticalLayout.addWidget(self.conjoinedLayoutBtnWid)
-        self.labelsNBtnsVerticalLayout.addWidget(self.btnDoneCorner)
+        # self.labelsNBtnsVerticalLayout.addWidget(self.btnDoneCorner)
 
-        
-
-
- 
         self.LabelsandButtonsWidget = QWidget()
         self.LabelsandButtonsWidget.setLayout(self.labelsNBtnsVerticalLayout)
 
         self.wholeCornerLayout = QHBoxLayout()
-        
+
         self.wholeCornerLayout.addWidget(self.ImageandLabelWidgt)
         self.wholeCornerLayout.addWidget(self.LabelsandButtonsWidget)
-        
-        
 
         self.tabRegisterCorners.setLayout(self.wholeCornerLayout)
 
-        # Create schema tab
+
+        # Create schema tab (dont think this tab is need keep until confirm)
         self.tabCreateSchema.layout = QGridLayout()
 
         self.ComboVidMenuSchema = QComboBox()
@@ -869,26 +932,30 @@ class MyTabWidget(QWidget):
         self.btnChangeFrameSchema = QPushButton("Change Frame")
         self.btnChangeFrameSchema.clicked.connect(self.displayAltFrameSchema)
 
-
-        self.labelInstructionsSchema = QLabel("Enter in the measured length in mm for\neach of the sides of the box")
+        self.labelInstructionsSchema = QLabel(
+            "Enter in the measured length in mm for\neach of the sides of the box"
+        )
         # self.labelInstructions.setAlignment(alignment=QtCore.Qt.AlignCenter)
 
-        self.labelTopSchema= QLabel("Top width in mm:")
+        self.labelTopSchema = QLabel("Top width in mm:")
         self.labelTopSchema.setMinimumWidth(70)
         self.FieldTSchema = QLineEdit()
         self.FieldTSchema.setPlaceholderText("Enter width in mm")
-        self.FieldTSchema.returnPressed.connect(self.FieldLengthRegistrationTop) #Prob save x
+        self.FieldTSchema.returnPressed.connect(
+            self.FieldLengthRegistrationTop
+        )  
 
-        self.labelRightSchema= QLabel("Right length in mm:")
+        self.labelRightSchema = QLabel("Right length in mm:")
         self.labelRightSchema.setMinimumWidth(70)
         self.FieldRSchema = QLineEdit()
         self.FieldRSchema.setPlaceholderText("Enter length in mm")
         self.FieldRSchema.returnPressed.connect(self.FieldLengthRegistrationRight)
-        
-        self.labelImageAltSchema = QLabel("Altered Image Place Holder")
 
-        self.labelBottomSchema= QLabel("Bottom length in mm:")
-        
+        self.labelImageAltSchema = QLabel("Altered Image Place Holder")
+        self.labelImageAltSchema.resizeEvent
+
+        self.labelBottomSchema = QLabel("Bottom length in mm:")
+
         self.labelBottomSchema.setMinimumWidth(70)
         self.FieldBSchema = QLineEdit()
         self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
@@ -903,12 +970,13 @@ class MyTabWidget(QWidget):
         self.btnSetForAllSchema = QPushButton("Set For All")
         self.btnSetForAllSchema.clicked.connect(self.setForAllLengths)
 
-
         self.btnClearMeasurementsSchema = QPushButton("Clear measurements")
         self.btnClearMeasurementsSchema.clicked.connect(self.clearLengths)
 
         self.btnDoneCornerSchema = QPushButton("Done")
-        self.btnDoneCornerSchema.clicked.connect(self.DoneRegisterCornersToBack)
+        self.btnDoneCornerSchema.clicked.connect(
+            lambda: self.DoneRegisterCornersToBack(False)
+        )
 
         self.spacingLabel1Schema = QLabel("")
         self.spacingLabel2Schema = QLabel("")
@@ -917,42 +985,48 @@ class MyTabWidget(QWidget):
         self.spacingLabel5Schema = QLabel("")
         self.spacingLabel6Schema = QLabel("")
 
-        self.tabCreateSchema.layout.addWidget(self.ComboVidMenuSchema,0,0,1,3) 
-        self.tabCreateSchema.layout.addWidget(self.btnChangeFrameSchema,0,3,1,1)
-        self.tabCreateSchema.layout.addWidget(self.labelInstructionsSchema,1,0,1,4, alignment=QtCore.Qt.AlignCenter) 
-        # self.tabCreateSchema.layout.addWidget(self.spacingLabel1Schema,2,0,1,1) 
-        # self.tabCreateSchema.layout.addWidget(self.labelTopSchema,2,1,1,1) 
-        # self.tabCreateSchema.layout.addWidget(self.FieldTSchema,2,2,1,1) 
-        self.tabCreateSchema.layout.addWidget(self.labelTopSchema,2,0,1,2, alignment=QtCore.Qt.AlignRight) 
-        self.tabCreateSchema.layout.addWidget(self.FieldTSchema,2,2,1,2, alignment=QtCore.Qt.AlignLeft) 
-        # self.tabCreateSchema.layout.addWidget(self.spacingLabel2Schema,2,3,1,1) 
-        self.tabCreateSchema.layout.addWidget(self.labelLeftSchema,3,0,1,1) 
-        self.tabCreateSchema.layout.addWidget(self.labelImageAltSchema,3,1,2,2) 
-        self.tabCreateSchema.layout.addWidget(self.labelRightSchema,3,3,1,1) 
-        self.tabCreateSchema.layout.addWidget(self.FieldLSchema,4,0,1,1)
-        self.tabCreateSchema.layout.addWidget(self.FieldRSchema,4,3,1,1) 
-        # self.tabCreateSchema.layout.addWidget(self.spacingLabel3Schema,5,0,1,1)
-        # self.tabCreateSchema.layout.addWidget(self.spacingLabel4Schema,5,3,1,1) 
-        self.tabCreateSchema.layout.addWidget(self.labelBottomSchema,5,0,1,2, alignment=QtCore.Qt.AlignRight) 
-        self.tabCreateSchema.layout.addWidget(self.FieldBSchema,5,2,1,2, alignment=QtCore.Qt.AlignLeft) 
-        self.tabCreateSchema.layout.addWidget(self.btnSetForAllSchema,6,0,1,2) 
-        self.tabCreateSchema.layout.addWidget(self.btnClearMeasurementsSchema,6,2,1,2) 
-        self.tabCreateSchema.layout.addWidget(self.btnDoneCornerSchema,7,0,1,4) 
+        self.tabCreateSchema.layout.addWidget(self.ComboVidMenuSchema, 0, 0, 1, 3)
+        self.tabCreateSchema.layout.addWidget(self.btnChangeFrameSchema, 0, 3, 1, 1)
+        self.tabCreateSchema.layout.addWidget(
+            self.labelInstructionsSchema, 1, 0, 1, 4, alignment=QtCore.Qt.AlignCenter
+        )
 
+        self.tabCreateSchema.layout.addWidget(
+            self.labelTopSchema, 2, 0, 1, 2, alignment=QtCore.Qt.AlignRight
+        )
+        self.tabCreateSchema.layout.addWidget(
+            self.FieldTSchema, 2, 2, 1, 2, alignment=QtCore.Qt.AlignLeft
+        )
+  
+        self.tabCreateSchema.layout.addWidget(self.labelLeftSchema, 3, 0, 1, 1)
+        self.tabCreateSchema.layout.addWidget(self.labelImageAltSchema, 3, 1, 2, 2)
+        self.tabCreateSchema.layout.addWidget(self.labelRightSchema, 3, 3, 1, 1)
+        self.tabCreateSchema.layout.addWidget(self.FieldLSchema, 4, 0, 1, 1)
+        self.tabCreateSchema.layout.addWidget(self.FieldRSchema, 4, 3, 1, 1)
+     
+        self.tabCreateSchema.layout.addWidget(
+            self.labelBottomSchema, 5, 0, 1, 2, alignment=QtCore.Qt.AlignRight
+        )
+        self.tabCreateSchema.layout.addWidget(
+            self.FieldBSchema, 5, 2, 1, 2, alignment=QtCore.Qt.AlignLeft
+        )
+        self.tabCreateSchema.layout.addWidget(self.btnSetForAllSchema, 6, 0, 1, 2)
+        self.tabCreateSchema.layout.addWidget(
+            self.btnClearMeasurementsSchema, 6, 2, 1, 2
+        )
+        self.tabCreateSchema.layout.addWidget(self.btnDoneCornerSchema, 7, 0, 1, 4)
 
         self.tabCreateSchema.setLayout(self.tabCreateSchema.layout)
 
-        
         try:
             int(helper["ValidationVideoSettings"]["Frame"])
             int(helper["ValidationVideoSettings"]["TotalFrames"])
         except:
             helper["ValidationVideoSettings"]["Frame"] = 0
             helper["ValidationVideoSettings"]["TotalFrames"] = 1
-            
-            with open('helper.yaml', 'w') as file:
-                yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper) 
 
+            with open("helper.yaml", "w") as file:
+                yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
 
         # Delete when real
         self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
@@ -960,44 +1034,46 @@ class MyTabWidget(QWidget):
         self.startTab.addTab(self.tabScoring, "Scoring")
         self.startTab.addTab(self.tabValidation, "Validation")
         self.startTab.addTab(self.tabRegisterCorners, "Register Corners")
-        self.startTab.addTab(self.tabCreateSchema,"Schema")
-        
-        # self.startTab.addTab(self.tabProcess, "Junk?")
+        self.startTab.addTab(self.tabCreateSchema, "Schema")
+
         # # delete when real
-  
+
         # Add tabs to widget
         self.layout.addWidget(self.startTab)
         self.setLayout(self.layout)
 
-      
-    
     def FolderSearch(self):
         """When button is clicked will allow user to search explorer for folder that contains video files and updates config file"""
         self.cwd = os.getcwd()
-        self.path = QFileDialog.getExistingDirectory(self,"Open the location of the recorded video files",r"" + str(self.cwd))
-        # try:
-        if True:
+        self.path = QFileDialog.getExistingDirectory(
+            self, "Open the location of the recorded video files", r"" + str(self.cwd)
+        )
+        try:
             # Checks path and then cheanges interface and updates changes to yaml
-            if len(self.path) !=0:
+            if len(self.path) != 0:
                 info = openYaml()
                 info["folderPath"] = self.path
                 info["videoPaths"] = []
-                info["data"][' Videos'] = []
+                info["data"][" Videos"] = []
 
                 fileList = os.listdir(self.path)
                 x = len(fileList)
                 for i in range(x):
-                    if not fileList[x-(i+1)].endswith(".mp4"):
-                        fileList.pop(x-(i+1))
-                info["data"] = {' Videos':fileList.copy()}
+                    if not fileList[x - (i + 1)].endswith(".mp4"):
+                        fileList.pop(x - (i + 1))
+                info["data"] = {" Videos": fileList.copy()}
                 info["videoPaths"] = fileList.copy()
-               
+
                 # print(fileList)
                 for i in range(len(fileList)):
-                    info["videoPaths"][i] = {"title":info["videoPaths"][i],"points":[],"lengths":{"Top":"","Bottom":"","Right":"","Left":""},"DLC":"","DLC.mp4":""}
+                    info["videoPaths"][i] = {
+                        "title": info["videoPaths"][i],
+                        "points": [],
+                        "lengths": {"Top": "", "Bottom": "", "Right": "", "Left": ""},
+                        "DLC": "",
+                        "DLC.mp4": "",
+                    }
 
-                
-         
                 # for j in range(int(info["numFeatures"])):
                 #     info["data"]["Feature %d" % (j +1)] = []
                 #     for i in range (len(fileList)):
@@ -1017,64 +1093,60 @@ class MyTabWidget(QWidget):
                         pass
                     
                     and list features would be a list of all the features"""
-                
-         
-                  
-                with open('config.yaml', 'w') as file:
-                    yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)    
-                
+
+                with open("config.yaml", "w") as file:
+                    yaml.dump(
+                        info, file, default_flow_style=False, Dumper=NoAliasDumper
+                    )
+
                 self.yamlUpdateUI()
-   
-            else:
-                print("error 5")
-        # except:
-        #     print("error 4")
+
+        except:
+            print("error 4")
 
     def DLCFolderSearch(self):
         """When button is clicked will allow user to search explorer for folder that contains DLC h5 files and updates config file"""
         self.cwd = os.getcwd()
-        self.path = QFileDialog.getExistingDirectory(self,"Open the location of the recorded video files",r"" + str(self.cwd))
-        # try:
-        if True:
+        self.path = QFileDialog.getExistingDirectory(
+            self, "Open the location of the recorded video files", r"" + str(self.cwd)
+        )
+        try:
             # Checks path and then cheanges interface and updates changes to yaml
-            if len(self.path) !=0:
+            if len(self.path) != 0:
                 info = openYaml()
                 info["DLCfolderPath"] = self.path
-               
-
 
                 fileList = os.listdir(self.path)
 
-
-
-
                 x = len(fileList)
                 for i in range(x):
-                    if not fileList[x-(i+1)].endswith(".h5"):
-                        fileList.pop(x-(i+1))
+                    if not fileList[x - (i + 1)].endswith(".h5"):
+                        fileList.pop(x - (i + 1))
                 info["DLCvideoPaths"] = []
                 for i in range(len(fileList)):
-                    info["DLCvideoPaths"].append({"h5":fileList[i],"bodyparts":{}})
+                    info["DLCvideoPaths"].append({"h5": fileList[i], "bodyparts": {}})
                     for j in range(len(info["videoPaths"])):
-                        if fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
+                        if fileList[i].startswith(
+                            info["videoPaths"][j]["title"][
+                                : len(info["videoPaths"][j]["title"]) - 4
+                            ]
+                        ):
                             info["videoPaths"][j]["DLC"] = fileList[i]
 
                 # Assumes that all the h5 files collect the same features
                 if len(fileList) > 0:
-                    
                     PROJECT_DIR = Path(self.path)
                     df = pd.read_hdf(PROJECT_DIR / fileList[0])
-                    # print(df.head(5))
                     listdf = list(df)
-                    # print(listdf)
+                    # creates list of features
                     features = []
-                    for i in range(len(listdf)): 
-                        if i == 0 or features[len(features)-1] != listdf[i][1]:
+                    for i in range(len(listdf)):
+                        if i == 0 or features[len(features) - 1] != listdf[i][1]:
                             features.append(listdf[i][1])
                         else:
                             pass
-                    # print("features" , features)
-                    info["data"] = {' Videos':info["data"][' Videos']}
+
+                    info["data"] = {" Videos": info["data"][" Videos"]}
                     # adding generic data
                     zeros = []
                     for i in range(len(info["videoPaths"])):
@@ -1082,35 +1154,33 @@ class MyTabWidget(QWidget):
                     featuresDict = {}
                     for i in range(len(features)):
                         info["data"][str(features[i])] = zeros
-                        featuresDict[str(features[i])] = [0,0]
+                        featuresDict[str(features[i])] = [0, 0]
                     for i in range(len(info["DLCvideoPaths"])):
                         info["DLCvideoPaths"][i]["bodyparts"] = featuresDict
-                M4fileList = os.listdir(self.path)
-                # print(M4fileList)
-              
+                Mp4fileList = os.listdir(self.path)
+
                 for i in range(x):
-                    if not M4fileList[x-(i+1)].endswith(".mp4"):
-                        M4fileList.pop(x-(i+1))
-                for i in range(len(M4fileList)):
+                    if not Mp4fileList[x - (i + 1)].endswith(".mp4"):
+                        Mp4fileList.pop(x - (i + 1))
+                for i in range(len(Mp4fileList)):
                     for j in range(len(info["videoPaths"])):
-                        if M4fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
-                            info["videoPaths"][j]["DLC.mp4"] = M4fileList[i]
-                            
-               
-                # print(fileList)
-                
-            
-                  
-                with open('config.yaml', 'w') as file:
-                    yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)    
-                
+                        if Mp4fileList[i].startswith(
+                            info["videoPaths"][j]["title"][
+                                : len(info["videoPaths"][j]["title"]) - 4
+                            ]
+                        ):
+                            info["videoPaths"][j]["DLC.mp4"] = Mp4fileList[i]
+
+                with open("config.yaml", "w") as file:
+                    yaml.dump(
+                        info, file, default_flow_style=False, Dumper=NoAliasDumper
+                    )
+
                 self.yamlUpdateUI()
-   
-            else:
-                print("error 5")
-        # except:
-        #     print("error 4")
-    
+
+        except:
+            print("error 4")
+
     def FolderSearchField(self):
         """When enter is pressed will check if path is valid for folder that contains video files and updates config file"""
         self.cwd = os.getcwd()
@@ -1118,36 +1188,40 @@ class MyTabWidget(QWidget):
         try:
             # Checksif path exist and then cheanges interface and updates changes to yaml
             if os.path.exists(self.path):
-                self.path = self.path.replace("\\","/")
+                self.path = self.path.replace("\\", "/")
                 info = openYaml()
-                
-                   
+
                 info["folderPath"] = str(self.path)
                 fileList = os.listdir(self.path)
                 x = len(fileList)
-                       
+
                 for i in range(x):
-                    if not fileList[x-(i+1)].endswith(".mp4"):
-                        fileList.pop(x-(i+1))
+                    if not fileList[x - (i + 1)].endswith(".mp4"):
+                        fileList.pop(x - (i + 1))
 
                 info["videoPaths"] = fileList.copy()
                 for i in range(len(fileList)):
-                    info["videoPaths"][i] = {"title":info["videoPaths"][i],"points":[],"lengths":{"Top":"","Bottom":"","Right":"","Left":""},"DLC":"","DLC.mp4":""}
-                
-                info["data"] = {' Videos':fileList.copy()}
-               
+                    info["videoPaths"][i] = {
+                        "title": info["videoPaths"][i],
+                        "points": [],
+                        "lengths": {"Top": "", "Bottom": "", "Right": "", "Left": ""},
+                        "DLC": "",
+                        "DLC.mp4": "",
+                    }
+
+                info["data"] = {" Videos": fileList.copy()}
+
                 # for j in range(int(info["numFeatures"])):
                 #     info["data"]["Feature %d" % (j +1)] = []
                 #     for i in range (len(fileList)):
                 #         info["data"]["Feature %d" % (j +1)].append(0)
-            
-                    
 
-                                     
-                with open('config.yaml', 'w') as file:
-                    yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
-                   
-                self.yamlUpdateUI()  
+                with open("config.yaml", "w") as file:
+                    yaml.dump(
+                        info, file, default_flow_style=False, Dumper=NoAliasDumper
+                    )
+
+                self.yamlUpdateUI()
 
             else:
                 print("error 2")
@@ -1161,39 +1235,38 @@ class MyTabWidget(QWidget):
         try:
             # Checksif path exist and then cheanges interface and updates changes to yaml
             if os.path.exists(self.path):
-                
-                self.path = self.path.replace("\\","/")
-                info = openYaml()        
+                self.path = self.path.replace("\\", "/")
+                info = openYaml()
                 info["DLCfolderPath"] = str(self.path)
                 fileList = os.listdir(self.path)
                 x = len(fileList)
                 for i in range(x):
-                    if not fileList[x-(i+1)].endswith(".h5"):
-                        fileList.pop(x-(i+1))
-                
+                    if not fileList[x - (i + 1)].endswith(".h5"):
+                        fileList.pop(x - (i + 1))
+
                 info["DLCvideoPaths"] = []
                 for i in range(len(fileList)):
-                    info["DLCvideoPaths"].append({"h5":fileList[i],"bodyparts":{}})
+                    info["DLCvideoPaths"].append({"h5": fileList[i], "bodyparts": {}})
                     for j in range(len(info["videoPaths"])):
-                        if fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
+                        if fileList[i].startswith(
+                            info["videoPaths"][j]["title"][
+                                : len(info["videoPaths"][j]["title"]) - 4
+                            ]
+                        ):
                             info["videoPaths"][j]["DLC"] = fileList[i]
 
-
                 if len(fileList) > 0:
-                    
                     PROJECT_DIR = Path(self.path)
                     df = pd.read_hdf(PROJECT_DIR / fileList[0])
-                    # print(df.head(5))
                     listdf = list(df)
-                    # print(listdf)
+                    # creates feature list
                     features = []
-                    for i in range(len(listdf)): 
-                        if i == 0 or features[len(features)-1] != listdf[i][1]:
+                    for i in range(len(listdf)):
+                        if i == 0 or features[len(features) - 1] != listdf[i][1]:
                             features.append(listdf[i][1])
                         else:
                             pass
-                    # print("features" , features)
-                    info["data"] = {' Videos':info["data"][' Videos']}
+                    info["data"] = {" Videos": info["data"][" Videos"]}
                     # adding generic data
                     zeros = []
                     for i in range(len(info["videoPaths"])):
@@ -1201,25 +1274,30 @@ class MyTabWidget(QWidget):
                     featuresDict = {}
                     for i in range(len(features)):
                         info["data"][str(features[i])] = zeros
-                        featuresDict[str(features[i])] = [0,0]
+                        featuresDict[str(features[i])] = [0, 0]
                     for i in range(len(info["DLCvideoPaths"])):
                         info["DLCvideoPaths"][i]["bodyparts"] = featuresDict
 
-                M4fileList = os.listdir(self.path)
+                Mp4fileList = os.listdir(self.path)
 
-              
                 for i in range(x):
-                    if not M4fileList[x-(i+1)].endswith(".mp4"):
-                        M4fileList.pop(x-(i+1))
-                for i in range(len(M4fileList)):
+                    if not Mp4fileList[x - (i + 1)].endswith(".mp4"):
+                        Mp4fileList.pop(x - (i + 1))
+                for i in range(len(Mp4fileList)):
                     for j in range(len(info["videoPaths"])):
-                        if M4fileList[i].startswith(info["videoPaths"][j]["title"][:len(info["videoPaths"][j]["title"])-4]):
-                            info["videoPaths"][j]["DLC.mp4"] = M4fileList[i]
+                        if Mp4fileList[i].startswith(
+                            info["videoPaths"][j]["title"][
+                                : len(info["videoPaths"][j]["title"]) - 4
+                            ]
+                        ):
+                            info["videoPaths"][j]["DLC.mp4"] = Mp4fileList[i]
 
-                with open('config.yaml', 'w') as file:
-                    yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
-                   
-                self.yamlUpdateUI()  
+                with open("config.yaml", "w") as file:
+                    yaml.dump(
+                        info, file, default_flow_style=False, Dumper=NoAliasDumper
+                    )
+
+                self.yamlUpdateUI()
 
             else:
                 print("error 2")
@@ -1230,7 +1308,6 @@ class MyTabWidget(QWidget):
         """Will take the info from the config file and update the UI"""
         info = openYaml()
 
-        
         if len(info["folderPath"]) != 0:
             self.searchField.setText("")
             self.searchField.setPlaceholderText(info["folderPath"])
@@ -1242,7 +1319,7 @@ class MyTabWidget(QWidget):
             self.searchFieldDLC.setPlaceholderText(info["DLCfolderPath"])
         else:
             self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
-        
+
         self.listVideoFolders.clear()
         self.listVideoFolders.addItems(info["data"][" Videos"])
 
@@ -1282,22 +1359,21 @@ class MyTabWidget(QWidget):
 
     def StoreProjName(self):
         """Will store the project name to the config file"""
-        name = self.projNameField.text()  
-        if len(name) !=0:
+        name = self.projNameField.text()
+        if len(name) != 0:
             info = openYaml()
             info["Name"] = name
             self.projNameField.setText("")
             self.projNameField.setPlaceholderText(str(name))
-            with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
         else:
             self.projNameField.setText("")
-            
-    
+
     def StoreProjLocation(self):
         """Will store the project location to the config file (specific for create tab)"""
         loc = self.projLocField.text()
-         
+
         if os.path.exists(loc):
             info = openYaml()
             info["Path"] = loc
@@ -1305,15 +1381,14 @@ class MyTabWidget(QWidget):
             self.projLocField.setPlaceholderText(str(loc))
             self.projLocFieldv2.setText("")
             self.projLocFieldv2.setPlaceholderText(str(loc))
-            with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
         else:
             self.projLocField.setText("")
-            
-            
+
     def StoreProjLocationv2(self):
         """Will store the project location to the config file (specific for load tab)"""
-        loc = self.projLocFieldv2.text()  
+        loc = self.projLocFieldv2.text()
         if os.path.exists(loc):
             info = openYaml()
             info["Path"] = loc
@@ -1321,47 +1396,49 @@ class MyTabWidget(QWidget):
             self.projLocField.setPlaceholderText(str(loc))
             self.projLocFieldv2.setText("")
             self.projLocFieldv2.setPlaceholderText(str(loc))
-            with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
         else:
             self.projLocFieldv2.setText("")
-            
-
 
     def PathSearch(self):
-        """ button to store the project location to the config file (for both create and load tabs)"""
+        """button to store the project location to the config file (for both create and load tabs)"""
         self.cwd = os.getcwd()
-        self.path = QFileDialog.getExistingDirectory(self,"Open the location of the folder",r"" + str(self.cwd))
+        self.path = QFileDialog.getExistingDirectory(
+            self, "Open the location of the folder", r"" + str(self.cwd)
+        )
         try:
             # Checks path and then cheanges interface and updates changes to yaml
-            if len(self.path) !=0:
-                    info = openYaml()
-                    info["Path"] = self.path
-                    self.projLocField.setPlaceholderText(self.path)
-                    self.projLocFieldv2.setPlaceholderText(self.path)
-                    with open('config.yaml', 'w') as file:
-                        yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)    
-                    
+            if len(self.path) != 0:
+                info = openYaml()
+                info["Path"] = self.path
+                self.projLocField.setPlaceholderText(self.path)
+                self.projLocFieldv2.setPlaceholderText(self.path)
+                with open("config.yaml", "w") as file:
+                    yaml.dump(
+                        info, file, default_flow_style=False, Dumper=NoAliasDumper
+                    )
+
         except:
             print("Failed to choose valid path")
 
     def boxWidthSave(self):
         """Will store the box width to the config file (specific for choose points tab)"""
         bw = self.FieldBoxWidth.text()
-        # try:
-        if True:
+        try:
+      
             eval(bw + "+0")
             bw = float(bw)
             info = openYaml()
             info["BoxWidth"] = bw
             self.FieldBoxWidth.setText("")
             self.FieldBoxWidth.setPlaceholderText(str(bw))
-            with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-        # except:
-        #     self.FieldBoxWidth.setText("Invalid Entry")
-    
+        except:
+            self.FieldBoxWidth.setText("Invalid Entry")
+
     def boxHeightSave(self):
         """Will store the box height to the config file (specific for choose points tab)"""
         bh = self.FieldBoxHeight.text()
@@ -1372,16 +1449,16 @@ class MyTabWidget(QWidget):
             info["BoxHeight"] = bh
             self.FieldBoxHeight.setText("")
             self.FieldBoxHeight.setPlaceholderText(str(bh))
-            with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
         except:
             self.FieldBoxHeight.setText("Invalid Entry")
 
     def placeHodlerBtn(self):
-        """pLACE HOLDER FOR ACTUAL BUTTONS"""
+        """PLACE HOLDER FOR ACTUAL BUTTONS"""
         sender = self.sender()
-        print(sender.text() + ' was pressed')
+        print(sender.text() + " was pressed")
 
     def Create_DLC_Project(self):
         """When pressed will update tabs and start the process for creating a new project including clearing config file"""
@@ -1389,20 +1466,27 @@ class MyTabWidget(QWidget):
             self.startTab.removeTab(1)
         except:
             pass
-        self.startTab.addTab(self.tabCreate,"Create")
+        self.startTab.addTab(self.tabCreate, "Create")
         self.startTab.setCurrentIndex(1)
 
-
         # wil clear config file
-        # info= {"folderPath": "","DLCfolderPath": "","videoPaths":[],"DLCvideoPaths":[], "points":[],"BoxHeight":"","BoxWidth":"","Name":"","Path":"","numFeatures":"2",
-        #         "data":
-        #         {' Videos':[],
-        #             'Feature 1': [],
-        #             'Feature 2': []}}
-        # with open('config.yaml', 'w') as file:
-        #     yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
-        
-        
+        if ClearConfig_popup() == 16384:
+            info = {
+                    "folderPath": "",
+                    "DLCfolderPath": "",
+                    "videoPaths": [],
+                    "DLCvideoPaths": [],
+                    "zone": [],
+                    "BoxHeight": "",
+                    "BoxWidth": "",
+                    "Name": "",
+                    "Path": "",
+                    "numFeatures": "2",
+                    "data": {" Videos": [], "Feature 1": [], "Feature 2": []},
+                    "uncertainty": 0.6,
+                }
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
     def Open_DLC_Project(self):
         """When pressed will update tabs and start the process for loading a existing project"""
@@ -1410,90 +1494,100 @@ class MyTabWidget(QWidget):
             self.startTab.removeTab(1)
         except:
             pass
-        self.startTab.addTab(self.tabLoad,"Load")
+        self.startTab.addTab(self.tabLoad, "Load")
         self.startTab.setCurrentIndex(1)
-        # Place Holder
-        sender = self.sender()
-        # print(sender.text() + ' was pressed')
-        # self.pop = self.show_popup()
-        # self.pop.show()
-    #    pop up not yet connected to choices
+      
 
-    def locationInImage(self,event):
+    #    pop up not yet connected to choices (to connect to the yaml file)
+
+    def locationInImage(self, event):
         """When pressed will save place in image clicked and append to list however points won't be adjusted for the image so may not like what is imagined"""
-        # try:
-        if True:
+        
+        helper = openHelperYaml()
+        try:
             if self.labelImageOriCorner.text() != "Original Image Place Holder":
                 pos = str(event.pos())
                 pos = pos.strip("PyQt5.QtCore.Qpoint")
                 pos = pos.strip("()")
-                # self.cornerImageDim
-                # self.labelImageOriCorner.width
-                # self.labelImageOriCorner.height
+
                 info = openYaml()
                 if len(pos) == 0:
                     # cord = [0,0]
                     pass
                 else:
                     cord = pos.split(", ")
-                    cord[0] = int(int(cord[0]) * self.cornerImageDim[0] / self.labelImageOriCorner.width())
-                    cord[1] = int(int(cord[1]) * self.cornerImageDim[1] / self.labelImageOriCorner.height())
+                    cord[0] = int(
+                        int(cord[0])
+                        * self.cornerImageDim[0]
+                        / self.labelImageOriCorner.width()
+                    )
+                    cord[1] = int(
+                        int(cord[1])
+                        * self.cornerImageDim[1]
+                        / self.labelImageOriCorner.height()
+                    )
                     for i in range(len(info["videoPaths"])):
-                            if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText() and len(info["videoPaths"][i]["points"]) < 4:
-                                info["videoPaths"][i]["points"].append(cord)
-                            elif info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText() and len(info["videoPaths"][i]["points"]) == 4:
-                                info["videoPaths"][i]["points"][3] = cord
-                    
-            
+                        if (
+                            info["videoPaths"][i]["title"]
+                            == self.ComboVidMenuCorner.currentText()
+                            and len(helper["points"][i]) < 4
+                        ):
+                            helper["points"][i].append(cord)
+                        elif (
+                            info["videoPaths"][i]["title"]
+                            == self.ComboVidMenuCorner.currentText()
+                            and len(helper["points"][i]) == 4
+                        ):
+                            helper["points"][i][3] = cord
 
-                    
-                    with open('config.yaml', 'w') as file:
-                        yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
-        # except:
-        #     print("fail")
+                    with open("helper.yaml", "w") as file:
+                        yaml.dump(
+                            helper, file, default_flow_style=False, Dumper=NoAliasDumper
+                        )
+        except:
+            print("fail")
 
         self.displayFrameCorner()
-          
 
-        # string = str(cord).replace("[","(")
-        # string = str(string).replace("]",")")
-        
-        # if  len(str(self.labelPointList.text())) == 0:
-        #     self.labelPointList.setText(string)
-        # else:
-        #     self.labelPointList.setText(str(self.labelPointList.text()) + " , " + string)
-        # self.labelPointList = QLabel(str(self.pointList))
-    
+
     def clearPointsCorner(self):
         """Clears points of the selected video"""
         info = openYaml()
+        helper = openHelperYaml()
         for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
-                    info["videoPaths"][i]["points"] = []
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+            if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                helper["points"][i] = []
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.displayFrameCorner()
-        
+
     def saveToAllCorner(self):
         """Takes the points of the currently selected image and will save the points to all the others"""
         if str(SetForAllVideos_popup()) == "16384":
-            # print("16384 pass")
             info = openYaml()
+            helper = openHelperYaml()
             for i in range(len(info["videoPaths"])):
-                    if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
-                        points = info["videoPaths"][i]["points"] 
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuCorner.currentText()
+                ):
+                    points = helper["points"][i]
             for j in range(len(info["videoPaths"])):
-                info["videoPaths"][j]["points"] = points.copy()
-            with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
+                helper["points"][j] = points.copy()
+            with open("helper.yaml", "w") as file:
+                yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
             self.displayFrameCorner()
 
     def fieldTextUpdater(self):
         """Updates field  goes from TL to TR to BR to BL"""
         info = openYaml()
+        helper = openHelperYaml()
         try:
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuCorner.currentText()
+                ):
                     self.FieldTL.setPlaceholderText("Enter Cordinate in x y form")
                     self.FieldTL.setText("")
                     self.FieldTR.setPlaceholderText("Enter Cordinate in x y form")
@@ -1502,114 +1596,136 @@ class MyTabWidget(QWidget):
                     self.FieldBR.setText("")
                     self.FieldBL.setPlaceholderText("Enter Cordinate in x y form")
                     self.FieldBL.setText("")
-                    
-                    self.FieldTL.setPlaceholderText(str(info["videoPaths"][i]["points"][0][0]) + " " + str(info["videoPaths"][i]["points"][0][1]))
-                    self.FieldTR.setPlaceholderText(str(info["videoPaths"][i]["points"][1][0]) + " " + str(info["videoPaths"][i]["points"][1][1]))
-                    self.FieldBR.setPlaceholderText(str(info["videoPaths"][i]["points"][2][0]) + " " + str(info["videoPaths"][i]["points"][2][1]))
-                    self.FieldBL.setPlaceholderText(str(info["videoPaths"][i]["points"][3][0]) + " " + str(info["videoPaths"][i]["points"][3][1]))
+
+                    self.FieldTL.setPlaceholderText(
+                        str(helper["points"][i][0][0])
+                        + " "
+                        + str(helper["points"][i][0][1])
+                    )
+                    self.FieldTR.setPlaceholderText(
+                        str(helper["points"][i][1][0])
+                        + " "
+                        + str(helper["points"][i][1][1])
+                    )
+                    self.FieldBR.setPlaceholderText(
+                        str(helper["points"][i][2][0])
+                        + " "
+                        + str(helper["points"][i][2][1])
+                    )
+                    self.FieldBL.setPlaceholderText(
+                        str(helper["points"][i][3][0])
+                        + " "
+                        + str(helper["points"][i][3][1])
+                    )
         except:
             pass
-
-        
 
     def FieldPointRegistrationTL(self):
         """Saves the top left position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
-        # print(sender.text() + ' was pressed')
+        helper = openHelperYaml()
         cord = sender.text()
         cord = cord.split(" ")
-        # print(cord[0].isnumeric())
         if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
-                    if len(info["videoPaths"][i]["points"]) >= 4:
-                        info["videoPaths"][i]["points"][0] = cord
-                    elif len(info["videoPaths"][i]["points"]) == 0:
-                        info["videoPaths"][i]["points"] =  [cord]
-                    elif len(info["videoPaths"][i]["points"]) < 4:
-                        info["videoPaths"][i]["points"].insert(0,cord)
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuCorner.currentText()
+                ):
+                    if len(helper["points"][i]) >= 4:
+                        helper["points"][i][0] = cord
+                    elif len(helper["points"][i]) == 0:
+                        helper["points"][i] = [cord]
+                    elif len(helper["points"][i]) < 4:
+                        helper["points"][i].insert(0, cord)
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.displayFrameCorner()
 
     def FieldPointRegistrationTR(self):
         """Saves the top Right position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
-        # print(sender.text() + ' was pressed')
+        helper = openHelperYaml()
         cord = sender.text()
         cord = cord.split(" ")
-        # print(cord[0].isnumeric())
         if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
-                    if len(info["videoPaths"][i]["points"]) >= 4:
-                        info["videoPaths"][i]["points"][1] = cord
-                    elif len(info["videoPaths"][i]["points"]) == 0:
-                        info["videoPaths"][i]["points"] =  [cord]
-                    elif len(info["videoPaths"][i]["points"]) == 1:
-                        info["videoPaths"][i]["points"].append(cord)
-                    elif len(info["videoPaths"][i]["points"]) < 4:
-                        info["videoPaths"][i]["points"].insert(1,cord)
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuCorner.currentText()
+                ):
+                    if len(helper["points"][i]) >= 4:
+                        helper["points"][i][1] = cord
+                    elif len(helper["points"][i]) == 0:
+                        helper["points"][i] = [cord]
+                    elif len(helper["points"][i]) == 1:
+                        helper["points"][i].append(cord)
+                    elif len(helper["points"][i]) < 4:
+                        helper["points"][i].insert(1, cord)
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.displayFrameCorner()
-    
+
     def FieldPointRegistrationBR(self):
         """Saves the Bottom Right position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
-        # print(sender.text() + ' was pressed')
+        helper = openHelperYaml()
         cord = sender.text()
         cord = cord.split(" ")
-        # print(cord[0].isnumeric())
         if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
-                    if len(info["videoPaths"][i]["points"]) >= 4:
-                        info["videoPaths"][i]["points"][2] = cord
-                    elif len(info["videoPaths"][i]["points"]) == 0:
-                        info["videoPaths"][i]["points"] =  [cord]
-                    elif len(info["videoPaths"][i]["points"]) <= 2:
-                        info["videoPaths"][i]["points"].append(cord)
-                    elif len(info["videoPaths"][i]["points"]) < 4:
-                        info["videoPaths"][i]["points"].insert(2,cord)
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuCorner.currentText()
+                ):
+                    if len(helper["points"][i]) >= 4:
+                        helper["points"][i][2] = cord
+                    elif len(helper["points"][i]) == 0:
+                        helper["points"][i] = [cord]
+                    elif len(helper["points"][i]) <= 2:
+                        helper["points"][i].append(cord)
+                    elif len(helper["points"][i]) < 4:
+                        helper["points"][i].insert(2, cord)
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.displayFrameCorner()
 
     def FieldPointRegistrationBL(self):
         """Saves the Bottom left position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
-        # print(sender.text() + ' was pressed')
+        helper = openHelperYaml()
         cord = sender.text()
         cord = cord.split(" ")
-        # print(cord[0].isnumeric())
         if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
             cord[0] = int(cord[0])
             cord[1] = int(cord[1])
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
-                    if len(info["videoPaths"][i]["points"]) >= 4:
-                        info["videoPaths"][i]["points"][3] = cord
-                    elif len(info["videoPaths"][i]["points"]) == 0:
-                        info["videoPaths"][i]["points"] =  [cord]
-                    elif len(info["videoPaths"][i]["points"]) <= 3:
-                        info["videoPaths"][i]["points"].append(cord)
-                    elif len(info["videoPaths"][i]["points"]) < 4:
-                        info["videoPaths"][i]["points"].insert(3,cord)
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuCorner.currentText()
+                ):
+                    if len(helper["points"][i]) >= 4:
+                        helper["points"][i][3] = cord
+                    elif len(helper["points"][i]) == 0:
+                        helper["points"][i] = [cord]
+                    elif len(helper["points"][i]) <= 3:
+                        helper["points"][i].append(cord)
+                    elif len(helper["points"][i]) < 4:
+                        helper["points"][i].insert(3, cord)
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.displayFrameCorner()
-        
+
     def toRegisterCorners(self):
         """Will continue from the Choose points tab and register corners button to register corners tab and remove everything"""
         try:
@@ -1620,6 +1736,14 @@ class MyTabWidget(QWidget):
         except:
             pass
         self.startTab.addTab(self.tabRegisterCorners, "Register Corners")
+        info = openYaml()
+        helper = openHelperYaml()
+        helper["points"] = []
+        for i in range(len(info["videoPaths"])):
+            helper["points"].append(info["videoPaths"][i]["points"])
+
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
 
     def toRegisterSchema(self):
         """Will continue from the Choose points tab and register corners button to register corners tab and remove everything"""
@@ -1630,14 +1754,13 @@ class MyTabWidget(QWidget):
             self.startTab.removeTab(0)
         except:
             pass
-        self.startTab.addTab(self.tabCreateSchema,"Schema")
+        self.startTab.addTab(self.tabCreateSchema, "Schema")
         info = openYaml()
-        # print(info["data"][" Videos"])
         self.ComboVidMenuSchema = QComboBox()
         self.ComboVidMenuSchema.clear()
         self.ComboVidMenuSchema.addItems(info["data"][" Videos"])
 
-    def DoneRegisterCornersToBack(self):
+    def DoneRegisterCornersToBack(self, save=True):
         """Brings back all tabs and gets rid of register corners tab"""
         try:
             self.startTab.removeTab(0)
@@ -1648,7 +1771,17 @@ class MyTabWidget(QWidget):
         self.startTab.addTab(self.tabScoring, "Scoring")
         self.startTab.addTab(self.tabValidation, "Validation")
         self.startTab.setCurrentIndex(1)
-    
+        if save:
+            info = openYaml()
+            helper = openHelperYaml()
+            for i in range(len(info["videoPaths"])):
+                try:
+                    info["videoPaths"][i]["points"] = helper["points"][i]
+                except:
+                    pass
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
+
     def toNext(self):
         """Will continue from the create or load project button and will update tabs to move to the rest"""
         sender = self.sender()
@@ -1660,7 +1793,7 @@ class MyTabWidget(QWidget):
         nameExist = True
         if len(str(info["Name"])) == 0 and sender.text() == "Create Project":
             nameExist = False
-        
+
         if nameExist and pathExist:
             try:
                 self.startTab.removeTab(0)
@@ -1671,7 +1804,7 @@ class MyTabWidget(QWidget):
             self.startTab.addTab(self.tabPointSelection, "Choose Points")
             self.startTab.addTab(self.tabScoring, "Scoring")
             self.startTab.addTab(self.tabValidation, "Validation")
-            # self.startTab.addTab(self.tabProcess, "Junk?")
+          
 
         elif (not nameExist) and (not pathExist):
             self.createhelplabel.setText("You need to enter a project name and path")
@@ -1682,34 +1815,11 @@ class MyTabWidget(QWidget):
         else:
             self.loadhelplabel.setText("You need to enter a project path")
 
-
-    # def show_popup(self):
-    #     """pop up dont think is nessary"""
-    #     msg = QMessageBox()
-    #     msg.setWindowTitle("Warning")
-    #     msg.setText("Previously saved project may be deleted\nWould you like to proceed?")
-    #     msg.setIcon(QMessageBox.Warning)
-    #     msg.setStandardButtons(QMessageBox.Yes|QMessageBox.No)
-    #     msg.setDefaultButton(QMessageBox.No)
-        
-    #     msg.setDetailedText("may overide yaml file if stored in same location")
-
-    #     msg.buttonClicked.connect(self.popup_button)
-    #     return msg
-
-    # def popup_button(self, i):
-    #     """to connect to the pop up but doesnt seem to work not really important """
-    #     print(i.text())
-    #     # not yet connected to actual yer or no
-    
-
     def displayFrame(self):
         """Displays 1st frame of the video"""
         info = openYaml(False)
-        
-        if self.ComboVidMenu.count() != 0 and os.path.exists(info["folderPath"]):
 
-            # print(self.ComboVidMenu.currentText())
+        if self.ComboVidMenu.count() != 0 and os.path.exists(info["folderPath"]):
             PROJECT_DIR = Path(info["folderPath"])
             cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidMenu.currentText()))
             cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
@@ -1720,210 +1830,175 @@ class MyTabWidget(QWidget):
             image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
             image = image.scaled(300, 300, Qt.KeepAspectRatio)
             pixmap = QPixmap(image)
-            
-            # pixmap = QPixmap(cap)
+
             self.labelImageOri.setPixmap(pixmap)
             self.labelImageOri.setScaledContents(True)
-            # plt.imshow(frame)
-            # self.labelImageOri.setText("Original Image Place Holder")
 
-           
+
         else:
             self.labelImageOri.setText("Original Image Place Holder")
         self.displayAltFrame()
 
-          
-
-
     def displayAltFrame(self):
         """Displays 1st frame of the altered video"""
-        # print("happened")
         info = openYaml(False)
         for i in range(len(info["videoPaths"])):
             if info["videoPaths"][i]["title"] == self.ComboVidMenu.currentText():
                 index = i
-                # print(index)
-        if self.ComboVidMenu.count() != 0 and os.path.exists(info["folderPath"]) and len(info["videoPaths"][index]["points"]) == 4:
-
-            # print(self.ComboVidMenu.currentText())
+        if (
+            self.ComboVidMenu.count() != 0
+            and os.path.exists(info["folderPath"])
+            and len(info["videoPaths"][index]["points"]) == 4
+        ):
             PROJECT_DIR = Path(info["folderPath"])
             cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidMenu.currentText()))
             cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
             ret, frame = cap.read()
-            registration_points = np.array(
-                info["videoPaths"][index]["points"]
-            ).astype(np.float32)
+            registration_points = np.array(info["videoPaths"][index]["points"]).astype(
+                np.float32
+            )
 
-            x = registration_points[:,0]
-            y = registration_points[:,1]
+            x = registration_points[:, 0]
+            y = registration_points[:, 1]
             if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
-                wid, hei = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
+                wid, hei = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
             else:
-                wid, hei = 500 , 500
-            schema = np.array([
-                [0, 0],
-                [wid, 0],
-                [wid, hei],
-                [0, hei]
-            ]).astype(np.float32)
-            homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
+                wid, hei = 500, 500
+            schema = np.array([[0, 0], [wid, 0], [wid, hei], [0, hei]]).astype(
+                np.float32
+            )
+            homogeneous_transform = cv2.getPerspectiveTransform(
+                registration_points, schema
+            )
             frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
-            
+
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             h, w, ch = frame.shape
             bytes_per_line = ch * w
             image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
             image = image.scaled(300, 300, Qt.KeepAspectRatio)
             pixmap = QPixmap(image)
-            
-            # pixmap = QPixmap(cap)
+
             self.labelImageAlt.setPixmap(pixmap)
             self.labelImageAlt.setScaledContents(True)
-            # plt.imshow(frame)
-            # self.labelImageOri.setText("Original Image Place Holder")
 
         else:
             print("else")
             self.labelImageAlt.setText("Altered Image Place Holder")
 
-
-    # def displayVideo(self):
-    #     """Plays video? not yet"""
-    #     info = openYaml(False)
-        
-    #     if self.ComboVidValidationMenu.count() != 0 and os.path.exists(info["folderPath"]):
-
-    #         # print(self.ComboVidValidationMenu.currentText())
-    #         PROJECT_DIR = Path(info["folderPath"])
-    #         cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidValidationMenu.currentText()))
-    #         cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
-    #         ret, frame = cap.read()
-    #         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #         h, w, ch = frame.shape
-    #         bytes_per_line = ch * w
-    #         image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
-    #         image = image.scaled(300, 300, Qt.KeepAspectRatio)
-    #         pixmap = QPixmap(image)
-            
-    #         # pixmap = QPixmap(cap)
-    #         self.labelVideoValidation.setPixmap(pixmap)
-    #         self.labelVideoValidation.setMinimumSize(300,300)
-    #         self.labelVideoValidation.setMaximumSize(600,600)
-    #         self.labelVideoValidation.setScaledContents(True)
-    #         # plt.imshow(frame)
-    #         # self.labelImageOri.setText("Original Image Place Holder")
-
-           
-    #     else:
-    #         self.labelVideoValidation.setText("Original Image Place Holder")
-
     def displayFrameCorner(self):
-        """Displays 1st frame of the video"""
+        """Displays 1st frame of the video (in register corners tab)"""
         info = openYaml(False)
-        
+        helper = openHelperYaml()
+
         if self.ComboVidMenuCorner.count() != 0 and os.path.exists(info["folderPath"]):
-
-            # print(self.ComboVidMenu.currentText())
             PROJECT_DIR = Path(info["folderPath"])
-            cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidMenuCorner.currentText()))
+            cap = cv2.VideoCapture(
+                str(PROJECT_DIR / self.ComboVidMenuCorner.currentText())
+            )
             cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
-            
-
-
 
             ret, frame = cap.read()
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             h, w, ch = frame.shape
-            # self.frame = frame
 
-            
             bytes_per_line = ch * w
             image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
 
             imwidth = image.width()
             imheight = image.height()
-            self.labelImgBL.setText("0,"+ str(imheight))
-            self.labelImgBR.setText(str(imwidth) +","+ str(imheight))
+            self.labelImgBL.setText("0," + str(imheight))
+            self.labelImgBR.setText(str(imwidth) + "," + str(imheight))
             self.labelImgTL.setText("0,0")
             self.labelImgTR.setText(str(imwidth) + ",0")
-            self.cornerImageDim = [imwidth,imheight]
+            self.cornerImageDim = [imwidth, imheight]
             pixmap = QPixmap(image)
             # Sets points
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText() and len(info["videoPaths"][i]["title"]) != 0:
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuCorner.currentText()
+                    and len(info["videoPaths"][i]["title"]) != 0
+                ):
                     index = i
-                    for j in range(len(info["videoPaths"][i]["points"])):
+                    for j in range(len(helper["points"][i])):
                         painter = QtGui.QPainter(pixmap)
-                        pen = QPen(Qt.red)
+                        if j == 0:
+                            pen = QPen(Qt.red)
+                        elif j == 1:
+                            pen = QPen(Qt.magenta)
+                        elif j == 2:
+                            pen = QPen(Qt.cyan)
+                        elif j == 3:
+                            pen = QPen(Qt.green)
+
                         pen.setWidth(10)
-                        
-                        painter.setPen(pen) 
-                        
-                        painter.drawPoint(int(info["videoPaths"][i]["points"][j][0]), int(info["videoPaths"][i]["points"][j][1]))
-                        # painter.drawLine(10, 10, 300, 200)
+
+                        painter.setPen(pen)
+                        painter.drawPoint(
+                            int(helper["points"][i][j][0]),
+                            int(helper["points"][i][j][1]),
+                        )
                         painter.end()
-                        # print(j)
-            
 
-            
-            # pixmap = QPixmap(cap)
             self.labelImageOriCorner.setPixmap(pixmap)
-            self.labelImageOriCorner.setMinimumSize(300,300)
-            self.labelImageOriCorner.setMaximumSize(600,600)
-            self.labelImageOriCorner.setScaledContents(True)
-            # print(info["videoPaths"])
+            self.labelImageOriCorner.setMinimumSize(300, 300)
 
-            # plt.imshow(frame)
-            # self.labelImageOri.setText("Original Image Place Holder")
+            self.labelImageOriCorner.setMaximumSize(600, 600)
+            self.labelImageOriCorner.setScaledContents(True)
+
             if "index" not in locals():
                 for i in range(len(info["videoPaths"])):
-                    if info["videoPaths"][i]["title"] == self.ComboVidMenuCorner.currentText():
+                    if (
+                        info["videoPaths"][i]["title"]
+                        == self.ComboVidMenuCorner.currentText()
+                    ):
                         index = i
-           
-            # Displays altered image
-            if ("index" in locals()) and len(info["videoPaths"][index]["points"]) == 4:
-             
-                registration_points = np.array(
-                info["videoPaths"][index]["points"]
-                ).astype(np.float32)
 
-                x = registration_points[:,0]
-                y = registration_points[:,1]
-                if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
-                    wid, hei = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
+            # Displays altered image
+            if ("index" in locals()) and len(helper["points"][index]) == 4:
+                registration_points = np.array(helper["points"][index]).astype(
+                    np.float32
+                )
+
+                if (
+                    str(info["BoxWidth"]).isnumeric()
+                    and str(info["BoxHeight"]).isnumeric()
+                ):
+                    wid, hei = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
                 else:
-                    wid, hei = 500 , 500
-                schema = np.array([
-                    [0, 0],
-                    [wid, 0],
-                    [wid, hei],
-                    [0, hei]
-                ]).astype(np.float32)
-                homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
-            
+                    wid, hei = 500, 500
+                schema = np.array([[0, 0], [wid, 0], [wid, hei], [0, hei]]).astype(
+                    np.float32
+                )
+                homogeneous_transform = cv2.getPerspectiveTransform(
+                    registration_points, schema
+                )
+
                 frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
-                
+
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 h, w, ch = frame.shape
                 bytes_per_line = ch * w
-                altimage = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+                altimage = QImage(
+                    frame.data, w, h, bytes_per_line, QImage.Format_RGB888
+                )
                 altimage = altimage.scaled(300, 300, Qt.KeepAspectRatio)
                 altpixmap = QPixmap(altimage)
-     
-                # pixmap = QPixmap(cap)
-                
+
+
                 self.labelImageAltCorner.setPixmap(altpixmap)
-                self.labelImageAltCorner.setMinimumSize(300,300)
-                self.labelImageAltCorner.setMaximumSize(600,600)
+                self.labelImageAltCorner.setMinimumSize(300, 300)
+                self.labelImageAltCorner.setMaximumSize(600, 600)
                 self.labelImageAltCorner.setScaledContents(True)
             else:
-           
-                self.labelImageAltCorner.setText("Altered Image Place Holder\nWill be visble when 4 points are selected")
+                self.labelImageAltCorner.setText(
+                    "Altered Image Place Holder\nWill be visble when 4 points are selected"
+                )
 
             # Updates the text fields
             self.fieldTextUpdater()
 
-           
         else:
             self.labelImageOriCorner.setText("Original Image Place Holder")
             self.labelImgBL.setText("")
@@ -1933,78 +2008,98 @@ class MyTabWidget(QWidget):
 
     def displayAltFrameSchema(self):
         """Displays 1st frame of the altered video"""
-        # print("happened")
+
         info = openYaml(False)
         for i in range(len(info["videoPaths"])):
-            if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
+            if info["videoPaths"][i]["title"] == self.ComboVidMenuSchema.currentText():
                 index = i
-                # print(index)
-        # print(self.ComboVidMenuSchema.count() , os.path.exists(info["folderPath"]) , ("index" in locals()) , len(info["videoPaths"][index]["points"]) )
-        if self.ComboVidMenuSchema.count() != 0 and os.path.exists(info["folderPath"]) and ("index" in locals()) and len(info["videoPaths"][index]["points"]) == 4:
 
-            # print(self.ComboVidMenu.currentText())
+        if (
+            self.ComboVidMenuSchema.count() != 0
+            and os.path.exists(info["folderPath"])
+            and ("index" in locals())
+            and len(info["videoPaths"][index]["points"]) == 4
+        ):
+
             PROJECT_DIR = Path(info["folderPath"])
-            cap = cv2.VideoCapture(str(PROJECT_DIR / self.ComboVidMenuSchema.currentText()))
+            cap = cv2.VideoCapture(
+                str(PROJECT_DIR / self.ComboVidMenuSchema.currentText())
+            )
             cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
             ret, frame = cap.read()
-            registration_points = np.array(
-                info["videoPaths"][index]["points"]
-            ).astype(np.float32)
+            registration_points = np.array(info["videoPaths"][index]["points"]).astype(
+                np.float32
+            )
 
-            x = registration_points[:,0]
-            y = registration_points[:,1]
+            x = registration_points[:, 0]
+            y = registration_points[:, 1]
             if str(info["BoxWidth"]).isnumeric() and str(info["BoxHeight"]).isnumeric():
-                wid, hei = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
+                wid, hei = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
             else:
-                wid, hei = 500 , 500
-            schema = np.array([
-                [0, 0],
-                [wid, 0],
-                [wid, hei],
-                [0, hei]
-            ]).astype(np.float32)
-            homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
+                wid, hei = 500, 500
+            schema = np.array([[0, 0], [wid, 0], [wid, hei], [0, hei]]).astype(
+                np.float32
+            )
+            homogeneous_transform = cv2.getPerspectiveTransform(
+                registration_points, schema
+            )
             frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
-            
+
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             h, w, ch = frame.shape
             bytes_per_line = ch * w
             image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
             image = image.scaled(300, 300, Qt.KeepAspectRatio)
             pixmap = QPixmap(image)
-            
-            # pixmap = QPixmap(cap)
+
+
             self.labelImageAltSchema.setPixmap(pixmap)
             self.labelImageAltSchema.setScaledContents(True)
-            # plt.imshow(frame)
-            # self.labelImageOri.setText("Original Image Place Holder")
-            # print(info["videoPaths"][index]["lengths"]["Top"],str(info["videoPaths"][index]["lengths"]["Top"]).isnumeric(),len(str(info["videoPaths"][index]["lengths"]["Top"])))
-            if str(info["videoPaths"][index]["lengths"]["Top"]).isnumeric() and len(str(info["videoPaths"][index]["lengths"]["Top"])) != 0:
+
+            if (
+                str(info["videoPaths"][index]["lengths"]["Top"]).isnumeric()
+                and len(str(info["videoPaths"][index]["lengths"]["Top"])) != 0
+            ):
                 self.FieldTSchema.setText("")
-                self.FieldTSchema.setPlaceholderText(str(info["videoPaths"][index]["lengths"]["Top"]))
+                self.FieldTSchema.setPlaceholderText(
+                    str(info["videoPaths"][index]["lengths"]["Top"])
+                )
             else:
                 self.FieldTSchema.setPlaceholderText("Enter enter width in mm")
                 self.FieldTSchema.setText("")
-            if str(info["videoPaths"][index]["lengths"]["Bottom"]).isnumeric() and len(str(info["videoPaths"][index]["lengths"]["Bottom"]))!= 0:
+            if (
+                str(info["videoPaths"][index]["lengths"]["Bottom"]).isnumeric()
+                and len(str(info["videoPaths"][index]["lengths"]["Bottom"])) != 0
+            ):
                 self.FieldBSchema.setText("")
-                self.FieldBSchema.setPlaceholderText(str(info["videoPaths"][index]["lengths"]["Bottom"]))
+                self.FieldBSchema.setPlaceholderText(
+                    str(info["videoPaths"][index]["lengths"]["Bottom"])
+                )
             else:
                 self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
                 self.FieldBSchema.setText("")
-            if str(info["videoPaths"][index]["lengths"]["Right"]).isnumeric() and len(str(info["videoPaths"][index]["lengths"]["Right"])) != 0:
+            if (
+                str(info["videoPaths"][index]["lengths"]["Right"]).isnumeric()
+                and len(str(info["videoPaths"][index]["lengths"]["Right"])) != 0
+            ):
                 self.FieldRSchema.setText("")
-                self.FieldRSchema.setPlaceholderText(str(info["videoPaths"][index]["lengths"]["Right"]))
+                self.FieldRSchema.setPlaceholderText(
+                    str(info["videoPaths"][index]["lengths"]["Right"])
+                )
             else:
                 self.FieldRSchema.setPlaceholderText("Enter enter length in mm")
                 self.FieldRSchema.setText("")
-            if str(info["videoPaths"][index]["lengths"]["Left"]).isnumeric() and len(str(info["videoPaths"][index]["lengths"]["Left"])) != 0:
+            if (
+                str(info["videoPaths"][index]["lengths"]["Left"]).isnumeric()
+                and len(str(info["videoPaths"][index]["lengths"]["Left"])) != 0
+            ):
                 self.FieldLSchema.setText("")
-                self.FieldLSchema.setPlaceholderText(str(info["videoPaths"][index]["lengths"]["Left"]))
+                self.FieldLSchema.setPlaceholderText(
+                    str(info["videoPaths"][index]["lengths"]["Left"])
+                )
             else:
                 self.FieldLSchema.setPlaceholderText("Enter enter length in mm")
                 self.FieldLSchema.setText("")
-          
-            
 
         else:
             print("else")
@@ -2022,79 +2117,96 @@ class MyTabWidget(QWidget):
         """Saves the Top length"""
         sender = self.sender()
         info = openYaml()
-        # print(sender.text() + ' was pressed')
+
         length = sender.text()
-        
-        if length.isnumeric() :
+
+        if length.isnumeric():
             length = int(length)
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuSchema.currentText()
+                ):
                     info["videoPaths"][i]["lengths"]["Top"] = length
                     self.FieldTSchema.setText("")
                     self.FieldTSchema.setPlaceholderText(str(length))
-                    
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+
+        with open("config.yaml", "w") as file:
+            yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
     def FieldLengthRegistrationRight(self):
         """Saves the Right Length"""
         sender = self.sender()
         info = openYaml()
-        # print(sender.text() + ' was pressed')
+
         length = sender.text()
-        
-        if length.isnumeric() :
+
+        if length.isnumeric():
             length = int(length)
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuSchema.currentText()
+                ):
                     info["videoPaths"][i]["lengths"]["Right"] = length
                     self.FieldRSchema.setText("")
                     self.FieldRSchema.setPlaceholderText(str(length))
-                    
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
+
+        with open("config.yaml", "w") as file:
+            yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
     def FieldLengthRegistrationLeft(self):
         """Saves the Left Length"""
         sender = self.sender()
         info = openYaml()
-        # print(sender.text() + ' was pressed')
+
         length = sender.text()
-        
-        if length.isnumeric() :
+
+        if length.isnumeric():
             length = int(length)
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuSchema.currentText()
+                ):
                     info["videoPaths"][i]["lengths"]["Left"] = length
                     self.FieldLSchema.setText("")
                     self.FieldLSchema.setPlaceholderText(str(length))
-                    
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
+
+        with open("config.yaml", "w") as file:
+            yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
     def FieldLengthRegistrationBottom(self):
         """Saves the Bottom Length"""
         sender = self.sender()
         info = openYaml()
-        # print(sender.text() + ' was pressed')
+
         length = sender.text()
-        
-        if length.isnumeric() :
+
+        if length.isnumeric():
             length = int(length)
             for i in range(len(info["videoPaths"])):
-                if info["videoPaths"][i]["title"]  == self.ComboVidMenuSchema.currentText():
+                if (
+                    info["videoPaths"][i]["title"]
+                    == self.ComboVidMenuSchema.currentText()
+                ):
                     info["videoPaths"][i]["lengths"]["Bottom"] = length
                     self.FieldBSchema.setText("")
                     self.FieldBSchema.setPlaceholderText(str(length))
-                    
-        with open('config.yaml', 'w') as file:
-            yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper) 
-        
+
+        with open("config.yaml", "w") as file:
+            yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
     def clearLengths(self):
+        """clears the saved lengths of the box"""
         info = openYaml()
         for i in range(len(info["videoPaths"])):
-            info["videoPaths"][i]["lengths"] = {"Top":"","Bottom":"","Right":"","Left":""}
+            info["videoPaths"][i]["lengths"] = {
+                "Top": "",
+                "Bottom": "",
+                "Right": "",
+                "Left": "",
+            }
         self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
         self.FieldBSchema.setText("")
         self.FieldTSchema.setPlaceholderText("Enter enter width in mm")
@@ -2104,24 +2216,25 @@ class MyTabWidget(QWidget):
         self.FieldLSchema.setPlaceholderText("Enter enter length in mm")
         self.FieldLSchema.setText("")
 
-        with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+        with open("config.yaml", "w") as file:
+            yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
     def setForAllLengths(self):
+        """sets all lengths the same"""
         info = openYaml()
         for j in range(len(info["videoPaths"])):
             if info["videoPaths"][j]["title"] == self.ComboVidMenuSchema.currentText():
                 for i in range(len(info["videoPaths"])):
                     info["videoPaths"][i]["lengths"] = info["videoPaths"][j]["lengths"]
 
-        with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
+        with open("config.yaml", "w") as file:
+            yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def ValidationPlayVid(self, breaker = False):
-        print("1")
+    def ValidationPlayVid(self, breaker=False):
+        """Validates wether the video is playing correctly (still work in progress)"""
         helper = openHelperYaml()
-        print(breaker)
-        
+
+
         if breaker or self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
             try:
                 self.threadVal.running = False
@@ -2129,15 +2242,14 @@ class MyTabWidget(QWidget):
             except:
                 pass
             self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
-            self.threadVal.changePixmap.connect(self.setImage) 
-            self.sliderVal.setRange(0,helper["ValidationVideoSettings"]["TotalFrames"]) 
+            self.threadVal.changePixmap.connect(self.setImage)
+            self.sliderVal.setRange(0, helper["ValidationVideoSettings"]["TotalFrames"])
             self.inzone()
-            
-                     
+
         else:
             self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
-            self.threadVal.changePixmap.connect(self.setImage)  
-        # print(self.vidPlayingVal , self.ComboVidValidationMenu.currentText())
+            self.threadVal.changePixmap.connect(self.setImage)
+
         self.vidPlayingVal = self.ComboVidValidationMenu.currentText()
 
     def playVideo(self):
@@ -2146,10 +2258,9 @@ class MyTabWidget(QWidget):
             if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
                 self.threadVal.running = False
                 del self.threadVal
-                x = 1/0
+                x = 1 / 0
             self.threadVal.start()
         except:
-            
             self.ValidationPlayVid(True)
             self.threadVal.start()
 
@@ -2159,97 +2270,36 @@ class MyTabWidget(QWidget):
             if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
                 print("pass")
                 # del self.threadVal
-                x = 1/0
+                x = 1 / 0
             self.threadVal.running = False
         except:
             self.ValidationPlayVid(True)
-             
 
     def setImage(self, image):
-        """Sets frame """
+        """Sets frame"""
         # print("2")
         helper = openHelperYaml()
         # print(helper["ValidationVideoSettings"]["Frame"])
-        
-       
+
         # self.FieldTimeValidation.setPlaceholderText(str(round(helper["ValidationVideoSettings"]["Frame"]/helper["ValidationVideoSettings"]["FPS"],2))) #for seconds
-        self.FieldTimeValidation.setPlaceholderText(str(helper["ValidationVideoSettings"]["Frame"]))
-        
+        self.FieldTimeValidation.setPlaceholderText(
+            str(helper["ValidationVideoSettings"]["Frame"])
+        )
+
         self.sliderVal.setSliderPosition(helper["ValidationVideoSettings"]["Frame"])
-        # try:
-            # self.GraphValidation.plot([helper["ValidationVideoSettings"]["Frame"]], [-1], pen='black', symbol='o')
-            # print(self.GraphValidation.plotItem.listDataItems().index(0))
-            # x_data, y_data = self.GraphValidation.listDataItems()[0].getData()
-            # print(y_data)
-            # # point = self.GraphValidation.plot([helper["ValidationVideoSettings"]["Frame"] -1], [-1], pen='r', symbol='o')
-            # self.GraphValidation.removeItem([helper["ValidationVideoSettings"]["Frame"] -1], [-1])
-            # # point[0].remove()
-            
-
-            # Not working
-            # x_data, y_data = self.GraphValidation.listDataItems()[0].getData()
-
-            # # Find the index of the point to remove
-            # index_to_remove = None
-            # for i, (x, y) in enumerate(zip(x_data, y_data)):
-                
-            #     if  y < 0:
-            #         index_to_remove = i
-            #         print(i)
-            #         break
-
-            # # Remove the point from the data
-            # if index_to_remove is not None:
-            #     x_data = np.delete(x_data, index_to_remove)
-            #     y_data = np.delete(y_data, index_to_remove)
-            #     print(index_to_remove)
-
-            # # Update the plot with the modified data
-            # self.GraphValidation.listDataItems()[0].setData(x_data, y_data)
-
-
-         
-
-
-            # x_data, y_data = self.GraphValidation.listDataItems()[0].getData()
-
-            # # Find the index of the point to remove
-            # index_to_remove = None
-            # for i, (x, y) in enumerate(zip(x_data, y_data)):
-                
-            #     if  y < 0:
-            #         index_to_remove = i
-            #         print(i)
-            #         break
-
-            # # Remove the point from the data
-            # if index_to_remove is not None:
-            #     x_data = np.delete(x_data, index_to_remove)
-            #     y_data = np.delete(y_data, index_to_remove)
-            #     print(index_to_remove)
-
-            # Update the plot with the modified data
-            # self.GraphValidation.listDataItems()[0].setData([1,2,3,4,5], [2,34,5,6,7])
-            # plot_widget.removeItem(self.videoTrackerIndex)
-            
-
-            
-        # except:
-        #     print("failekjkg")
-        
-
-
+       
         # Keeps track of currentlocation but currently won't delete the last point so kinda useless
         # self.GraphValidation.plot([helper["ValidationVideoSettings"]["Frame"]], [-1], pen='r', symbol='o')
         # self.videoTrackerIndex = helper["ValidationVideoSettings"]["Frame"]
 
-
-
-        # helper["ValidationVideoSettings"]["Frame"] = helper["ValidationVideoSettings"]["Frame"] + 1 #Doesn't work as anticipated
-        if helper["ValidationVideoSettings"]["PlayBackSpeed"] != float(self.PlayBackSpeedValidationMenu.currentText()):
-            helper["ValidationVideoSettings"]["PlayBackSpeed"] = float(self.PlayBackSpeedValidationMenu.currentText())#Doesn't seem to change speed when playing, when done resets video
-            with open('helper.yaml', 'w') as file: #No new info to be saved
-                yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
+        if helper["ValidationVideoSettings"]["PlayBackSpeed"] != float(
+            self.PlayBackSpeedValidationMenu.currentText()
+        ):
+            helper["ValidationVideoSettings"]["PlayBackSpeed"] = float(
+                self.PlayBackSpeedValidationMenu.currentText()
+            )  # Doesn't seem to change speed when playing, when done resets video
+            with open("helper.yaml", "w") as file:  # No new info to be saved
+                yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
 
         self.labelVideoValidation.setPixmap(QPixmap.fromImage(image))
 
@@ -2257,217 +2307,175 @@ class MyTabWidget(QWidget):
         """Slider will change the frame but it will mess up if you switch the video then scroll (trying to fix)"""
         self.stopVideo()
         helper = openHelperYaml()
-        
+
         # Original maybe semi work
         helper["ValidationVideoSettings"]["Frame"] = self.sliderVal.value()
-        with open('helper.yaml', 'w') as file:
-            yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
 
         self.playVideo()
 
-        # attmept 2 fail
-        # try:
-        #     del self.threadVal
-        # except:
-        #     pass
-        # self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
-        # self.threadVal.changePixmap.connect(self.setImage) 
-        # self.sliderVal.setRange(0,helper["ValidationVideoSettings"]["TotalFrames"]) 
-        # self.inzone()
-        # try:
-        #     helper["ValidationVideoSettings"]["Frame"] = self.sliderVal.value()
-        # except:
-        #     helper["ValidationVideoSettings"]["Frame"] = 0
-
-        # with open('helper.yaml', 'w') as file:
-        #     yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
-
-
-
-        # Attempt 1 fail 
-        # helper = openHelperYaml()
-        # self.stopVideo()
-       
-        # print(self.vidPlayingVal , self.ComboVidValidationMenu.currentText())
-        # if self.vidPlayingVal == self.ComboVidValidationMenu.currentText():
-        #     helper["ValidationVideoSettings"]["Frame"] = self.sliderVal.value()
-        #     with open('helper.yaml', 'w') as file:
-        #         yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)
-            
-        #     self.ValidationPlayVid()  
-        # else:
-        #     print("oebg")
-            # try:
-            #     del self.threadVal
-            # except:
-            #     pass
-            # self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
-            # self.threadVal.changePixmap.connect(self.setImage) 
-            # self.sliderVal.setRange(0,helper["ValidationVideoSettings"]["TotalFrames"]) 
-            # self.inzone()
-            # try:
-            #     helper["ValidationVideoSettings"]["Frame"] = self.sliderVal.value()
-            # except:
-            #     helper["ValidationVideoSettings"]["Frame"] = 0
-        # show_popup()
 
     def FrameSet(self):
         """Will change the frame to the designated frame"""
-        # print(self.FieldTimeValidation.text().isnumeric())
-        if self.FieldTimeValidation.text().isnumeric():
+
+        helper = openHelperYaml()
+        if (
+            self.FieldTimeValidation.text().isnumeric()
+            and int(self.FieldTimeValidation.text())
+            <= helper["ValidationVideoSettings"]["TotalFrames"]
+        ):
             self.stopVideo()
-            # time.sleep(0.001)
-            helper = openHelperYaml()
-            helper["ValidationVideoSettings"]["Frame"] = int(round(float(self.FieldTimeValidation.text())))
+
+            self.sliderVal.setSliderPosition(int(self.FieldTimeValidation.text()))
+            helper["ValidationVideoSettings"]["Frame"] = int(
+                round(float(self.FieldTimeValidation.text()))
+            )
             # self.FieldTimeValidation.setPlaceholderText(str(round(helper["ValidationVideoSettings"]["Frame"]/helper["ValidationVideoSettings"]["FPS"],2))) #In regard to seconds
-            self.FieldTimeValidation.setPlaceholderText(str(int(round(float(self.FieldTimeValidation.text())))))
+            self.FieldTimeValidation.setPlaceholderText(
+                str(int(round(float(self.FieldTimeValidation.text()))))
+            )
 
             self.FieldTimeValidation.setText("")
-           
-            # self.GraphValidation.getPlotItem().setLabel(bottom='Frame Frame #'+ str(helper["ValidationVideoSettings"]["Frame"])) #doesnt seem to work
-            with open('helper.yaml', 'w') as file:
-                yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper)  
-            self.ValidationPlayVid(True)
-            # print("end")
+
+            with open("helper.yaml", "w") as file:
+                yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+            self.ValidationPlayVid()
 
     def inzone(self):
         """goes through each h5 file applies the zone transformation and will extract the number of frames of which each body part is inside of the zone and update the config file"""
-    
-         # Transform image frame
-        info = openYaml()
-        # try:
-        if True:
-            w, h = int(info["BoxWidth"]),int(info["BoxHeight"])  # in mm
-            schema = np.array([
-                [0, 0],
-                [w, 0],
-                [w, h],
-                [0, h]
-            ]).astype(np.float32)
-          
-            for i in range(len(info["videoPaths"])):
-                if len(info["videoPaths"][i]["points"]) == 4 and info["DLCvideoPaths"][i]["h5"] == info["videoPaths"][i]["DLC"]:
-                    registration_points = np.array([
-                    info["videoPaths"][i]["points"]
-                    ]).astype(np.float32)
 
-                    homogeneous_transform = cv2.getPerspectiveTransform(registration_points, schema)
+        # Transform image frame
+        info = openYaml()
+        try:
+            w, h = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
+            schema = np.array([[0, 0], [w, 0], [w, h], [0, h]]).astype(np.float32)
+
+            for i in range(len(info["videoPaths"])):
+                if (
+                    len(info["videoPaths"][i]["points"]) == 4
+                    and info["DLCvideoPaths"][i]["h5"] == info["videoPaths"][i]["DLC"]
+                ):
+                    registration_points = np.array(
+                        [info["videoPaths"][i]["points"]]
+                    ).astype(np.float32)
+
+                    homogeneous_transform = cv2.getPerspectiveTransform(
+                        registration_points, schema
+                    )
                     # transformed_frame = cv2.warpPerspective(frame, homogeneous_transform, (w, h))
 
-
                     # Loads dataframe
-                    df = pd.read_hdf(str(Path(info["DLCfolderPath"]) / info["DLCvideoPaths"][i]["h5"]))
+                    df = pd.read_hdf(
+                        str(
+                            Path(info["DLCfolderPath"]) / info["DLCvideoPaths"][i]["h5"]
+                        )
+                    )
                     # loads data frame
                     # transforms it
-                    transformed_df = transform_dataframe_to_perspective(df, homogeneous_transform)
+                    transformed_df = transform_dataframe_to_perspective(
+                        df, homogeneous_transform
+                    )
 
-                
                     features = []
                     # How to select specific bodyparts and get a centroid
                     for key in info["DLCvideoPaths"][i]["bodyparts"]:
                         bodyparts_of_interest = [str(key)]
-                        centroid = transformed_df.loc[:, pd.IndexSlice[:, bodyparts_of_interest]].groupby(level='coords', axis=1).mean()
-                        # plt.scatter(centroid.x, centroid.y, s=1, c=c)
+                        centroid = (
+                            transformed_df.loc[
+                                :, pd.IndexSlice[:, bodyparts_of_interest]
+                            ]
+                            .groupby(level="coords", axis=1)
+                            .mean()
+                        )
+                
 
                         # Defining the center zone
-                        zone_points = np.array(
-                            info["zone"]
-                        )
+                        zone_points = np.array(info["zone"])
 
                         # When is the mouse part inside?
                         center_zone = plt.Polygon(zone_points, alpha=0.5)
-                        mouse_points = centroid[['x','y']].values
+                        mouse_points = centroid[["x", "y"]].values
                         is_in_center = center_zone.contains_points(mouse_points)
-                        info["DLCvideoPaths"][i]["bodyparts"][str(key)][1] = int(is_in_center.sum())
-                        
+                        info["DLCvideoPaths"][i]["bodyparts"][str(key)][1] = int(
+                            is_in_center.sum()
+                        )
+                        info["data"][str(key)][i] = int(is_in_center.sum())
+
                         features.append(key)
-                            
-                       
-                if self.ComboVidValidationMenu.currentText() == info["videoPaths"][i]["title"]:
-                    likelihood = transformed_df.xs('likelihood', level='coords', axis=1)
-                    transformed_df = transformed_df.where(likelihood > info["uncertainty"]) #Will leave gap for distance measurment and wil assume false for inzone
-                    centroid = transformed_df.loc[:, pd.IndexSlice[:, features]].groupby(level='coords', axis=1).mean()
 
+                if (
+                    self.ComboVidValidationMenu.currentText()
+                    == info["videoPaths"][i]["title"]
+                ):
+                    likelihood = transformed_df.xs("likelihood", level="coords", axis=1)
+                    transformed_df = transformed_df.where(
+                        likelihood > info["uncertainty"]
+                    )  # Will leave gap for distance measurment and wil assume false for inzone
+                    centroid = (
+                        transformed_df.loc[:, pd.IndexSlice[:, features]]
+                        .groupby(level="coords", axis=1)
+                        .mean()
+                    )
 
-                    # print(centroid)
-                    # listdf = list(centroid)
-                    # # print(listdf)
-                    # lowCertainty = []
-                    # for i in range(len(listdf)): 
-                        
-                    #     if i == 0 or lowCertainty[len(lowCertainty)-1] != listdf[i][1]:
-                    #         lowCertainty.append(listdf[i][1])
-                    #         print(lowCertainty[len(lowCertainty)-1])
-                            
-                    #     else:
-                    #         pass
-                    
-                  # When is the mouse inside?
+                    # When is the mouse inside?
                     center_zone = plt.Polygon(zone_points, alpha=0.5)
-                    mouse_points = centroid[['x','y']].values
+                    mouse_points = centroid[["x", "y"]].values
                     is_in_center = center_zone.contains_points(mouse_points)
-                
-                    
-                    # labels = ["True","False"]
-                
-                    # fig = plt.figure()
-                    # ax = fig.add_subplot(111)
-                    # ax.imshow(is_in_center)
-                    # ax.set_yticks(np.arange(len(labels)))
-                    # ax.set_yticklabels(labels)
-                    # plt.plot(is_in_center)
-                    # plt.yticks(np.arange(min(is_in_center), max(is_in_center)+1, 1))
-                    # plt.show()
-                    # fig = plt.figure()
-                    # fig.plot(is_in_center)
-                    # fig.yticks(np.arange(min(is_in_center), max(is_in_center)+1, 1))
+
+               
                     try:
-                        
                         self.GraphValidation.getPlotItem().clearPlots()
-                     
-                        
+
                     except:
                         pass
 
                     if self.GraphValidationMenu.currentText() == "In zone":
-                        self.GraphTitleValidationLabel.setText("Mouse inside zone per frame \n(1 means inside zone 0 means outside)")
-                        # self.GraphValidation = pg.PlotWidget()
-                        # self.GraphValidation.re
+                        self.GraphTitleValidationLabel.setText(
+                            "Mouse inside zone per frame \n(1 means inside zone 0 means outside)"
+                        )
+
 
                         # Generate some example data
-                        print(is_in_center)
+
                         x = np.arange(len(is_in_center))
                         y = np.array(is_in_center)
 
-                        
-
                         # # Add the scatter plot item to the graph widget
-                        # self.GraphValidation.addItem(scatter)
+
                         plot = self.GraphValidation.plot(x=x, y=y)
 
-            # Set the pen
-                        plot.setPen(pg.mkPen('g', width=2))
-                        
+                        # Set the pen
+                        plot.setPen(pg.mkPen("g", width=2))
+
                         self.GraphValidation.setXRange(0, len(is_in_center), padding=0)
 
                         # self.GraphValidation.setYRange(0, 1, padding=0)
-                        self.GraphValidation.getPlotItem().getViewBox().setMouseEnabled(y=False)
-                        self.GraphValidation.getPlotItem().setLabels( left='Inside zone', bottom='Frame')
-                        self.GraphValidation.getPlotItem().getViewBox() #unclear how to loop back to change color
-                        # self.GraphValidation.getPlotItem().getViewBox()
-                        # self.GraphValidation.getPlotItem().
-                        # yTicks = [0, 1]
-                        # self.GraphValidation.getPlotItem().getAxis("left").setTicks([yTicks])
-                        # self.GraphValidation.getPlotItem().getViewBox().setMouseEnabled(x=False)
+                        self.GraphValidation.getPlotItem().getViewBox().setMouseEnabled(
+                            y=False
+                        )
+                        self.GraphValidation.getPlotItem().setLabels(
+                            left="Inside zone", bottom="Frame"
+                        )
+                        self.GraphValidation.getPlotItem().getViewBox()  # unclear how to loop back to change color
+          
                     elif self.GraphValidationMenu.currentText() == "Distance":
-                        self.GraphTitleValidationLabel.setText("Distance traveled per frame")
-                        
+                        self.GraphTitleValidationLabel.setText(
+                            "Distance traveled per frame"
+                        )
+
                         bodyparts_of_interest = features
-                        centroid = transformed_df.loc[:, pd.IndexSlice[:, bodyparts_of_interest]].groupby(level='coords', axis=1).mean()
-                        location = centroid[['x', 'y']].values
+                        centroid = (
+                            transformed_df.loc[
+                                :, pd.IndexSlice[:, bodyparts_of_interest]
+                            ]
+                            .groupby(level="coords", axis=1)
+                            .mean()
+                        )
+                        location = centroid[["x", "y"]].values
                         deltas = location[1:] - location[:-1]
-                        delta_x = deltas[:,0]
-                        delta_y = deltas[:,1] 
+                        delta_x = deltas[:, 0]
+                        delta_y = deltas[:, 1]
 
                         distance = np.sqrt(delta_x**2 + delta_y**2)
                         threshold = 20
@@ -2476,21 +2484,119 @@ class MyTabWidget(QWidget):
                         y = np.array(distance)
                         plot = self.GraphValidation.plot(x=x, y=y)
 
-                         # Set the pen
-                        plot.setPen(pg.mkPen('g', width=2))
-                        
-                        self.GraphValidation.setXRange(0, len(distance), padding=0)
-                        self.GraphValidation.getPlotItem().setLabels( left='Distance moved per frame (mm)', bottom='Frame')
-            
-                   
+                        # Set the pen
+                        plot.setPen(pg.mkPen("g", width=2))
 
-            with open('config.yaml', 'w') as file:
-                yaml.dump(info,file,default_flow_style=False, Dumper=NoAliasDumper)  
-        # except:
-        #     print("fail")
+                        self.GraphValidation.setXRange(0, len(distance), padding=0)
+                        self.GraphValidation.getPlotItem().setLabels(
+                            left="Distance moved per frame (mm)", bottom="Frame"
+                        )
+
+            self.featuresDataDisplay.setModel(pandasModel(pd.DataFrame(info["data"])))
+            self.featuresDataDisplay.resizeColumnsToContents()
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
+        except:
+            print("fail")
+
+    def ResetValidation(self):
+        """Resets validation tab (currently just messes things up)"""
+        info = openYaml()
+        
+        helper = {
+            "ValidationVideoSettings": {
+                "PlayBackSpeed": 1,
+                "Frame": 0,
+                "FPS": 30,
+                "TotalFrames": 1,
+            },
+            "PartsOfInterest": [],
+        }
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+        self.PlayBackSpeedValidationMenu.setCurrentIndex(1)
+        self.FieldTimeValidation.setPlaceholderText(str(0))
+        self.sliderVal.setValue(0)
+        self.FieldTimeValidation.setText("")
+        try:
+            self.threadVal.running = False
+        except:
+            pass
+
+        self.labelVideoValidation.setText("Place Holder for Video")
+        self.GraphTitleValidationLabel.setText("Graph")
+        
+        self.listVideoFoldersValidation = QListWidget()
+        if len(info["data"][" Videos"]) != 0:
+            self.listVideoFoldersValidation.addItems(info["data"][" Videos"])
+
+        self.featuresDataDisplay = QTableView()
+        if len(info["data"][" Videos"]) >=3:
+            self.featuresDataDisplay.setMinimumHeight(115)
+        elif len(info["data"][" Videos"]) == 2:
+            self.featuresDataDisplay.setMinimumHeight(85)
+        elif len(info["data"][" Videos"]) == 1:
+            self.featuresDataDisplay.setMinimumHeight(55)
+        # self.featuresDataDisplay.setMaximumHeight(len(info["data"][" Videos"]) + 25)
+        self.featuresDataDisplay.setModel(pandasModel(pd.DataFrame(info["data"])))
+        self.featuresDataDisplay.resizeColumnsToContents()
+        hheader = self.featuresDataDisplay.horizontalHeader()
+        hheader.setSectionResizeMode(QHeaderView.Stretch)
+        hheader.setStyleSheet("::section {background-color: grey; color: black;}")
+
+        # self.labelValidationTimeHeading = QLabel("Time (s)") #for time
+    
+
+      
+        self.FieldTimeValidation.setPlaceholderText("Enter Frame")
+        
+
+        self.ComboVidValidationMenu = QComboBox()
+        self.ComboVidValidationMenu.addItems(info["data"][" Videos"])
 
         
-if __name__ == '__main__':
+        self.PlayBackSpeedValidationMenu.setCurrentIndex(1)
+    
+    def ExportData(self):
+        info = openYaml()
+        # try:
+        if True:
+            w, h = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
+            schema = np.array([[0, 0], [w, 0], [w, h], [0, h]]).astype(np.float32)
+
+            for i in range(len(info["videoPaths"])):
+                if (
+                    len(info["videoPaths"][i]["points"]) == 4
+                    and info["DLCvideoPaths"][i]["h5"] == info["videoPaths"][i]["DLC"]
+                ):
+                    registration_points = np.array(
+                        [info["videoPaths"][i]["points"]]
+                    ).astype(np.float32)
+
+                    homogeneous_transform = cv2.getPerspectiveTransform(
+                        registration_points, schema
+                    )
+                    # transformed_frame = cv2.warpPerspective(frame, homogeneous_transform, (w, h))
+
+                    # Loads dataframe
+                    df = pd.read_hdf(
+                        str(
+                            Path(info["DLCfolderPath"]) / info["DLCvideoPaths"][i]["h5"]
+                        )
+                    )
+                    transformed_df = transform_dataframe_to_perspective(
+                        df, homogeneous_transform
+                    )
+                    
+                    
+                    # Create a sample DataFrame
+                    data = pd.DataFrame(transformed_df)
+                    # Write the DataFrame to an Excel file
+                    data.to_excel('data.xlsx', index=True)
+   
+
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_())
