@@ -1,16 +1,230 @@
-BoxHeight: ''
-BoxWidth: ''
-DLCfolderPath: ''
-DLCvideoPaths: []
+BoxHeight: 500.0
+BoxWidth: 500.0
+DLCfolderPath: C:/Users/avpet/OneDrive/Documents/Python code/DSRI/2023-06-15_sample-data/dlc_files
+DLCvideoPaths:
+- bodyparts:
+    left_ear:
+    - 0
+    - 7321
+    midbody1:
+    - 0
+    - 7984
+    midbody2:
+    - 0
+    - 8661
+    nose:
+    - 0
+    - 6960
+    right_ear:
+    - 0
+    - 7570
+    tailbase:
+    - 0
+    - 9073
+  h5: f1DLC_resnet50_agrpNov19shuffle1_400000.h5
+- bodyparts:
+    left_ear:
+    - 0
+    - 7462
+    midbody1:
+    - 0
+    - 7572
+    midbody2:
+    - 0
+    - 7847
+    nose:
+    - 0
+    - 7556
+    right_ear:
+    - 0
+    - 7640
+    tailbase:
+    - 0
+    - 7975
+  h5: f2DLC_resnet50_agrpNov19shuffle1_400000.h5
+- bodyparts:
+    left_ear:
+    - 0
+    - 12218
+    midbody1:
+    - 0
+    - 13102
+    midbody2:
+    - 0
+    - 13400
+    nose:
+    - 0
+    - 12334
+    right_ear:
+    - 0
+    - 12970
+    tailbase:
+    - 0
+    - 14197
+  h5: f3DLC_resnet50_agrpNov19shuffle1_400000.h5
+- bodyparts:
+    left_ear:
+    - 0
+    - 6910
+    midbody1:
+    - 0
+    - 7086
+    midbody2:
+    - 0
+    - 8162
+    nose:
+    - 0
+    - 6828
+    right_ear:
+    - 0
+    - 6854
+    tailbase:
+    - 0
+    - 8468
+  h5: f4DLC_resnet50_agrpNov19shuffle1_400000.h5
 Name: ''
-Path: ''
+Path: C:/Users/avpet/OneDrive/Documents/Python code/DSRI/2023-06-15_sample-data/videos
 data:
-  ' Videos': []
-  Feature 1: []
-  Feature 2: []
-folderPath: ''
-groups: []
+  ' Videos':
+  - f1.mp4
+  - f2.mp4
+  - f3.mp4
+  - f4.mp4
+  left_ear:
+  - 7321
+  - 7462
+  - 12218
+  - 6910
+  midbody1:
+  - 7984
+  - 7572
+  - 13102
+  - 7086
+  midbody2:
+  - 8661
+  - 7847
+  - 13400
+  - 8162
+  nose:
+  - 6960
+  - 7556
+  - 12334
+  - 6828
+  right_ear:
+  - 7570
+  - 7640
+  - 12970
+  - 6854
+  tailbase:
+  - 9073
+  - 7975
+  - 14197
+  - 8468
+folderPath: C:/Users/avpet/OneDrive/Documents/Python code/DSRI/2023-06-15_sample-data/videos
+groups:
+- counting
+- Steve
+- The pups
 numFeatures: '2'
+threshold: 20
 uncertainty: 0.6
-videoPaths: []
-zone: []
+videoPaths:
+- DLC: f1DLC_resnet50_agrpNov19shuffle1_400000.h5
+  DLC.mp4: f1DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
+  group:
+  - counting
+  - Steve
+  lengths:
+    Bottom: ''
+    Left: ''
+    Right: ''
+    Top: ''
+  points:
+  - - 243
+    - 119
+  - - 680
+    - 115
+  - - 723
+    - 475
+  - - 209
+    - 487
+  title: f1.mp4
+- DLC: f2DLC_resnet50_agrpNov19shuffle1_400000.h5
+  DLC.mp4: f2DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
+  group:
+  - Steve
+  - The pups
+  lengths:
+    Bottom: ''
+    Left: ''
+    Right: ''
+    Top: ''
+  points:
+  - - 246
+    - 113
+  - - 675
+    - 113
+  - - 726
+    - 459
+  - - 220
+    - 484
+  title: f2.mp4
+- DLC: f3DLC_resnet50_agrpNov19shuffle1_400000.h5
+  DLC.mp4: f3DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
+  group:
+  - counting
+  - Steve
+  - The pups
+  lengths:
+    Bottom: ''
+    Left: ''
+    Right: ''
+    Top: ''
+  points:
+  - - 240
+    - 121
+  - - 678
+    - 113
+  - - 720
+    - 471
+  - - 224
+    - 486
+  title: f3.mp4
+- DLC: f4DLC_resnet50_agrpNov19shuffle1_400000.h5
+  DLC.mp4: f4DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
+  group:
+  - Steve
+  lengths:
+    Bottom: ''
+    Left: ''
+    Right: ''
+    Top: ''
+  points:
+  - - 240
+    - 121
+  - - 678
+    - 113
+  - - 720
+    - 471
+  - - 224
+    - 486
+  title: f4.mp4
+zones:
+  TopLeft:
+  - - 600
+    - 100
+  - - 350
+    - 100
+  - - 350
+    - 350
+  - - 600
+    - 350
+  center:
+  - - 100
+    - 100
+  - - 400
+    - 100
+  - - 400
+    - 400
+  - - 100
+    - 400

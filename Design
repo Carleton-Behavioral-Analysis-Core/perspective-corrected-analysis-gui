@@ -27,7 +27,6 @@ from PIL import ImageDraw
 
 class NoAliasDumper(yaml.SafeDumper):
     """Prevents yaml from using id to save space (would potentially mess up certain functions)"""
-
     def ignore_aliases(self, data):
         return True
 
@@ -39,19 +38,19 @@ def openYaml(rewrite=True):
         with open("config.yaml", "r") as file:
             info = yaml.safe_load(file)
             # print("past safe load")
-            if len(info) != 13:
+            if len(info) != 14:
                 x = 1 / 0
     except:
         # if False:
         if rewrite:
-            print("rewrite")
+            print("rewrite info")
 
             info = {
                 "folderPath": "",
                 "DLCfolderPath": "",
                 "videoPaths": [],
                 "DLCvideoPaths": [],
-                "zone": [],
+                "zones": {"center": []},
                 "BoxHeight": "",
                 "BoxWidth": "",
                 "Name": "",
@@ -59,7 +58,8 @@ def openYaml(rewrite=True):
                 "numFeatures": "2",
                 "data": {" Videos": [], "Feature 1": [], "Feature 2": []},
                 "uncertainty": 0.6,
-                "groups": []
+                "groups": [],
+                "threshold": 20
             }
             with open("config.yaml", "w") as file:
                 yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
@@ -68,18 +68,16 @@ def openYaml(rewrite=True):
 
 def openHelperYaml(rewrite=True):
     """Opens yaml file if file is messed with resets it to generic if not returns yaml (acts like a support file)"""
+    rewrite = False
     try:
-        # if True:
         with open("helper.yaml", "r") as file:
             helper = yaml.safe_load(file)
-
-            if len(helper) != 3:
-                print(len(helper))
+            if len(helper) != 4:
                 x = 1 / 0
     except:
-        # if False:
+        print("rewrite helper")
         if rewrite:
-            print("rewrite helper")
+            
             helper = {
                 "ValidationVideoSettings": {
                     "PlayBackSpeed": 1,
@@ -89,6 +87,7 @@ def openHelperYaml(rewrite=True):
                 },
                 "PartsOfInterest": [],
                 "points": [],
+                "Zones":{}
             }
             with open("helper.yaml", "w") as file:
                 yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
@@ -144,7 +143,7 @@ class pandasModel(QAbstractTableModel):
 
 
 def SetForAllVideos_popup():
-    """SHows a warning for setting the points for all the videos and makes sure choice is confirmed"""
+    """Shows a warning for setting the points for all the videos and makes sure choice is confirmed"""
     msg = QtWidgets.QMessageBox()
     msg.setWindowTitle("Confirmation")
     msg.setText("Are you sure you want to set these points for all videos?")
@@ -154,20 +153,13 @@ def SetForAllVideos_popup():
     msg.setIcon(QMessageBox.Warning)
     msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
     msg.setDefaultButton(QtWidgets.QMessageBox.No)
-    # msg = QMessageBox()
-    # msg.setIcon(QMessageBox.Critical)
-    # msg.setText("Error")
-
-    # msg.setWindowTitle("Error")
-    # msg.buttonClicked.connect(popup_button_clicked())
 
     x = msg.exec_()
-    # print(x)
     return x
 
 
 def ClearConfig_popup():
-    """SHows a warning for setting the points for all the videos and makes sure choice is confirmed"""
+    """SHows for clearing the config file (when creating new file)"""
     msg = QtWidgets.QMessageBox()
     msg.setWindowTitle("Confirmation")
     msg.setText("Proceeding with this action may erase saved data")
@@ -175,21 +167,9 @@ def ClearConfig_popup():
     msg.setIcon(QMessageBox.Warning)
     msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
     msg.setDefaultButton(QtWidgets.QMessageBox.No)
-    # msg = QMessageBox()
-    # msg.setIcon(QMessageBox.Critical)
-    # msg.setText("Error")
-
-    # msg.setWindowTitle("Error")
-    # msg.buttonClicked.connect(popup_button_clicked())
 
     x = msg.exec_()
-    # print(x)
     return x
-
-
-def popup_button_clicked(i):
-    # print(i.text(), "click")
-    return i.text()
 
 
 def ValidationWarning_popup():
@@ -291,28 +271,28 @@ class ThreadOpenCV(QThread):
                 image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
 
                 # Trying to draw shape
+                for key in info["zones"]:
+                    if len(info["zones"][key]) == 4:
+                        painter = QPainter(image)
+                        pixmap = QPixmap(image)
+                        painter.drawPixmap(image.height(), image.width(), pixmap)
+                        brush = QBrush(QColor(0, 0, 150, 127))
 
-                if len(info["zone"]) == 4:
-                    painter = QPainter(image)
-                    pixmap = QPixmap(image)
-                    painter.drawPixmap(image.height(), image.width(), pixmap)
-                    brush = QBrush(QColor(0, 0, 150, 127))
+                        points = QPolygon(
+                            [
+                                QPoint(info["zones"][key][0][0], info["zones"][key][0][1]),
+                                QPoint(info["zones"][key][1][0], info["zones"][key][1][1]),
+                                QPoint(info["zones"][key][2][0], info["zones"][key][2][1]),
+                                QPoint(info["zones"][key][3][0], info["zones"][key][3][1]),
+                            ]
+                        )
 
-                    points = QPolygon(
-                        [
-                            QPoint(info["zone"][0][0], info["zone"][0][1]),
-                            QPoint(info["zone"][1][0], info["zone"][1][1]),
-                            QPoint(info["zone"][2][0], info["zone"][2][1]),
-                            QPoint(info["zone"][3][0], info["zone"][3][1]),
-                        ]
-                    )
-
-                    painter.setBrush(brush)
-                    painter.drawPolygon(points)
-                    del painter
-                    del brush
-                else:
-                    pass
+                        painter.setBrush(brush)
+                        painter.drawPolygon(points)
+                        del painter
+                        del brush
+                    else:
+                        pass
 
                 image = image.scaled(640, 480, Qt.KeepAspectRatio)
                 x = (1 / fps) / (helper["ValidationVideoSettings"]["PlayBackSpeed"])
@@ -386,11 +366,13 @@ class MyTabWidget(QWidget):
         self.tabRegisterCorners = QWidget()
         self.tabCreateSchema = QWidget()
         self.tabGroup = QWidget()
+        self.tabZone = QWidget()
 
         # Dont think I need most of these
         self.path = ""
         self.title = ""
         self.cornerImageDim = []
+        self.zoneImageDim = []
         self.vidPlayingVal = ""
         self.videoTrackerIndex = 0
         info = openYaml()
@@ -596,8 +578,8 @@ class MyTabWidget(QWidget):
             self.FieldBoxHeight.setPlaceholderText("Box Height in mm")
         self.FieldBoxHeight.returnPressed.connect(self.boxHeightSave)
 
-        self.btnCreateSchema = QPushButton("2. CREATE SCHEMA")
-        self.btnCreateSchema.clicked.connect(self.toRegisterSchema)
+        self.btnCreateSchema = QPushButton("2. REGISTER ZONES")
+        self.btnCreateSchema.clicked.connect(self.toZones)
 
         self.btnRegisterCorners = QPushButton("1. REGISTER CORNERS")
         self.btnRegisterCorners.clicked.connect(self.toRegisterCorners)
@@ -607,6 +589,8 @@ class MyTabWidget(QWidget):
 
         self.ComboVidMenu = QComboBox()
         self.ComboVidMenu.addItems(info["data"][" Videos"])
+        self.ComboVidMenu.currentTextChanged.connect(self.displayFrame)
+        
         # self.ComboVidMenu.clicked.connect
 
         self.labelImageOri = QLabel("Original Image Place Holder")
@@ -637,8 +621,8 @@ class MyTabWidget(QWidget):
 
         self.btnScoreVid = QPushButton("SCORE VIDEOS")
         self.btnScoreVid.clicked.connect(
-            self.inzone
-        )  # should be place holder but using it to test inzone
+            self.placeHodlerBtn
+        )  
 
         self.btnCreateVis = QPushButton("CREATE VISUALS")
         self.btnCreateVis.clicked.connect(self.placeHodlerBtn)
@@ -694,10 +678,13 @@ class MyTabWidget(QWidget):
 
         self.ComboVidValidationMenu = QComboBox()
         self.ComboVidValidationMenu.addItems(info["data"][" Videos"])
+        self.ComboVidValidationMenu.currentTextChanged.connect(self.ChangeVideo)
 
         self.PlayBackSpeedValidationMenu = QComboBox()
         self.PlayBackSpeedValidationMenu.addItems(["0.5", "1", "2", "5", "10", "30"])
         self.PlayBackSpeedValidationMenu.setCurrentIndex(1)
+        self.PlayBackSpeedValidationMenu.currentTextChanged.connect(self.changePlayBackSpeed) 
+
 
         self.labelVideoValidation = QLabel("Place Holder for Video")
         self.labelVideoValidation.setScaledContents(True)  # allows video to chage size
@@ -713,9 +700,11 @@ class MyTabWidget(QWidget):
         self.sliderVal = QSlider(Qt.Orientation.Horizontal, self)
         self.sliderVal.sliderReleased.connect(self.changeFrameSlider)
         self.sliderVal.setRange(0, 10)
+        self.sliderVal.setSliderPosition(0)
 
         self.GraphValidationMenu = QComboBox()
         self.GraphValidationMenu.addItems(["In zone", "Distance"])
+        self.GraphValidationMenu.currentTextChanged.connect(self.inzone)
 
         self.GraphValidationLabelMenu = QLabel("Visualize metric")
 
@@ -724,7 +713,7 @@ class MyTabWidget(QWidget):
         self.btnResetVal = QPushButton("Reset")
         self.btnResetVal.clicked.connect(self.ResetValidation)
 
-        self.btnExportData = QPushButton("Export")
+        self.btnExportData = QPushButton("Export Data")
         self.btnExportData.clicked.connect(self.ExportData)
 
         self.btnToGroup = QPushButton("Group")
@@ -768,6 +757,7 @@ class MyTabWidget(QWidget):
 
         self.ComboVidMenuCorner = QComboBox()
         self.ComboVidMenuCorner.addItems(info["data"][" Videos"])
+        self.ComboVidMenuCorner.currentTextChanged.connect(self.displayFrameCorner)
 
         self.btnChangeFrame = QPushButton("Change Frame")
         self.btnChangeFrame.clicked.connect(self.displayFrameCorner)
@@ -1047,11 +1037,12 @@ class MyTabWidget(QWidget):
         self.listVideoGroupLayout.addWidget(self.labelSelectGroup, 0, 0, 1, 1)
         self.listVideoGroupLayout.addWidget(self.labelVideoGroup, 0, 1, 1, 1)
         self.listVideoGroupLayout.addWidget(self.labelGroupsGroup, 0, 2, 1, 1)
-        self.listVideoGroupLayout.setHorizontalSpacing(10)
+        # self.listVideoGroupLayout.setHorizontalSpacing(10)
+        # self.listVideoGroupLayout.setVerticalSpacing(5)
         # groups = set()
-        for i in range(len((info["data"][" Videos"]))):
+        for i in range(len((info["data"][" Videos"]))+1):
             localGroup = "N/A"
-
+            
             exec("self.checkBoxGroup" + str(i) + " = QCheckBox()")
             exec(
                 "self.listVideoGroupLayout.addWidget(self.checkBoxGroup"
@@ -1077,29 +1068,19 @@ class MyTabWidget(QWidget):
                 + ", 2, 1, 1)"
             )
         #     # print("tot " , i)
-
-        # for i in range(5):
-        #     exec("self.tester" + str(i) + ' = QLabel("test' + str(i)+'")')
-        #     exec("self.listVideoGroupLayout.addWidget(self.tester" +str(i) + ", " + str(i+1) + ", 0, 1, 1)")
-
-        # self.listVideoGroupLayout.removeWidget(self.checkBoxGroup2)
-        # self.tester = QLabel("test")
-        # self.listVideoGroupLayout.addWidget(self.tester, 1, 0, 1, 1)
-        # self.tester2 = QLabel("test2")
-        # self.listVideoGroupLayout.addWidget(self.tester2, 2, 0, 1, 1)
-
+        self.listVideoGroupLayout.setHorizontalSpacing(10)
+        self.listVideoGroupLayout.setVerticalSpacing(5)
+      
         self.listVideoGroup = QWidget()
         self.listVideoGroup.setLayout(self.listVideoGroupLayout)
         self.scroll_area.setWidget(self.listVideoGroup)
+    
 
         self.selectAllBtnGroup = QPushButton("Select All")
         self.selectAllBtnGroup.clicked.connect(self.selectAllGroupsBtnGroup)
 
         self.deselectAllBtnGroup = QPushButton("Deselect All")
         self.deselectAllBtnGroup.clicked.connect(self.deselectAllGroupsBtnGroup)
-
-        # self.deselectAllBtnGroup = QPushButton()
-        # self.deselectAllBtnGroup.clicked.connect(self.placeHodlerBtn)
 
         self.addToNewGroupbtn = QPushButton("Add New Group")
         self.addToNewGroupbtn.clicked.connect(self.addGroupBtnGroup)
@@ -1151,7 +1132,114 @@ class MyTabWidget(QWidget):
             with open("helper.yaml", "w") as file:
                 yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
 
+        # Zone tab 993275
+
+
+
+        self.tabZone.layout = QGridLayout()
+
+        self.ComboVidMenuZone = QComboBox()
+        self.ComboVidMenuZone.addItems(info["data"][" Videos"])
+        self.ComboVidMenuZone.currentTextChanged.connect(self.ZoneDisplay)
+
+        self.ComboZoneMenuZone = QComboBox()
+        zoneList = []
+        for zone in info["zones"]:
+            zoneList.append(zone)
+        zoneList = sorted(
+                zoneList,
+                key=lambda a: sum(
+                    ([a[:l].lower(), a[:l]] for l in range(1, len(a) + 1)), []
+                ),
+            )
+        self.ComboZoneMenuZone.addItems(zoneList)
+        self.ComboZoneMenuZone.currentTextChanged.connect(self.ZoneDisplay)
+
+
+        self.labelImageOneZone = QLabel("One zone Image Place Holder")
+        self.labelImageOneZone.mousePressEvent = lambda event: self.locationInImageZone(
+            event
+        )
+
+        self.labelImageZone = QLabel("Multy Zone Image Place Holder")
+
+        self.FieldNameZone = QLineEdit()
+        self.FieldNameZone.setPlaceholderText("Name of Zone")
+        self.FieldNameZone.returnPressed.connect(self.addZoneZone)
+
+        self.btnDeleteZone = QPushButton("Delete Zone")
+        self.btnDeleteZone.clicked.connect(self.removeZoneZone)
+
+        self.labelInstructionsZone = QLabel(
+            "Either enter x y coordinates seperated\nby single space or press on image"
+        )
+        self.labelTopLeftZone = QLabel("Top Left:")
+        self.labelTopLeftZone.setStyleSheet("QLabel {color: red;}")
+        self.labelTopLeftZone.setMinimumWidth(70)
+        self.FieldTLZone = QLineEdit()
+        self.FieldTLZone.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldTLZone.returnPressed.connect(self.FieldZoneRegistrationTL)  # Prob save x
+
+        self.labelTopRightZone = QLabel("Top Right:")
+        self.labelTopRightZone.setStyleSheet("QLabel {color: magenta;}")
+        self.labelTopRightZone.setMinimumWidth(70)
+        self.FieldTRZone = QLineEdit()
+        self.FieldTRZone.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldTRZone.returnPressed.connect(self.FieldZoneRegistrationTR)
+
+        self.labelBottomRightZone = QLabel("Bottom Right:")
+        self.labelBottomRightZone.setStyleSheet("QLabel {color: cyan;}")
+        self.labelBottomRightZone.setMinimumWidth(70)
+        self.FieldBRZone = QLineEdit()
+        self.FieldBRZone.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldBRZone.returnPressed.connect(self.FieldZoneRegistrationBR)
+
+        self.labelBottomLeftZone = QLabel("Bottom Left:")
+        self.labelBottomLeftZone.setStyleSheet("QLabel {color: lime;}")
+        self.labelBottomLeftZone.setMinimumWidth(70)
+        self.FieldBLZone = QLineEdit()
+        self.FieldBLZone.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldBLZone.returnPressed.connect(self.FieldZoneRegistrationBL)
+
+        
+
+        self.btnClearPointsZone = QPushButton("Clear Points")
+        self.btnClearPointsZone.clicked.connect(self.clearZone)
+
+        self.btnDoneCornerZone = QPushButton("Save Changes")
+        self.btnDoneCornerZone.clicked.connect(lambda: self.DoneRegisterZonesToBack(True))
+
+        self.btnNoSaveCornerZone = QPushButton("Don't Save changes")
+        self.btnNoSaveCornerZone.clicked.connect(
+            lambda: self.DoneRegisterZonesToBack(False)
+        )
+
+        self.tabZone.layout.addWidget(self.labelImageOneZone, 0, 0, 4, 4)
+        self.tabZone.layout.addWidget(self.labelImageZone, 4, 0, 4, 4)
+        self.tabZone.layout.addWidget(self.ComboVidMenuZone, 0, 4, 1, 2)
+        self.tabZone.layout.addWidget(self.ComboZoneMenuZone, 0, 6, 1, 2)
+        self.tabZone.layout.addWidget(self.labelInstructionsZone, 2, 4, 1, 4)
+       
+        self.tabZone.layout.addWidget(self.btnDeleteZone, 1, 6, 1, 2)
+        self.tabZone.layout.addWidget(self.FieldNameZone, 1, 4, 1, 2)
+
+        self.tabZone.layout.addWidget(self.labelTopLeftZone, 3, 4, 1, 1)
+        self.tabZone.layout.addWidget(self.FieldTLZone, 3, 5, 1, 3)
+        self.tabZone.layout.addWidget(self.labelTopRightZone, 4, 4, 1, 1)
+        self.tabZone.layout.addWidget(self.FieldTRZone, 4, 5, 1, 3)
+        self.tabZone.layout.addWidget(self.labelBottomRightZone, 5, 4, 1, 1)
+        self.tabZone.layout.addWidget(self.FieldBRZone, 5, 5, 1, 3)
+        self.tabZone.layout.addWidget(self.labelBottomLeftZone, 6, 4, 1, 1)
+        self.tabZone.layout.addWidget(self.FieldBLZone, 6, 5, 1, 3)
+        self.tabZone.layout.addWidget(self.btnClearPointsZone, 7, 4, 1, 4)
+        self.tabZone.layout.addWidget(self.btnDoneCornerZone, 8, 4, 1, 2)
+        self.tabZone.layout.addWidget(self.btnNoSaveCornerZone, 8, 6, 1, 2)
+        self.tabZone.setLayout(self.tabZone.layout)
+
+       
+
         # Delete when real
+        self.startTab.addTab(self.tabZone, "Zone")
         self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
         self.startTab.addTab(self.tabPointSelection, "Choose Points")
         self.startTab.addTab(self.tabScoring, "Scoring")
@@ -1159,6 +1247,7 @@ class MyTabWidget(QWidget):
         # self.startTab.addTab(self.tabRegisterCorners, "Register Corners")
         # self.startTab.addTab(self.tabCreateSchema, "Schema")
         self.startTab.addTab(self.tabGroup, "Group")
+        
 
         # # delete when real
 
@@ -1196,13 +1285,9 @@ class MyTabWidget(QWidget):
                         "lengths": {"Top": "", "Bottom": "", "Right": "", "Left": ""},
                         "DLC": "",
                         "DLC.mp4": "",
-                        "group": [],
+                        "group": []
                     }
 
-                # for j in range(int(info["numFeatures"])):
-                #     info["data"]["Feature %d" % (j +1)] = []
-                #     for i in range (len(fileList)):
-                #         info["data"]["Feature %d" % (j +1)].append(0)
 
                 """If can connect to dataframe in dlc can use this code to display headings (not sure if tracking time in zone but could do by header is what I'm trying to say)
                 PROJECT_DIR = Path("C:/Users/avpet/OneDrive/Documents/Python code/DSRI/2023-06-15_sample-data/dlc_files")
@@ -1332,15 +1417,10 @@ class MyTabWidget(QWidget):
                         "lengths": {"Top": "", "Bottom": "", "Right": "", "Left": ""},
                         "DLC": "",
                         "DLC.mp4": "",
-                        "group": [],
+                        "group": []
                     }
 
                 info["data"] = {" Videos": fileList.copy()}
-
-                # for j in range(int(info["numFeatures"])):
-                #     info["data"]["Feature %d" % (j +1)] = []
-                #     for i in range (len(fileList)):
-                #         info["data"]["Feature %d" % (j +1)].append(0)
 
                 with open("config.yaml", "w") as file:
                     yaml.dump(
@@ -1583,7 +1663,7 @@ class MyTabWidget(QWidget):
     def placeHodlerBtn(self):
         """PLACE HOLDER FOR ACTUAL BUTTONS"""
         sender = self.sender()
-        print(sender.text() + " was pressed")
+        # print(sender.text() + " was pressed")
 
     def Create_DLC_Project(self):
         """When pressed will update tabs and start the process for creating a new project including clearing config file"""
@@ -1609,6 +1689,8 @@ class MyTabWidget(QWidget):
                 "numFeatures": "2",
                 "data": {" Videos": [], "Feature 1": [], "Feature 2": []},
                 "uncertainty": 0.6,
+                "groups": [],
+                "threshold": 20
             }
             with open("config.yaml", "w") as file:
                 yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
@@ -1868,7 +1950,7 @@ class MyTabWidget(QWidget):
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def toRegisterSchema(self):
+    def toZones(self):
         """Will continue from the Choose points tab and register corners button to register corners tab and remove everything"""
         try:
             self.startTab.removeTab(0)
@@ -1877,11 +1959,25 @@ class MyTabWidget(QWidget):
             self.startTab.removeTab(0)
         except:
             pass
-        self.startTab.addTab(self.tabCreateSchema, "Schema")
+        self.startTab.addTab(self.tabZone, "Zones")
         info = openYaml()
-        self.ComboVidMenuSchema = QComboBox()
-        self.ComboVidMenuSchema.clear()
-        self.ComboVidMenuSchema.addItems(info["data"][" Videos"])
+        helper = openHelperYaml()
+        zoneList = []
+        for zone in info["zones"]:
+            zoneList.append(zone)
+        zoneList = sorted(
+                zoneList,
+                key=lambda a: sum(
+                    ([a[:l].lower(), a[:l]] for l in range(1, len(a) + 1)), []
+                ),
+            )
+        helper["Zones"] = info["zones"]
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+        
+        self.ComboZoneMenuZone.clear()
+        self.ComboZoneMenuZone.addItems(zoneList)
+        self.ZoneDisplay()
 
     def DoneRegisterCornersToBack(self, save=True):
         """Brings back all tabs and gets rid of register corners tab"""
@@ -2056,7 +2152,7 @@ class MyTabWidget(QWidget):
             self.labelImgBR.setText(str(imwidth) + "," + str(imheight))
             self.labelImgTL.setText("0,0")
             self.labelImgTR.setText(str(imwidth) + ",0")
-            self.cornerImageDim = [imwidth, imheight]
+            self.zoneImageDim = [imwidth, imheight]
             pixmap = QPixmap(image)
             # Sets points
             for i in range(len(info["videoPaths"])):
@@ -2347,7 +2443,7 @@ class MyTabWidget(QWidget):
                 "Top": "",
                 "Bottom": "",
                 "Right": "",
-                "Left": "",
+                "Left": ""
             }
         self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
         self.FieldBSchema.setText("")
@@ -2396,11 +2492,15 @@ class MyTabWidget(QWidget):
     def playVideo(self):
         """Plays the video"""
         try:
+            self.featuresDataDisplay.resizeColumnsToContents()
             if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
+                
                 self.threadVal.running = False
                 del self.threadVal
                 x = 1 / 0
             self.threadVal.start()
+        
+            
         except:
             self.ValidationPlayVid(True)
             self.threadVal.start()
@@ -2409,7 +2509,7 @@ class MyTabWidget(QWidget):
         """stop the video"""
         try:
             if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
-                print("pass")
+                # print("pass")
                 # del self.threadVal
                 x = 1 / 0
             self.threadVal.running = False
@@ -2456,6 +2556,17 @@ class MyTabWidget(QWidget):
 
         self.playVideo()
 
+    def ChangeVideo(self):
+        try:
+            self.featuresDataDisplay.resizeColumnsToContents()
+            self.stopVideo()
+        except:
+            pass
+        finally:
+            self.ValidationPlayVid()
+            self.stopVideo()
+
+
     def FrameSet(self):
         """Will change the frame to the designated frame"""
 
@@ -2487,6 +2598,7 @@ class MyTabWidget(QWidget):
 
         # Transform image frame
         info = openYaml()
+        self.featuresDataDisplay.resizeColumnsToContents()
         try:
             w, h = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
             schema = np.array([[0, 0], [w, 0], [w, h], [0, h]]).astype(np.float32)
@@ -2528,21 +2640,93 @@ class MyTabWidget(QWidget):
                             .groupby(level="coords", axis=1)
                             .mean()
                         )
+                        numZones = 0
+                        for zone in info["zones"]:
+                            # Goes through each zone and checks if mouse in zone
+                            # Defining the center zone
+                            zone_points = np.array(info["zones"][zone])
+                            # not sure how to loop through zones and save findings (wouldnt it just rewrite the stuff thats written)
 
+                            # When is the mouse part inside?
+                            center_zone = plt.Polygon(zone_points, alpha=0.5)
+                            mouse_points = centroid[["x", "y"]].values
+                            is_in_center = center_zone.contains_points(mouse_points)
+
+                            if numZones == 0:
+                                tally = is_in_center
+                            else:
+                                for j in range(len(tally)):
+                                    # makes it true if mouse is in any of the zones
+                                    if tally[j] or is_in_center[j]:
+                                       tally[j] = True 
+                            numZones += 1
+                        
+                        features.append(key)
+                        info["DLCvideoPaths"][i]["bodyparts"][str(key)][1] = int(
+                            tally.sum()
+                        )
+                        info["data"][str(key)][i] = int(tally.sum())
+
+                        
+                elif (
+                    len(info["videoPaths"][i]["points"]) == 0
+                    and info["DLCvideoPaths"][i]["h5"] == info["videoPaths"][i]["DLC"]
+                ):
+                 
+
+                    # Loads dataframe
+                    transformed_df = pd.read_hdf(
+                        str(
+                            Path(info["DLCfolderPath"]) / info["DLCvideoPaths"][i]["h5"]
+                        )
+                    )
+   
+
+                    features = []
+                    # How to select specific bodyparts and get a centroid
+                    for key in info["DLCvideoPaths"][i]["bodyparts"]:
+                        bodyparts_of_interest = [str(key)]
+                        centroid = (
+                            transformed_df.loc[
+                                :, pd.IndexSlice[:, bodyparts_of_interest]
+                            ]
+                            .groupby(level="coords", axis=1)
+                            .mean()
+                        )
+                        numZones = 0
+                        for zone in info["zones"]:
+                            # Goes through each zone and checks if mouse in zone
+                            # Defining the center zone
+                            zone_points = np.array(info["zones"][zone])
+                            # not sure how to loop through zones and save findings (wouldnt it just rewrite the stuff thats written)
+
+                            # When is the mouse part inside?
+                            center_zone = plt.Polygon(zone_points, alpha=0.5) # nessessary?
+                            mouse_points = centroid[["x", "y"]].values
+                            is_in_center = center_zone.contains_points(mouse_points)
+
+                            if numZones == 0:
+                                tally = is_in_center
+                            else:
+                                for j in range(len(tally)):
+                                    # makes it true if mouse is in any of the zones
+                                    if tally[j] or is_in_center[j]:
+                                       tally[j] = True 
+                            numZones += 1
+                        
                         # Defining the center zone
-                        zone_points = np.array(info["zone"])
+                    
 
                         # When is the mouse part inside?
-                        center_zone = plt.Polygon(zone_points, alpha=0.5)
-                        mouse_points = centroid[["x", "y"]].values
-                        is_in_center = center_zone.contains_points(mouse_points)
-                        info["DLCvideoPaths"][i]["bodyparts"][str(key)][1] = int(
-                            is_in_center.sum()
-                        )
-                        info["data"][str(key)][i] = int(is_in_center.sum())
-
                         features.append(key)
 
+                 
+                        info["DLCvideoPaths"][i]["bodyparts"][str(key)][1] = int(
+                            tally.sum()
+                        )
+                        info["data"][str(key)][i] = int(tally.sum())
+
+                        
                 if (
                     self.ComboVidValidationMenu.currentText()
                     == info["videoPaths"][i]["title"]
@@ -2558,9 +2742,30 @@ class MyTabWidget(QWidget):
                     )
 
                     # When is the mouse inside?
-                    center_zone = plt.Polygon(zone_points, alpha=0.5)
-                    mouse_points = centroid[["x", "y"]].values
-                    is_in_center = center_zone.contains_points(mouse_points)
+                    # Need to do forloop to run though?
+                    #  I think this is the only set of this code that is needed (its done two times aboue but I think it might be completely unnesary and could just be lumped in here)
+                    numZones = 0
+                    for zone in info["zones"]:
+                        # Goes through each zone and checks if mouse in zone
+                        # Defining the center zone
+                        zone_points = np.array(info["zones"][zone])
+                        # not sure how to loop through zones and save findings (wouldnt it just rewrite the stuff thats written)
+
+                        # When is the mouse part inside?
+                        center_zone = plt.Polygon(zone_points, alpha=0.5)
+                        mouse_points = centroid[["x", "y"]].values
+                        is_in_center = center_zone.contains_points(mouse_points)
+
+                        if numZones == 0:
+                            tally = is_in_center
+                        else:
+                            for j in range(len(tally)):
+                                # makes it true if mouse is in any of the zones
+                                if tally[j] or is_in_center[j]:
+                                    tally[j] = True 
+                        numZones += 1
+                    # center_zone = plt.Polygon(zone_points, alpha=0.5)
+                  
 
                     try:
                         self.GraphValidation.getPlotItem().clearPlots()
@@ -2573,11 +2778,9 @@ class MyTabWidget(QWidget):
                             "Mouse inside zone per frame \n(1 means inside zone 0 means outside)"
                         )
 
-                        # Generate some example data
-
-                        x = np.arange(len(is_in_center))
-                        y = np.array(is_in_center)
-
+                        x = np.arange(len(tally))
+                        y = np.array(tally)
+                        # print(tally)
                         # # Add the scatter plot item to the graph widget
 
                         plot = self.GraphValidation.plot(x=x, y=y)
@@ -2585,7 +2788,7 @@ class MyTabWidget(QWidget):
                         # Set the pen
                         plot.setPen(pg.mkPen("g", width=2))
 
-                        self.GraphValidation.setXRange(0, len(is_in_center), padding=0)
+                        self.GraphValidation.setXRange(0, len(tally), padding=0)
 
                         # self.GraphValidation.setYRange(0, 1, padding=0)
                         self.GraphValidation.getPlotItem().getViewBox().setMouseEnabled(
@@ -2615,7 +2818,7 @@ class MyTabWidget(QWidget):
                         delta_y = deltas[:, 1]
 
                         distance = np.sqrt(delta_x**2 + delta_y**2)
-                        threshold = 20
+                        threshold = info["threshold"]
                         distance[distance > threshold] = np.nan
                         x = np.arange(len(distance))
                         y = np.array(distance)
@@ -2648,6 +2851,8 @@ class MyTabWidget(QWidget):
                 "TotalFrames": 1,
             },
             "PartsOfInterest": [],
+            "points": [],
+            "Zones":{}
         }
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
@@ -2690,6 +2895,22 @@ class MyTabWidget(QWidget):
 
         self.PlayBackSpeedValidationMenu.setCurrentIndex(1)
 
+    def changePlayBackSpeed(self):
+        """changes play back speed"""
+        helper = openHelperYaml()
+        helper["ValidationVideoSettings"]["PlayBackSpeed"] = float(
+                self.PlayBackSpeedValidationMenu.currentText()
+            )
+
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+        try:
+            self.stopVideo()
+            
+        except:
+            pass
+        self.playVideo()
+
     def ExportData(self):
         info = openYaml()
         # try:
@@ -2723,40 +2944,18 @@ class MyTabWidget(QWidget):
 
                     # Create a sample DataFrame
                     data = pd.DataFrame(transformed_df)
+                    print(data)
                     # Write the DataFrame to an Excel file
-                    data.to_excel("data.xlsx", index=True)
+                    # data.to_excel("data.xlsx", index=True)
 
     def updateGroups(self):
         """Updates the group tab"""
-        # Drop down
+
         info = openYaml()
         groups = set()
 
-        # print(self.listVideoGroupLayout.count())
-        counter = (self.listVideoGroupLayout.count() // 3) - 1
+        counter = (self.listVideoGroupLayout.count() // 3) - 1 #determines how many rows are of videos
 
-        # self.labelSelectGroup.setText("Select")
-        # # self.labelSelectGroup.setFixedHeight(10)
-        # self.labelVideoGroup.setText("Videos")
-        # # self.labelVideoGroup.setFixedHeight(10)
-        # self.labelGroupsGroup.setText("Groups")
-        # self.labelGroupsGroup.setFixedHeight(10)
-        # self.listVideoGroupLayout.setHorizontalSpacing(10)
-        self.listVideoGroupLayout.removeWidget(self.labelSelectGroup)
-
-        self.listVideoGroupLayout.removeWidget(self.labelVideoGroup)
-        self.listVideoGroupLayout.removeWidget(self.labelGroupsGroup)
-        del self.labelSelectGroup, self.labelVideoGroup, self.labelGroupsGroup
-
-        self.labelSelectGroup = QLabel("Select")
-        # self.labelSelectGroup.setFixedHeight(40)
-        self.labelVideoGroup = QLabel("Videos")
-        # self.labelVideoGroup.setFixedHeight(40)
-        self.labelGroupsGroup = QLabel("Groups")
-        self.listVideoGroupLayout.addWidget(self.labelSelectGroup, 0, 0, 1, 1)
-        self.listVideoGroupLayout.addWidget(self.labelVideoGroup, 0, 1, 1, 1)
-        self.listVideoGroupLayout.addWidget(self.labelGroupsGroup, 0, 2, 1, 1)
-        self.listVideoGroupLayout.setHorizontalSpacing(10)
 
         self.listVideoGroupLayout.setHorizontalSpacing(10)
 
@@ -2771,7 +2970,6 @@ class MyTabWidget(QWidget):
             )
 
             for j in range(len(info["videoPaths"][i]["group"])):
-                # print(info["videoPaths"][i]["group"][j])
                 groups.add(str(info["videoPaths"][i]["group"][j]))
                 if j == 0:
                     localGroup = str(info["videoPaths"][i]["group"][j])
@@ -2810,7 +3008,7 @@ class MyTabWidget(QWidget):
                     + ", 2, 1, 1)"
                 )
             if i <= counter - 1:
-                exec("print(self.checkBoxGroup" + str(i) + ".isChecked())")
+                # exec("print(self.checkBoxGroup" + str(i) + ".isChecked())")
                 exec(
                     "self.VidTitleGroupLabel"
                     + str(i)
@@ -2819,7 +3017,6 @@ class MyTabWidget(QWidget):
                     + "])))"
                 )
                 exec("self.GroupGroupLabel" + str(i) + ".setText(localGroup)")
-            # print(str(i))
 
         if len((info["data"][" Videos"])) != counter and counter > len(
             (info["data"][" Videos"])
@@ -2850,17 +3047,8 @@ class MyTabWidget(QWidget):
                 # except:
                 #     print("this faiked")
 
-            # self.listVideoGroupLayout.removeWidget(self.checkBoxGroup2)
-
-            # # globals()["self.checkBoxGroup" + str(i)] = QCheckBox()
-            # locals()["self.VidTitleGroupLabel" + str(i)] = QLabel(str((info["data"][" Videos"][i])))
-            # locals()["self.GroupGroupLabel" + str(i)] = QLabel(localGroup)
-            # # exec("self.tabGroup.layout.addWidget(self.checkBoxGroup" + str(i) + ", " + str(int(i+1)) + ", 0, 1, 1)")
-            # exec("self.tabGroup.layout.addWidget(self.VidTitleGroupLabel" + str(i) + " , " + str(int(i+1)) + ", 1, 1, 1)")
-            # exec("self.tabGroup.layout.addWidget(self.GroupGroupLabel" + str(i) + ", " + str(int(i+1)) + ", 2, 1, 1)")
-        # print(self.listVideoGroupLayout.horizontalSpacing())
-
-        # print(groups)
+ 
+      
 
         for name in groups:
             if not name in info["groups"]:
@@ -2888,7 +3076,7 @@ class MyTabWidget(QWidget):
 
     def selectAllGroupsBtnGroup(self):
         """Selects all videos on the group tab"""
-
+        
         counter = (self.listVideoGroupLayout.count() // 3) - 1
         for i in range(counter):
             try:
@@ -2940,6 +3128,7 @@ class MyTabWidget(QWidget):
                     + str(i)
                     + ".isChecked()"
                 )
+
                 if testChecked:
                     inGroup = False
                     for j in range(len(info["videoPaths"][i]["group"])):
@@ -2948,7 +3137,7 @@ class MyTabWidget(QWidget):
                         ):
                             inGroup = True
                             break
-                    print(inGroup, "in group")
+             
                     if not inGroup:
                         info["videoPaths"][i]["group"].append(
                             self.ComboVidExistingGroups.currentText()
@@ -3011,6 +3200,443 @@ class MyTabWidget(QWidget):
             yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.updateGroups()
 
+    def ZoneDisplay(self):
+        """Changes the image displays on the zone tab shoing either one zone or multiple"""
+
+        info = openYaml(False)
+        helper = openHelperYaml()
+        for i in range(len(info["videoPaths"])):
+            if info["videoPaths"][i]["title"] == self.ComboVidMenuZone.currentText():
+                index = i
+      
+        if (
+            self.ComboVidMenuZone.count() != 0
+            and os.path.exists(info["folderPath"])
+             
+        ):
+            PROJECT_DIR = Path(info["folderPath"])
+            cap = cv2.VideoCapture(
+                str(PROJECT_DIR / self.ComboVidMenuZone.currentText())
+            )
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+
+            ret, frame = cap.read()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, ch = frame.shape
+
+            bytes_per_line = ch * w
+            image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
+
+            
+            pixmapOneZone = QPixmap(image)
+            pixmapZones = QPixmap(image)
+
+            if "index" not in locals():
+                for i in range(len(info["videoPaths"])):
+                    if (
+                        info["videoPaths"][i]["title"]
+                        == self.ComboVidMenuZone.currentText()
+                    ):
+                        index = i
+
+            # Displays altered image
+            if ("index" in locals()) and len(info["videoPaths"][index]["points"]) == 4:
+                registration_points = np.array(info["videoPaths"][index]["points"]).astype(
+                    np.float32
+                )
+
+                if (
+                    str(info["BoxWidth"]).isnumeric()
+                    and str(info["BoxHeight"]).isnumeric()
+                ):
+                    wid, hei = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
+                else:
+                    wid, hei = 500, 500
+                schema = np.array([[0, 0], [wid, 0], [wid, hei], [0, hei]]).astype(
+                    np.float32
+                )
+                homogeneous_transform = cv2.getPerspectiveTransform(
+                    registration_points, schema
+                )
+
+                frame = cv2.warpPerspective(frame, homogeneous_transform, (wid, hei))
+
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                h, w, ch = frame.shape
+                bytes_per_line = ch * w
+                altimage = QImage(
+                    frame.data, w, h, bytes_per_line, QImage.Format_RGB888
+                )
+                self.zoneImageDim = [altimage.width(), altimage.height()]
+                altimage.scaled(500, 500, Qt.KeepAspectRatio)
+                altimageoneZone = altimage.copy()
+                altimageZones = altimage.copy()
+                pixmapOneZone = QPixmap(altimage)
+                pixmapZones = QPixmap(altimage)
+            else:
+                
+                altimageoneZone = image.copy()
+                altimageZones = image.copy()
+
+                
+
+
+            # Sets points
+            
+            if (
+                info["videoPaths"][index]["title"]
+                == self.ComboVidMenuZone.currentText()
+                and len(info["videoPaths"][index]["title"]) != 0
+            ):
+                painter = QPainter(altimageZones)
+                pixmapZones = QPixmap(altimageZones)
+                # painter.drawPixmap(altimageZones.height(), altimageZones.width(), pixmapZones)
+                for key in helper["Zones"]:
+                    if len(helper["Zones"][key]) == 4:
+                        painter = QtGui.QPainter(pixmapZones)
+                        
+                        brush = QBrush(QColor(0, 0, 150, 127))
+
+                        points = QPolygon(
+                            [
+                                QPoint(helper["Zones"][key][0][0], helper["Zones"][key][0][1]),
+                                QPoint(helper["Zones"][key][1][0], helper["Zones"][key][1][1]),
+                                QPoint(helper["Zones"][key][2][0], helper["Zones"][key][2][1]),
+                                QPoint(helper["Zones"][key][3][0], helper["Zones"][key][3][1]),
+                            ]
+                        )
+
+                        painter.setBrush(brush)
+                        painter.drawPolygon(points)
+                        painter.end()
+
+                        if key == self.ComboZoneMenuZone.currentText():
+                            painter2 = QPainter(altimageoneZone)
+                            pixmapOneZone = QPixmap(altimageoneZone)
+                            painter2 = QtGui.QPainter(pixmapOneZone)
+                            
+                            brush2 = QBrush(QColor(0, 0, 150, 127))
+
+                            points = QPolygon(
+                                [
+                                    QPoint(helper["Zones"][key][0][0], helper["Zones"][key][0][1]),
+                                    QPoint(helper["Zones"][key][1][0], helper["Zones"][key][1][1]),
+                                    QPoint(helper["Zones"][key][2][0], helper["Zones"][key][2][1]),
+                                    QPoint(helper["Zones"][key][3][0], helper["Zones"][key][3][1]),
+                                ]
+                            )
+                            painter2.setBrush(brush2)
+                            painter2.drawPolygon(points)
+                            painter2.end()
+                            del painter2
+                            del brush2
+                          
+
+                    if key == self.ComboZoneMenuZone.currentText():
+                        self.FieldTLZone.setPlaceholderText("Enter Cordinate in x y form")
+                        self.FieldTRZone.setPlaceholderText("Enter Cordinate in x y form")
+                        self.FieldBRZone.setPlaceholderText("Enter Cordinate in x y form")
+                        self.FieldBLZone.setPlaceholderText("Enter Cordinate in x y form")
+                        for j in range(len(helper["Zones"][key])):
+                            painter = QtGui.QPainter(pixmapOneZone)
+                            if j == 0:
+                                pen = QPen(Qt.red)
+                                self.FieldTLZone.setPlaceholderText(str(helper["Zones"][key][j][0]) + " " +
+                                str(helper["Zones"][key][j][1]))
+                            elif j == 1:
+                                pen = QPen(Qt.magenta)
+                                self.FieldTRZone.setPlaceholderText(str(helper["Zones"][key][j][0]) + " " +
+                                str(helper["Zones"][key][j][1]))
+                            elif j == 2:
+                                pen = QPen(Qt.cyan)
+                                self.FieldBRZone.setPlaceholderText(str(helper["Zones"][key][j][0]) + " " +
+                                str(helper["Zones"][key][j][1]))
+                            elif j == 3:
+                                pen = QPen(Qt.green)
+                                self.FieldBLZone.setPlaceholderText(str(helper["Zones"][key][j][0]) + " " +
+                                str(helper["Zones"][key][j][1]))
+
+                            pen.setWidth(10)
+
+                            painter.setPen(pen)
+                            painter.drawPoint(
+                                int(helper["Zones"][key][j][0]),
+                                int(helper["Zones"][key][j][1]),
+                            )
+                            painter.end()
+                            
+                        
+                    else:
+                        pass
+                del painter
+                del brush
+
+
+        
+            self.labelImageOneZone.setPixmap(pixmapOneZone)
+            self.labelImageOneZone.setMinimumSize(300, 300)
+            self.labelImageOneZone.setMaximumSize(600, 600)
+            self.labelImageOneZone.setScaledContents(True)
+            self.labelImageZone.setPixmap(pixmapZones)
+            self.labelImageZone.setMinimumSize(300, 300)
+            self.labelImageZone.setMaximumSize(600, 600)
+            self.labelImageZone.setScaledContents(True)
+
+    def addZoneZone(self):
+        """Adds zone to zone tab"""
+        self.ComboZoneMenuZone
+        helper = openHelperYaml()
+        ZoneList = []
+        for key in helper["Zones"]:
+            ZoneList.append(key)
+
+        if not self.FieldNameZone.text() in ZoneList:
+            ZoneList.append(self.FieldNameZone.text())
+            self.FieldNameZone.setPlaceholderText("Name of New Zone")
+            helper["Zones"][self.FieldNameZone.text()] = []
+            ZoneList = sorted(
+                    ZoneList,
+                    key=lambda a: sum(
+                        ([a[:l].lower(), a[:l]] for l in range(1, len(a) + 1)), []
+                    ),
+                )
+            self.ComboZoneMenuZone.clear()
+            self.ComboZoneMenuZone.addItems(ZoneList)
+            self.ComboZoneMenuZone.setCurrentIndex(ZoneList.index(self.FieldNameZone.text()))
+            self.FieldNameZone.setText("")
+            with open("helper.yaml", "w") as file:
+                yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+        
+        self.FieldTLZone.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldTRZone.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldBRZone.setPlaceholderText("Enter Cordinate in x y form")
+        self.FieldBLZone.setPlaceholderText("Enter Cordinate in x y form")
+        for j in range(len(helper["Zones"][self.FieldNameZone.text()])):
+            if j == 0:
+                self.FieldTLZone.setPlaceholderText(str(helper["Zones"][self.FieldNameZone.text()][j][0]) + " " +
+                str(helper["Zones"][self.FieldNameZone.text()][j][1]))
+            elif j == 1:
+                self.FieldTRZone.setPlaceholderText(str(helper["Zones"][self.FieldNameZone.text()][j][0]) + " " +
+                str(helper["Zones"][self.FieldNameZone.text()][j][1]))
+            elif j == 2:
+                self.FieldBRZone.setPlaceholderText(str(helper["Zones"][self.FieldNameZone.text()][j][0]) + " " +
+                str(helper["Zones"][self.FieldNameZone.text()][j][1]))
+            elif j == 3:
+                self.FieldBLZone.setPlaceholderText(str(helper["Zones"][self.FieldNameZone.text()][j][0]) + " " +
+                str(helper["Zones"][self.FieldNameZone.text()][j][1]))
+
+    def removeZoneZone(self):
+        """Removes zone to zone tab"""
+        helper = openHelperYaml()
+        try:
+            helper["Zones"].pop(self.ComboZoneMenuZone.currentText())
+            ZoneList = []
+            for key in helper["Zones"]:
+                ZoneList.append(key) 
+            ZoneList = sorted(
+                    ZoneList,
+                    key=lambda a: sum(
+                        ([a[:l].lower(), a[:l]] for l in range(1, len(a) + 1)), []
+                    ),
+                )
+            self.ComboZoneMenuZone.clear()
+            self.ComboZoneMenuZone.addItems(ZoneList)
+            with open("helper.yaml", "w") as file:
+                yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+            self.ZoneDisplay()
+        except:
+            pass
+            
+    def locationInImageZone(self, event):
+            """When pressed will save place in image clicked and append to list however points won't be adjusted for the image so may not like what is imagined"""
+            
+            info = openYaml()
+            helper = openHelperYaml()
+            try:
+                if self.labelImageOneZone.text() != "One zone Image Place Holder":
+                    pos = str(event.pos())
+                    pos = pos.strip("PyQt5.QtCore.Qpoint")
+                    pos = pos.strip("()")
+
+                    try:
+                        wid, hei = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
+                    except:
+                        wid, hei = 500, 500
+                    
+                    if len(pos) == 0:
+                        # cord = [0,0]
+                        pass
+                    else:
+                        cord = pos.split(", ")
+                        
+                        cord[0] = int(
+                            int(cord[0])
+                            * self.zoneImageDim[0]
+                            / self.labelImageOneZone.width()
+                          
+                        )
+                        cord[1] = int(
+                            int(cord[1])
+                            * self.zoneImageDim[1]
+                            / self.labelImageOneZone.height()
+                        )
+                        helper["Zones"][self.ComboZoneMenuZone.currentText()]
+                        if (
+                            len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) < 4
+                        ):
+                            helper["Zones"][self.ComboZoneMenuZone.currentText()].append(cord)
+                        elif (
+                            
+                            len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) == 4
+                        ):
+                            helper["Zones"][self.ComboZoneMenuZone.currentText()][3] = cord
+
+                        helper["points"] = []
+                        with open("helper.yaml", "w") as file:
+                            yaml.dump(
+                                helper, file, default_flow_style=False, Dumper=NoAliasDumper
+                            )
+
+                        self.ZoneDisplay()
+            except:
+                print("fail")
+
+    def clearZone(self):
+        """Clears zone"""
+        helper = openHelperYaml()
+        try:
+            helper["Zones"][self.ComboZoneMenuZone.currentText()] = []
+            
+            
+            with open("helper.yaml", "w") as file:
+                yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+            self.ZoneDisplay()
+        except:
+            pass
+
+    def DoneRegisterZonesToBack(self, save=True):
+        """Brings back all tabs and gets rid of register corners tab"""
+        try:
+            self.startTab.removeTab(0)
+        except:
+            pass
+        self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
+        self.startTab.addTab(self.tabPointSelection, "Choose Points")
+        self.startTab.addTab(self.tabScoring, "Scoring")
+        self.startTab.addTab(self.tabValidation, "Validation")
+        self.startTab.setCurrentIndex(1)
+        if save:
+            info = openYaml()
+            helper = openHelperYaml()
+            info["zones"] = helper["Zones"]
+            with open("config.yaml", "w") as file:
+                yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
+            
+
+    def FieldZoneRegistrationTL(self):
+        """Saves the top left position cordinate for a point"""
+        sender = self.sender()
+        info = openYaml()
+        helper = openHelperYaml()
+       
+        # print(self.FieldTLZone.text())
+        cord = self.FieldTLZone.text()
+        cord = cord.split(" ")
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            
+            if len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) >= 4:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()][0] = cord
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) == 0:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()] = [cord]
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) < 4:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()].insert(0, cord)
+       
+            self.FieldTLZone.setText("")
+            
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+        self.ZoneDisplay()
+       
+
+    def FieldZoneRegistrationTR(self):
+        """Saves the top Right position cordinate for a point"""
+        sender = self.sender()
+        info = openYaml()
+        helper = openHelperYaml()
+        cord = self.FieldTRZone.text()
+        cord = cord.split(" ")
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            
+            if len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) >= 4:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()][1] = cord
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) == 0:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()] = [cord]
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) == 1:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()].append(cord)
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) < 4:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()].insert(1, cord)
+        
+            self.FieldTRZone.setText("")
+         
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+        self.ZoneDisplay()
+
+    def FieldZoneRegistrationBR(self):
+        """Saves the Bottom Right position cordinate for a point"""
+        sender = self.sender()
+        info = openYaml()
+        helper = openHelperYaml()
+        cord = self.FieldBRZone.text()
+        cord = cord.split(" ")
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            
+            if len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) >= 4:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()][2] = cord
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) == 0:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()] = [cord]
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) <= 2:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()].append(cord)
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) < 4:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()].insert(2, cord)
+           
+            self.FieldBRZone.setText("")
+         
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+        self.ZoneDisplay()
+
+    def FieldZoneRegistrationBL(self):
+        """Saves the Bottom left position cordinate for a point"""
+        sender = self.sender()
+        info = openYaml()
+        helper = openHelperYaml()
+        cord = self.FieldBLZone.text()
+        cord = cord.split(" ")
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            
+            if len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) >= 4:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()][3] = cord
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) == 0:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()] = [cord]
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) <= 3:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()].append(cord)
+            elif len(helper["Zones"][self.ComboZoneMenuZone.currentText()]) < 4:
+                helper["Zones"][self.ComboZoneMenuZone.currentText()].insert(3, cord)
+
+            self.FieldBLZone.setText("")
+        
+        with open("helper.yaml", "w") as file:
+            yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
+        self.ZoneDisplay()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
