@@ -1,0 +1,76 @@
+project_name: qerqwer
+project_path: /Users/andretelfer/Downloads/2023-06-15_sample-data
+
+# Dimensions of the box in mm
+box_height: 400.0
+box_width: 500.0
+
+# Directory that contains the .mp4 videos 
+video_folder_path: /Users/andretelfer/Downloads/2023-06-15_sample-data/videos
+
+# Directory that contains the .h5 files produced by deeplabcut
+dlc_folder_path: /Users/andretelfer/Downloads/2023-06-15_sample-data/dlc_files
+
+# Treatment groups for performing aggregate analysis and plots
+treatment_groups:
+- asdfasdfqewr
+- counting
+- tertwert
+
+# How far mice can move in each frame (used to filter out outliers)
+threshold: 20
+
+# The probability cutoff to filter out low confidence deeplabcut predictions 
+dlc_pcutoff: 0.6
+
+# Zone coordinates for performing analysis (in mm)
+analysis_zones:
+  Centre:
+  - - 130
+    - 110
+  - - 379
+    - 105
+  - - 373
+    - 405
+  - - 133
+    - 407
+  Zone:
+  - - 92
+    - 75
+  - - 390
+    - 66
+  - - 349
+    - 403
+  - - 74
+    - 429
+
+# Video data
+video_data:
+  f1.mp4:
+    dlc_file: f4DLC_resnet50_agrpNov19shuffle1_400000.h5
+    dlc_video_file: f4DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
+    treatment_groups: []
+    registration_points:
+    - - 243
+      - 117
+    - - 692
+      - 114
+    - - 729
+      - 476
+    - - 216
+      - 486
+
+  f2.mp4:
+    dlc_file: f4DLC_resnet50_agrpNov19shuffle1_400000.h5
+    dlc_video_file: f4DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
+    treatment_groups: []
+    registration_points:
+    - - 243
+      - 117
+    - - 692
+      - 114
+    - - 729
+      - 476
+    - - 216
+      - 486 
+
