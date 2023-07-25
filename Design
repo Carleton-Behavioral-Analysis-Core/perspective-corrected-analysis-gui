@@ -50,13 +50,13 @@ def openYaml(rewrite=True):
                 "DLCfolderPath": "",
                 "videoPaths": [],
                 "DLCvideoPaths": [],
-                "zones": {"center": []},
+                "analysis_zones": {"center": []},
                 "BoxHeight": 500,
                 "BoxWidth": 500,
                 "Name": "",
                 "Path": "",
                 "data": {" Videos": [], "Feature 1": [], "Feature 2": []},
-                "uncertainty": 0.6,
+                "dlc_pcutoff": 0.6,
                 "groups": [],
                 "threshold": 20
             }
@@ -270,8 +270,8 @@ class ThreadOpenCV(QThread):
                 image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
 
                 # Trying to draw shape
-                for key in info["zones"]:
-                    if len(info["zones"][key]) == 4:
+                for key in info["analysis_zones"]:
+                    if len(info["analysis_zones"][key]) == 4:
                         painter = QPainter(image)
                         pixmap = QPixmap(image)
                         painter.drawPixmap(image.height(), image.width(), pixmap)
@@ -279,10 +279,10 @@ class ThreadOpenCV(QThread):
 
                         points = QPolygon(
                             [
-                                QPoint(info["zones"][key][0][0], info["zones"][key][0][1]),
-                                QPoint(info["zones"][key][1][0], info["zones"][key][1][1]),
-                                QPoint(info["zones"][key][2][0], info["zones"][key][2][1]),
-                                QPoint(info["zones"][key][3][0], info["zones"][key][3][1]),
+                                QPoint(info["analysis_zones"][key][0][0], info["analysis_zones"][key][0][1]),
+                                QPoint(info["analysis_zones"][key][1][0], info["analysis_zones"][key][1][1]),
+                                QPoint(info["analysis_zones"][key][2][0], info["analysis_zones"][key][2][1]),
+                                QPoint(info["analysis_zones"][key][3][0], info["analysis_zones"][key][3][1]),
                             ]
                         )
 
@@ -436,7 +436,7 @@ class MyTabWidget(QWidget):
         self.projLocField.setPlaceholderText("Enter the project path")
         self.projLocField.returnPressed.connect(self.StoreProjLocationCreate)
 
-        self.btnProjPath = QPushButton("Project Path")
+        self.btnProjPath = QPushButton("Browse")
         self.btnProjPath.clicked.connect(self.PathSearchCreateAndLoad)
 
         self.btnCreate = QPushButton("Create Project")
@@ -463,7 +463,7 @@ class MyTabWidget(QWidget):
         self.projLocFieldv2.setPlaceholderText("Enter the project path")
         self.projLocFieldv2.returnPressed.connect(self.StoreProjLocationLoad)
 
-        self.btnProjPathv2 = QPushButton("Project Path")
+        self.btnProjPathv2 = QPushButton("Browse")
         self.btnProjPathv2.clicked.connect(self.PathSearchCreateAndLoad)
 
         self.btnLoad = QPushButton("Load Project")
@@ -492,7 +492,7 @@ class MyTabWidget(QWidget):
         self.searchField.returnPressed.connect(self.FolderSearchFieldDisplay)
         # Folder search function may have to be changed maybe to something involving yaml for opening folder (not new)
 
-        self.btnSearchVideoFolder = QPushButton("OPEN")
+        self.btnSearchVideoFolder = QPushButton("Browse")
         self.btnSearchVideoFolder.clicked.connect(self.FolderSearchDisplay)
 
         self.labelDLCVideoFolder = QLabel("DeepLabCut Analysis Folder")
@@ -506,7 +506,7 @@ class MyTabWidget(QWidget):
             self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
         self.searchFieldDLC.returnPressed.connect(self.DLCFolderSearchFieldDisplay)
 
-        self.btnSearchVideoDLCFolder = QPushButton("OPEN")
+        self.btnSearchVideoDLCFolder = QPushButton("Browse")
         self.btnSearchVideoDLCFolder.clicked.connect(self.DLCFolderSearchDisplay)
 
         self.labelVidToDLC = QLabel("Video to DLC Label Matching")
@@ -1047,34 +1047,34 @@ class MyTabWidget(QWidget):
         # self.listVideoGroupLayout.setHorizontalSpacing(10)
         # self.listVideoGroupLayout.setVerticalSpacing(5)
         # groups = set()
-        for i in range(len((info["data"][" Videos"]))+1):
-            localGroup = "N/A"
+        # for i in range(len((info["data"][" Videos"]))+1):
+        #     localGroup = "N/A"
             
-            exec("self.checkBoxGroup" + str(i) + " = QCheckBox()")
-            exec(
-                "self.listVideoGroupLayout.addWidget(self.checkBoxGroup"
-                + str(i)
-                + ", "
-                + str(i + 1)
-                + ", 0, 1, 1)"
-            )
-            exec("self.VidTitleGroupLabel" + str(i) + ' = QLabel("THis is first")')
-            exec(
-                "self.listVideoGroupLayout.addWidget(self.VidTitleGroupLabel"
-                + str(i)
-                + ", "
-                + str(i + 1)
-                + ", 1, 1, 1)"
-            )
-            exec("self.GroupGroupLabel" + str(i) + " = QLabel(localGroup)")
-            exec(
-                "self.listVideoGroupLayout.addWidget(self.GroupGroupLabel"
-                + str(i)
-                + ", "
-                + str(i + 1)
-                + ", 2, 1, 1)"
-            )
-        #     # print("tot " , i)
+        #     exec("self.checkBoxGroup" + str(i) + " = QCheckBox()")
+        #     exec(
+        #         "self.listVideoGroupLayout.addWidget(self.checkBoxGroup"
+        #         + str(i)
+        #         + ", "
+        #         + str(i + 1)
+        #         + ", 0, 1, 1)"
+        #     )
+        #     exec("self.VidTitleGroupLabel" + str(i) + ' = QLabel("THis is first")')
+        #     exec(
+        #         "self.listVideoGroupLayout.addWidget(self.VidTitleGroupLabel"
+        #         + str(i)
+        #         + ", "
+        #         + str(i + 1)
+        #         + ", 1, 1, 1)"
+        #     )
+        #     exec("self.GroupGroupLabel" + str(i) + " = QLabel(localGroup)")
+        #     exec(
+        #         "self.listVideoGroupLayout.addWidget(self.GroupGroupLabel"
+        #         + str(i)
+        #         + ", "
+        #         + str(i + 1)
+        #         + ", 2, 1, 1)"
+        #     )
+        # #     # print("tot " , i)
         self.listVideoGroupLayout.setHorizontalSpacing(10)
         self.listVideoGroupLayout.setVerticalSpacing(5)
       
@@ -1151,7 +1151,7 @@ class MyTabWidget(QWidget):
 
         self.ComboZoneMenuZone = QComboBox()
         zoneList = []
-        for zone in info["zones"]:
+        for zone in info["analysis_zones"]:
             zoneList.append(zone)
         zoneList = sorted(
                 zoneList,
@@ -1239,8 +1239,8 @@ class MyTabWidget(QWidget):
         self.tabZone.layout.addWidget(self.labelBottomLeftZone, 6, 4, 1, 1)
         self.tabZone.layout.addWidget(self.FieldBLZone, 6, 5, 1, 3)
         self.tabZone.layout.addWidget(self.btnClearPointsZone, 7, 4, 1, 4)
-        self.tabZone.layout.addWidget(self.btnDoneCornerZone, 8, 4, 1, 2)
-        self.tabZone.layout.addWidget(self.btnNoSaveCornerZone, 8, 6, 1, 2)
+        self.tabZone.layout.addWidget(self.btnDoneCornerZone, 8, 6, 1, 2)
+        self.tabZone.layout.addWidget(self.btnNoSaveCornerZone, 8, 4, 1, 2)
         self.tabZone.setLayout(self.tabZone.layout)
 
        
@@ -1688,13 +1688,13 @@ class MyTabWidget(QWidget):
                 "DLCfolderPath": "",
                 "videoPaths": [],
                 "DLCvideoPaths": [],
-                "zones": {"center": []},
+                "analysis_zones": {"center": []},
                 "BoxHeight": 500,
                 "BoxWidth": 500,
                 "Name": "",
                 "Path": "",
                 "data": {" Videos": [], "Feature 1": [], "Feature 2": []},
-                "uncertainty": 0.6,
+                "dlc_pcutoff": 0.6,
                 "groups": [],
                 "threshold": 20
             }
@@ -1945,6 +1945,9 @@ class MyTabWidget(QWidget):
             self.startTab.removeTab(0)
             self.startTab.removeTab(0)
             self.startTab.removeTab(0)
+            self.startTab.removeTab(0) #Delete these extra three when real
+            self.startTab.removeTab(0)
+            self.startTab.removeTab(0)
         except:
             pass
         self.startTab.addTab(self.tabRegisterCorners, "Register Corners")
@@ -1970,7 +1973,7 @@ class MyTabWidget(QWidget):
         info = openYaml()
         helper = openHelperYaml()
         zoneList = []
-        for zone in info["zones"]:
+        for zone in info["analysis_zones"]:
             zoneList.append(zone)
         self.ComboVidMenuZone.clear()   
         self.ComboVidMenuZone.addItems(info["data"][" Videos"])
@@ -1980,7 +1983,7 @@ class MyTabWidget(QWidget):
                     ([a[:l].lower(), a[:l]] for l in range(1, len(a) + 1)), []
                 ),
             )
-        helper["Zones"] = info["zones"]
+        helper["Zones"] = info["analysis_zones"]
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         
@@ -2140,7 +2143,7 @@ class MyTabWidget(QWidget):
         """Displays 1st frame of the video (in register corners tab)"""
         info = openYaml(False)
         helper = openHelperYaml()
-
+        
         if self.ComboVidMenuCorner.count() != 0 and os.path.exists(info["folderPath"]) and self.startTab.count() == 1:
             PROJECT_DIR = Path(info["folderPath"])
             cap = cv2.VideoCapture(
@@ -2660,10 +2663,10 @@ class MyTabWidget(QWidget):
                             .mean()
                         )
                         numZones = 0
-                        for zone in info["zones"]:
+                        for zone in info["analysis_zones"]:
                             # Goes through each zone and checks if mouse in zone
                             # Defining the center zone
-                            zone_points = np.array(info["zones"][zone])
+                            zone_points = np.array(info["analysis_zones"][zone])
                             # not sure how to loop through zones and save findings (wouldnt it just rewrite the stuff thats written)
 
                             # When is the mouse part inside?
@@ -2713,10 +2716,10 @@ class MyTabWidget(QWidget):
                             .mean()
                         )
                         numZones = 0
-                        for zone in info["zones"]:
+                        for zone in info["analysis_zones"]:
                             # Goes through each zone and checks if mouse in zone
                             # Defining the center zone
-                            zone_points = np.array(info["zones"][zone])
+                            zone_points = np.array(info["analysis_zones"][zone])
                             # not sure how to loop through zones and save findings (wouldnt it just rewrite the stuff thats written)
 
                             # When is the mouse part inside?
@@ -2752,7 +2755,7 @@ class MyTabWidget(QWidget):
                 ):
                     likelihood = transformed_df.xs("likelihood", level="coords", axis=1)
                     transformed_df = transformed_df.where(
-                        likelihood > info["uncertainty"]
+                        likelihood > info["dlc_pcutoff"]
                     )  # Will leave gap for distance measurment and wil assume false for inzoneValidation
                     centroid = (
                         transformed_df.loc[:, pd.IndexSlice[:, features]]
@@ -2767,7 +2770,7 @@ class MyTabWidget(QWidget):
                     for zone in info["zones"]:
                         # Goes through each zone and checks if mouse in zone
                         # Defining the center zone
-                        zone_points = np.array(info["zones"][zone])
+                        zone_points = np.array(info["analysis_zones"][zone])
                         # not sure how to loop through zones and save findings (wouldnt it just rewrite the stuff thats written)
 
                         # When is the mouse part inside?
@@ -3560,7 +3563,7 @@ class MyTabWidget(QWidget):
         if save:
             info = openYaml()
             helper = openHelperYaml()
-            info["zones"] = helper["Zones"]
+            info["analysis_zones"] = helper["Zones"]
             with open("config.yaml", "w") as file:
                 yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
             

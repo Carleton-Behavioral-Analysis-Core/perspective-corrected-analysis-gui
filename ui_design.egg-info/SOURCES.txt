@@ -1,0 +1,16 @@
+pyproject.toml
+ui_design/__init__.py
+ui_design/__main__.py
+ui_design/widgets.py
+ui_design.egg-info/PKG-INFO
+ui_design.egg-info/SOURCES.txt
+ui_design.egg-info/dependency_links.txt
+ui_design.egg-info/requires.txt
+ui_design.egg-info/top_level.txt
+ui_design/tabs/__init__.py
+ui_design/tabs/analysis_configuration.py
+ui_design/tabs/create_project.py
+ui_design/tabs/load_project.py
+ui_design/tabs/load_videos.py
+ui_design/tabs/registration.py
+ui_design/tabs/results.py

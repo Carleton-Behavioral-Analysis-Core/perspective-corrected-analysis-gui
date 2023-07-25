@@ -13,7 +13,7 @@ classifiers = [
 dependencies = [
     "pandas>=1.5",
     "numpy>=1.22",
-    "PyQt6",
+    "PyQt5",
     "matplotlib"
 ]
 
