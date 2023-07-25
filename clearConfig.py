@@ -10,21 +10,30 @@ info = {
                 "DLCfolderPath": "",
                 "videoPaths": [],
                 "DLCvideoPaths": [],
-                "zone": [],
-                "BoxHeight": "",
-                "BoxWidth": "",
+                "zones": {"center": []},
+                "BoxHeight": 500,
+                "BoxWidth": 500,
                 "Name": "",
                 "Path": "",
-                "numFeatures": "2",
                 "data": {" Videos": [], "Feature 1": [], "Feature 2": []},
                 "uncertainty": 0.6,
-                "groups": []
+                "groups": [],
+                "threshold": 20
             }
 with open('config.yaml', 'w') as file:
     yaml.dump(info,file,default_flow_style=False) 
 
 
-helper=  {"ValidationVideoSettings":{"PlayBackSpeed":1,"Frame":0,"FPS":30,"TotalFrames":1},"PartsOfInterest":[], "points" : []}
-print(len(helper))
+helper = {
+            "ValidationVideoSettings": {
+                "PlayBackSpeed": 1,
+                "Frame": 0,
+                "FPS": 30,
+                "TotalFrames": 1,
+            },
+            "PartsOfInterest": [],
+            "points": [],
+            "Zones":{}
+        }
 with open('helper.yaml', 'w') as file:
     yaml.dump(helper,file,default_flow_style=False, Dumper=NoAliasDumper) 

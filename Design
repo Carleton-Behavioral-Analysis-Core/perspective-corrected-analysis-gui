@@ -38,7 +38,7 @@ def openYaml(rewrite=True):
         with open("config.yaml", "r") as file:
             info = yaml.safe_load(file)
             # print("past safe load")
-            if len(info) != 14:
+            if len(info) != 13:
                 x = 1 / 0
     except:
         # if False:
@@ -51,11 +51,10 @@ def openYaml(rewrite=True):
                 "videoPaths": [],
                 "DLCvideoPaths": [],
                 "zones": {"center": []},
-                "BoxHeight": "",
-                "BoxWidth": "",
+                "BoxHeight": 500,
+                "BoxWidth": 500,
                 "Name": "",
                 "Path": "",
-                "numFeatures": "2",
                 "data": {" Videos": [], "Feature 1": [], "Feature 2": []},
                 "uncertainty": 0.6,
                 "groups": [],
@@ -360,7 +359,7 @@ class MyTabWidget(QWidget):
         self.tabCreate = QWidget()
         self.tabLoad = QWidget()
         self.tabFolderDisplay = QWidget()
-        self.tabPointSelection = QWidget()
+        self.tabRegistration = QWidget()
         self.tabScoring = QWidget()
         self.tabValidation = QWidget()
         self.tabRegisterCorners = QWidget()
@@ -399,14 +398,16 @@ class MyTabWidget(QWidget):
         self.tabCreateOrLoad.layout = QHBoxLayout()
 
         self.btnCreateProj = QPushButton("Create Project")
-        self.btnCreateProj.clicked.connect(self.Create_DLC_Project)
+        # self.btnCreateProj.setFixedSize()
+        self.btnCreateProj.clicked.connect(self.Create_DLC_ProjectLoadAndCreate)
 
         self.btnCreateProj.setStyleSheet(
             "QPushButton {background-color: lime; color: black;}"
         )
 
         self.btnOpenProj = QPushButton("Load Project")
-        self.btnOpenProj.clicked.connect(self.Open_DLC_Project)
+        
+        self.btnOpenProj.clicked.connect(self.Open_DLC_ProjectLoadAndCreate)
         self.btnOpenProj.setStyleSheet(
             "QPushButton {background-color: lime; color: black;}"
         )
@@ -420,22 +421,26 @@ class MyTabWidget(QWidget):
         self.tabCreate.layout = QGridLayout()
 
         self.labelName = QLabel("Project Name:")
+        self.labelName.setAlignment(QtCore.Qt.AlignRight)
+        self.labelName.setFixedWidth(100)
 
         self.projNameField = QLineEdit()
         self.projNameField.setPlaceholderText("Enter the Project Name")
-        self.projNameField.returnPressed.connect(self.StoreProjName)
+        self.projNameField.returnPressed.connect(self.StoreProjNameCreate)
 
         self.labelProjPath = QLabel("Project Path:")
+        self.labelProjPath.setAlignment(QtCore.Qt.AlignRight)
+        self.labelProjPath.setFixedWidth(100)
 
         self.projLocField = QLineEdit()
         self.projLocField.setPlaceholderText("Enter the project path")
-        self.projLocField.returnPressed.connect(self.StoreProjLocation)
+        self.projLocField.returnPressed.connect(self.StoreProjLocationCreate)
 
         self.btnProjPath = QPushButton("Project Path")
-        self.btnProjPath.clicked.connect(self.PathSearch)
+        self.btnProjPath.clicked.connect(self.PathSearchCreateAndLoad)
 
         self.btnCreate = QPushButton("Create Project")
-        self.btnCreate.clicked.connect(self.toNext)
+        self.btnCreate.clicked.connect(self.toNextCreateAndLoad)
 
         self.createhelplabel = QLabel("")
 
@@ -456,13 +461,13 @@ class MyTabWidget(QWidget):
 
         self.projLocFieldv2 = QLineEdit()
         self.projLocFieldv2.setPlaceholderText("Enter the project path")
-        self.projLocFieldv2.returnPressed.connect(self.StoreProjLocationv2)
+        self.projLocFieldv2.returnPressed.connect(self.StoreProjLocationLoad)
 
         self.btnProjPathv2 = QPushButton("Project Path")
-        self.btnProjPathv2.clicked.connect(self.PathSearch)
+        self.btnProjPathv2.clicked.connect(self.PathSearchCreateAndLoad)
 
         self.btnLoad = QPushButton("Load Project")
-        self.btnLoad.clicked.connect(self.toNext)
+        self.btnLoad.clicked.connect(self.toNextCreateAndLoad)
 
         self.loadhelplabel = QLabel("")
 
@@ -484,11 +489,11 @@ class MyTabWidget(QWidget):
             self.searchField.setPlaceholderText(str(info["folderPath"]))
         else:
             self.searchField.setPlaceholderText("Enter Folder Path")
-        self.searchField.returnPressed.connect(self.FolderSearchField)
+        self.searchField.returnPressed.connect(self.FolderSearchFieldDisplay)
         # Folder search function may have to be changed maybe to something involving yaml for opening folder (not new)
 
         self.btnSearchVideoFolder = QPushButton("OPEN")
-        self.btnSearchVideoFolder.clicked.connect(self.FolderSearch)
+        self.btnSearchVideoFolder.clicked.connect(self.FolderSearchDisplay)
 
         self.labelDLCVideoFolder = QLabel("DeepLabCut Analysis Folder")
 
@@ -499,10 +504,10 @@ class MyTabWidget(QWidget):
             self.searchFieldDLC.setPlaceholderText(str(info["DLCfolderPath"]))
         else:
             self.searchFieldDLC.setPlaceholderText("Enter Folder Path")
-        self.searchFieldDLC.returnPressed.connect(self.DLCFolderSearchField)
+        self.searchFieldDLC.returnPressed.connect(self.DLCFolderSearchFieldDisplay)
 
         self.btnSearchVideoDLCFolder = QPushButton("OPEN")
-        self.btnSearchVideoDLCFolder.clicked.connect(self.DLCFolderSearch)
+        self.btnSearchVideoDLCFolder.clicked.connect(self.DLCFolderSearchDisplay)
 
         self.labelVidToDLC = QLabel("Video to DLC Label Matching")
 
@@ -554,7 +559,7 @@ class MyTabWidget(QWidget):
         self.tabFolderDisplay.setLayout(self.tabFolderDisplay.layout)
 
         # Point selection tab
-        self.tabPointSelection.layout = QGridLayout()
+        self.tabRegistration.layout = QGridLayout()
 
         self.labelBoxWidth = QLabel("Box Width [mm]:")
         self.labelBoxWidth.setSizePolicy(30, 10)
@@ -565,7 +570,7 @@ class MyTabWidget(QWidget):
             self.FieldBoxWidth.setPlaceholderText(str(info["BoxWidth"]))
         else:
             self.FieldBoxWidth.setPlaceholderText("Box Width in mm")
-        self.FieldBoxWidth.returnPressed.connect(self.boxWidthSave)
+        self.FieldBoxWidth.returnPressed.connect(self.boxWidthSaveRegistration)
 
         self.labelBoxHeight = QLabel("Box Height [mm]:")
         self.labelBoxHeight.setSizePolicy(30, 10)
@@ -576,20 +581,20 @@ class MyTabWidget(QWidget):
             self.FieldBoxHeight.setPlaceholderText(str(info["BoxHeight"]))
         else:
             self.FieldBoxHeight.setPlaceholderText("Box Height in mm")
-        self.FieldBoxHeight.returnPressed.connect(self.boxHeightSave)
+        self.FieldBoxHeight.returnPressed.connect(self.boxHeightSaveRegistration)
 
         self.btnCreateSchema = QPushButton("2. REGISTER ZONES")
-        self.btnCreateSchema.clicked.connect(self.toZones)
+        self.btnCreateSchema.clicked.connect(self.toZonesRegistration)
 
         self.btnRegisterCorners = QPushButton("1. REGISTER CORNERS")
-        self.btnRegisterCorners.clicked.connect(self.toRegisterCorners)
+        self.btnRegisterCorners.clicked.connect(self.toRegisterCornersRegistration)
 
         self.btnVisualizeRegistrations = QPushButton("3. Visualize REGISTRATIONS")
-        self.btnVisualizeRegistrations.clicked.connect(self.displayFrame)
+        self.btnVisualizeRegistrations.clicked.connect(self.displayFrameRegistration)
 
         self.ComboVidMenu = QComboBox()
         self.ComboVidMenu.addItems(info["data"][" Videos"])
-        self.ComboVidMenu.currentTextChanged.connect(self.displayFrame)
+        self.ComboVidMenu.currentTextChanged.connect(self.displayFrameRegistration)
         
         # self.ComboVidMenu.clicked.connect
 
@@ -597,24 +602,24 @@ class MyTabWidget(QWidget):
 
         self.labelImageAlt = QLabel("Altered Image Place Holder")
 
-        self.tabPointSelection.layout.addWidget(
+        self.tabRegistration.layout.addWidget(
             self.labelBoxWidth, 0, 0, 1, 1, alignment=QtCore.Qt.AlignRight
         )
-        self.tabPointSelection.layout.addWidget(
+        self.tabRegistration.layout.addWidget(
             self.labelBoxHeight, 0, 2, 1, 1, alignment=QtCore.Qt.AlignRight
         )
-        self.tabPointSelection.layout.addWidget(self.FieldBoxWidth, 0, 1, 1, 1)
-        self.tabPointSelection.layout.addWidget(self.FieldBoxHeight, 0, 3, 1, 1)
-        self.tabPointSelection.layout.addWidget(self.btnCreateSchema, 2, 1, 1, 1)
-        self.tabPointSelection.layout.addWidget(self.btnRegisterCorners, 2, 0, 1, 1)
-        self.tabPointSelection.layout.addWidget(
+        self.tabRegistration.layout.addWidget(self.FieldBoxWidth, 0, 1, 1, 1)
+        self.tabRegistration.layout.addWidget(self.FieldBoxHeight, 0, 3, 1, 1)
+        self.tabRegistration.layout.addWidget(self.btnCreateSchema, 2, 1, 1, 1)
+        self.tabRegistration.layout.addWidget(self.btnRegisterCorners, 2, 0, 1, 1)
+        self.tabRegistration.layout.addWidget(
             self.btnVisualizeRegistrations, 2, 2, 1, 1
         )
-        self.tabPointSelection.layout.addWidget(self.ComboVidMenu, 2, 3, 1, 1)
-        self.tabPointSelection.layout.addWidget(self.labelImageOri, 3, 0, 1, 2)
-        self.tabPointSelection.layout.addWidget(self.labelImageAlt, 3, 2, 1, 2)
+        self.tabRegistration.layout.addWidget(self.ComboVidMenu, 2, 3, 1, 1)
+        self.tabRegistration.layout.addWidget(self.labelImageOri, 3, 0, 1, 2)
+        self.tabRegistration.layout.addWidget(self.labelImageAlt, 3, 2, 1, 2)
 
-        self.tabPointSelection.setLayout(self.tabPointSelection.layout)
+        self.tabRegistration.setLayout(self.tabRegistration.layout)
 
         # scoring tab start
         self.tabScoring.layout = QGridLayout()
@@ -674,37 +679,37 @@ class MyTabWidget(QWidget):
 
         self.FieldTimeValidation = QLineEdit()
         self.FieldTimeValidation.setPlaceholderText("Enter Frame")
-        self.FieldTimeValidation.returnPressed.connect(self.FrameSet)
+        self.FieldTimeValidation.returnPressed.connect(self.FrameSetValidation)
 
         self.ComboVidValidationMenu = QComboBox()
         self.ComboVidValidationMenu.addItems(info["data"][" Videos"])
-        self.ComboVidValidationMenu.currentTextChanged.connect(self.ChangeVideo)
+        self.ComboVidValidationMenu.currentTextChanged.connect(self.ChangeVideoValidation)
 
         self.PlayBackSpeedValidationMenu = QComboBox()
         self.PlayBackSpeedValidationMenu.addItems(["0.5", "1", "2", "5", "10", "30"])
         self.PlayBackSpeedValidationMenu.setCurrentIndex(1)
-        self.PlayBackSpeedValidationMenu.currentTextChanged.connect(self.changePlayBackSpeed) 
+        self.PlayBackSpeedValidationMenu.currentTextChanged.connect(self.changePlayBackSpeedValidation) 
 
 
         self.labelVideoValidation = QLabel("Place Holder for Video")
         self.labelVideoValidation.setScaledContents(True)  # allows video to chage size
 
         self.btnPlayVal = QPushButton("PLAY")
-        self.btnPlayVal.clicked.connect(self.playVideo)
+        self.btnPlayVal.clicked.connect(self.playVideoValidation)
 
         self.btnStopVal = QPushButton("STOP")
-        self.btnStopVal.clicked.connect(self.stopVideo)
+        self.btnStopVal.clicked.connect(self.stopVideoValidation)
 
         self.GraphValidation = pg.PlotWidget()
 
         self.sliderVal = QSlider(Qt.Orientation.Horizontal, self)
-        self.sliderVal.sliderReleased.connect(self.changeFrameSlider)
+        self.sliderVal.sliderReleased.connect(self.changeFrameSliderValidation)
         self.sliderVal.setRange(0, 10)
         self.sliderVal.setSliderPosition(0)
 
         self.GraphValidationMenu = QComboBox()
         self.GraphValidationMenu.addItems(["In zone", "Distance"])
-        self.GraphValidationMenu.currentTextChanged.connect(self.inzone)
+        self.GraphValidationMenu.currentTextChanged.connect(self.inzoneValidation)
 
         self.GraphValidationLabelMenu = QLabel("Visualize metric")
 
@@ -714,10 +719,10 @@ class MyTabWidget(QWidget):
         self.btnResetVal.clicked.connect(self.ResetValidation)
 
         self.btnExportData = QPushButton("Export Data")
-        self.btnExportData.clicked.connect(self.ExportData)
+        self.btnExportData.clicked.connect(self.ExportDataValidation)
 
         self.btnToGroup = QPushButton("Group")
-        self.btnToGroup.clicked.connect(self.ToGroup)
+        self.btnToGroup.clicked.connect(self.ToGroupValidation)
 
         # self.slider = QSlider(Qt.Horizontal)
 
@@ -763,7 +768,7 @@ class MyTabWidget(QWidget):
         self.btnChangeFrame.clicked.connect(self.displayFrameCorner)
 
         self.labelImageOriCorner = QLabel("Original Image Place Holder")
-        self.labelImageOriCorner.mousePressEvent = lambda event: self.locationInImage(
+        self.labelImageOriCorner.mousePressEvent = lambda event: self.locationInImageCorner(
             event
         )
 
@@ -776,28 +781,28 @@ class MyTabWidget(QWidget):
         self.labelTopLeft.setMinimumWidth(70)
         self.FieldTL = QLineEdit()
         self.FieldTL.setPlaceholderText("Enter Cordinate in x y form")
-        self.FieldTL.returnPressed.connect(self.FieldPointRegistrationTL)  # Prob save x
+        self.FieldTL.returnPressed.connect(self.FieldPointRegistrationTLCorner)  # Prob save x
 
         self.labelTopRight = QLabel("Top Right:")
         self.labelTopRight.setStyleSheet("QLabel {color: magenta;}")
         self.labelTopRight.setMinimumWidth(70)
         self.FieldTR = QLineEdit()
         self.FieldTR.setPlaceholderText("Enter Cordinate in x y form")
-        self.FieldTR.returnPressed.connect(self.FieldPointRegistrationTR)
+        self.FieldTR.returnPressed.connect(self.FieldPointRegistrationTRCorner)
 
         self.labelBottomRight = QLabel("Bottom Right:")
         self.labelBottomRight.setStyleSheet("QLabel {color: cyan;}")
         self.labelBottomRight.setMinimumWidth(70)
         self.FieldBR = QLineEdit()
         self.FieldBR.setPlaceholderText("Enter Cordinate in x y form")
-        self.FieldBR.returnPressed.connect(self.FieldPointRegistrationBR)
+        self.FieldBR.returnPressed.connect(self.FieldPointRegistrationBRCorner)
 
         self.labelBottomLeft = QLabel("Bottom Left:")
         self.labelBottomLeft.setStyleSheet("QLabel {color: lime;}")
         self.labelBottomLeft.setMinimumWidth(70)
         self.FieldBL = QLineEdit()
         self.FieldBL.setPlaceholderText("Enter Cordinate in x y form")
-        self.FieldBL.returnPressed.connect(self.FieldPointRegistrationBL)
+        self.FieldBL.returnPressed.connect(self.FieldPointRegistrationBLCorner)
 
         self.btnSetForAll = QPushButton("Set For All")
         self.btnSetForAll.clicked.connect(self.saveToAllCorner)
@@ -806,11 +811,11 @@ class MyTabWidget(QWidget):
         self.btnClearPoints.clicked.connect(self.clearPointsCorner)
 
         self.btnDoneCorner = QPushButton("Save Changes")
-        self.btnDoneCorner.clicked.connect(lambda: self.DoneRegisterCornersToBack(True))
+        self.btnDoneCorner.clicked.connect(lambda: self.DoneRegisterCornersToBackCorner(True))
 
         self.btnNoSaveCorner = QPushButton("Don't Save changes")
         self.btnNoSaveCorner.clicked.connect(
-            lambda: self.DoneRegisterCornersToBack(False)
+            lambda: self.DoneRegisterCornersToBackCorner(False)
         )
 
         self.labelImageAltCorner = QLabel(
@@ -943,13 +948,13 @@ class MyTabWidget(QWidget):
         self.labelTopSchema.setMinimumWidth(70)
         self.FieldTSchema = QLineEdit()
         self.FieldTSchema.setPlaceholderText("Enter width in mm")
-        self.FieldTSchema.returnPressed.connect(self.FieldLengthRegistrationTop)
+        self.FieldTSchema.returnPressed.connect(self.FieldLengthRegistrationTopSchema)
 
         self.labelRightSchema = QLabel("Right length in mm:")
         self.labelRightSchema.setMinimumWidth(70)
         self.FieldRSchema = QLineEdit()
         self.FieldRSchema.setPlaceholderText("Enter length in mm")
-        self.FieldRSchema.returnPressed.connect(self.FieldLengthRegistrationRight)
+        self.FieldRSchema.returnPressed.connect(self.FieldLengthRegistrationRightSchema)
 
         self.labelImageAltSchema = QLabel("Altered Image Place Holder")
         self.labelImageAltSchema.resizeEvent
@@ -959,23 +964,23 @@ class MyTabWidget(QWidget):
         self.labelBottomSchema.setMinimumWidth(70)
         self.FieldBSchema = QLineEdit()
         self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
-        self.FieldBSchema.returnPressed.connect(self.FieldLengthRegistrationBottom)
+        self.FieldBSchema.returnPressed.connect(self.FieldLengthRegistrationBottomSchema)
 
         self.labelLeftSchema = QLabel("Left length in mm:")
         self.labelLeftSchema.setMinimumWidth(70)
         self.FieldLSchema = QLineEdit()
         self.FieldLSchema.setPlaceholderText("Enter length in mm")
-        self.FieldLSchema.returnPressed.connect(self.FieldLengthRegistrationLeft)
+        self.FieldLSchema.returnPressed.connect(self.FieldLengthRegistrationLeftSchema)
 
         self.btnSetForAllSchema = QPushButton("Set For All")
-        self.btnSetForAllSchema.clicked.connect(self.setForAllLengths)
+        self.btnSetForAllSchema.clicked.connect(self.setForAllLengthsSchema)
 
         self.btnClearMeasurementsSchema = QPushButton("Clear measurements")
-        self.btnClearMeasurementsSchema.clicked.connect(self.clearLengths)
+        self.btnClearMeasurementsSchema.clicked.connect(self.clearLengthsSchema)
 
         self.btnDoneCornerSchema = QPushButton("Done")
         self.btnDoneCornerSchema.clicked.connect(
-            lambda: self.DoneRegisterCornersToBack(False)
+            lambda: self.DoneRegisterCornersToBackCorner(False)
         )
 
         self.spacingLabel1Schema = QLabel("")
@@ -1017,6 +1022,8 @@ class MyTabWidget(QWidget):
         self.tabCreateSchema.layout.addWidget(self.btnDoneCornerSchema, 7, 0, 1, 4)
 
         self.tabCreateSchema.setLayout(self.tabCreateSchema.layout)
+        # Delete up to here if getting rid of schema
+
 
         #  group tab
         self.tabGroup.layout = QGridLayout()
@@ -1087,7 +1094,7 @@ class MyTabWidget(QWidget):
 
         self.FieldGroupTitle = QLineEdit()
         self.FieldGroupTitle.setPlaceholderText("Title")
-        self.FieldGroupTitle.returnPressed.connect(self.newGroupNameHolder)
+        self.FieldGroupTitle.returnPressed.connect(self.newGroupNameHolderGroup)
 
         self.addToExistingGroupbtn = QPushButton("Add to Existing Group")
         self.addToExistingGroupbtn.clicked.connect(self.addVideoToGroup)
@@ -1106,7 +1113,7 @@ class MyTabWidget(QWidget):
         self.placeholderbtn.clicked.connect(self.updateGroups)
 
         self.BackGroupBtn = QPushButton("Done Grouping")
-        self.BackGroupBtn.clicked.connect(self.DoneGroupToBack)
+        self.BackGroupBtn.clicked.connect(self.DoneGroupToBackGroup)
 
         self.tabGroup.layout.addWidget(self.scroll_area, 0, 0, 4, 4)
         self.tabGroup.layout.addWidget(self.selectAllBtnGroup, 4, 0, 1, 2)
@@ -1140,7 +1147,7 @@ class MyTabWidget(QWidget):
 
         self.ComboVidMenuZone = QComboBox()
         self.ComboVidMenuZone.addItems(info["data"][" Videos"])
-        self.ComboVidMenuZone.currentTextChanged.connect(self.ZoneDisplay)
+        self.ComboVidMenuZone.currentTextChanged.connect(self.DisplayZone)
 
         self.ComboZoneMenuZone = QComboBox()
         zoneList = []
@@ -1153,7 +1160,7 @@ class MyTabWidget(QWidget):
                 ),
             )
         self.ComboZoneMenuZone.addItems(zoneList)
-        self.ComboZoneMenuZone.currentTextChanged.connect(self.ZoneDisplay)
+        self.ComboZoneMenuZone.currentTextChanged.connect(self.DisplayZone)
 
 
         self.labelImageOneZone = QLabel("One zone Image Place Holder")
@@ -1178,28 +1185,28 @@ class MyTabWidget(QWidget):
         self.labelTopLeftZone.setMinimumWidth(70)
         self.FieldTLZone = QLineEdit()
         self.FieldTLZone.setPlaceholderText("Enter Cordinate in x y form")
-        self.FieldTLZone.returnPressed.connect(self.FieldZoneRegistrationTL)  # Prob save x
+        self.FieldTLZone.returnPressed.connect(self.FieldZoneRegistrationTLZone)  # Prob save x
 
         self.labelTopRightZone = QLabel("Top Right:")
         self.labelTopRightZone.setStyleSheet("QLabel {color: magenta;}")
         self.labelTopRightZone.setMinimumWidth(70)
         self.FieldTRZone = QLineEdit()
         self.FieldTRZone.setPlaceholderText("Enter Cordinate in x y form")
-        self.FieldTRZone.returnPressed.connect(self.FieldZoneRegistrationTR)
+        self.FieldTRZone.returnPressed.connect(self.FieldZoneRegistrationTRZone)
 
         self.labelBottomRightZone = QLabel("Bottom Right:")
         self.labelBottomRightZone.setStyleSheet("QLabel {color: cyan;}")
         self.labelBottomRightZone.setMinimumWidth(70)
         self.FieldBRZone = QLineEdit()
         self.FieldBRZone.setPlaceholderText("Enter Cordinate in x y form")
-        self.FieldBRZone.returnPressed.connect(self.FieldZoneRegistrationBR)
+        self.FieldBRZone.returnPressed.connect(self.FieldZoneRegistrationBRZone)
 
         self.labelBottomLeftZone = QLabel("Bottom Left:")
         self.labelBottomLeftZone.setStyleSheet("QLabel {color: lime;}")
         self.labelBottomLeftZone.setMinimumWidth(70)
         self.FieldBLZone = QLineEdit()
         self.FieldBLZone.setPlaceholderText("Enter Cordinate in x y form")
-        self.FieldBLZone.returnPressed.connect(self.FieldZoneRegistrationBL)
+        self.FieldBLZone.returnPressed.connect(self.FieldZoneRegistrationBLZone)
 
         
 
@@ -1207,11 +1214,11 @@ class MyTabWidget(QWidget):
         self.btnClearPointsZone.clicked.connect(self.clearZone)
 
         self.btnDoneCornerZone = QPushButton("Save Changes")
-        self.btnDoneCornerZone.clicked.connect(lambda: self.DoneRegisterZonesToBack(True))
+        self.btnDoneCornerZone.clicked.connect(lambda: self.DoneRegisterZonesToBackZone(True))
 
         self.btnNoSaveCornerZone = QPushButton("Don't Save changes")
         self.btnNoSaveCornerZone.clicked.connect(
-            lambda: self.DoneRegisterZonesToBack(False)
+            lambda: self.DoneRegisterZonesToBackZone(False)
         )
 
         self.tabZone.layout.addWidget(self.labelImageOneZone, 0, 0, 4, 4)
@@ -1238,10 +1245,10 @@ class MyTabWidget(QWidget):
 
        
 
-        # Delete when real
+        # Delete when real code 1111111
         self.startTab.addTab(self.tabZone, "Zone")
         self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
-        self.startTab.addTab(self.tabPointSelection, "Choose Points")
+        self.startTab.addTab(self.tabRegistration, "Registration")
         self.startTab.addTab(self.tabScoring, "Scoring")
         self.startTab.addTab(self.tabValidation, "Validation")
         # self.startTab.addTab(self.tabRegisterCorners, "Register Corners")
@@ -1255,7 +1262,7 @@ class MyTabWidget(QWidget):
         self.layout.addWidget(self.startTab)
         self.setLayout(self.layout)
 
-    def FolderSearch(self):
+    def FolderSearchDisplay(self):
         """When button is clicked will allow user to search explorer for folder that contains video files and updates config file"""
         self.cwd = os.getcwd()
         self.path = QFileDialog.getExistingDirectory(
@@ -1314,7 +1321,7 @@ class MyTabWidget(QWidget):
         except:
             print("error 4")
 
-    def DLCFolderSearch(self):
+    def DLCFolderSearchDisplay(self):
         """When button is clicked will allow user to search explorer for folder that contains DLC h5 files and updates config file"""
         self.cwd = os.getcwd()
         self.path = QFileDialog.getExistingDirectory(
@@ -1391,7 +1398,7 @@ class MyTabWidget(QWidget):
         except:
             print("error 4")
 
-    def FolderSearchField(self):
+    def FolderSearchFieldDisplay(self):
         """When enter is pressed will check if path is valid for folder that contains video files and updates config file"""
         self.cwd = os.getcwd()
         self.path = self.searchField.text()
@@ -1434,7 +1441,7 @@ class MyTabWidget(QWidget):
         except:
             print("error 1")
 
-    def DLCFolderSearchField(self):
+    def DLCFolderSearchFieldDisplay(self):
         """When enter is pressed will check if path is valid for folder that contains video files and updates config file"""
         self.cwd = os.getcwd()
         self.path = self.searchFieldDLC.text()
@@ -1511,7 +1518,7 @@ class MyTabWidget(QWidget):
             print("error 1")
 
     def yamlUpdateUI(self):
-        """Will take the info from the config file and update the UI"""
+        """Will take the info from the config file and update the UI (Changes things here and there could be uodated to change more things)"""
         info = openYaml()
 
         if len(info["folderPath"]) != 0:
@@ -1563,7 +1570,7 @@ class MyTabWidget(QWidget):
         self.featuresDataDisplay.setModel(pandasModel(pd.DataFrame(info["data"])))
         self.featuresDataDisplay.resizeColumnsToContents()
 
-    def StoreProjName(self):
+    def StoreProjNameCreate(self):
         """Will store the project name to the config file"""
         name = self.projNameField.text()
         if len(name) != 0:
@@ -1576,7 +1583,7 @@ class MyTabWidget(QWidget):
         else:
             self.projNameField.setText("")
 
-    def StoreProjLocation(self):
+    def StoreProjLocationCreate(self):
         """Will store the project location to the config file (specific for create tab)"""
         loc = self.projLocField.text()
 
@@ -1592,7 +1599,7 @@ class MyTabWidget(QWidget):
         else:
             self.projLocField.setText("")
 
-    def StoreProjLocationv2(self):
+    def StoreProjLocationLoad(self):
         """Will store the project location to the config file (specific for load tab)"""
         loc = self.projLocFieldv2.text()
         if os.path.exists(loc):
@@ -1607,7 +1614,7 @@ class MyTabWidget(QWidget):
         else:
             self.projLocFieldv2.setText("")
 
-    def PathSearch(self):
+    def PathSearchCreateAndLoad(self):
         """button to store the project location to the config file (for both create and load tabs)"""
         self.cwd = os.getcwd()
         self.path = QFileDialog.getExistingDirectory(
@@ -1628,7 +1635,7 @@ class MyTabWidget(QWidget):
         except:
             print("Failed to choose valid path")
 
-    def boxWidthSave(self):
+    def boxWidthSaveRegistration(self):
         """Will store the box width to the config file (specific for choose points tab)"""
         bw = self.FieldBoxWidth.text()
         try:
@@ -1644,7 +1651,7 @@ class MyTabWidget(QWidget):
         except:
             self.FieldBoxWidth.setText("Invalid Entry")
 
-    def boxHeightSave(self):
+    def boxHeightSaveRegistration(self):
         """Will store the box height to the config file (specific for choose points tab)"""
         bh = self.FieldBoxHeight.text()
         try:
@@ -1665,7 +1672,7 @@ class MyTabWidget(QWidget):
         sender = self.sender()
         # print(sender.text() + " was pressed")
 
-    def Create_DLC_Project(self):
+    def Create_DLC_ProjectLoadAndCreate(self):
         """When pressed will update tabs and start the process for creating a new project including clearing config file"""
         try:
             self.startTab.removeTab(1)
@@ -1681,12 +1688,11 @@ class MyTabWidget(QWidget):
                 "DLCfolderPath": "",
                 "videoPaths": [],
                 "DLCvideoPaths": [],
-                "zone": [],
-                "BoxHeight": "",
-                "BoxWidth": "",
+                "zones": {"center": []},
+                "BoxHeight": 500,
+                "BoxWidth": 500,
                 "Name": "",
                 "Path": "",
-                "numFeatures": "2",
                 "data": {" Videos": [], "Feature 1": [], "Feature 2": []},
                 "uncertainty": 0.6,
                 "groups": [],
@@ -1695,7 +1701,7 @@ class MyTabWidget(QWidget):
             with open("config.yaml", "w") as file:
                 yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def Open_DLC_Project(self):
+    def Open_DLC_ProjectLoadAndCreate(self):
         """When pressed will update tabs and start the process for loading a existing project"""
         try:
             self.startTab.removeTab(1)
@@ -1706,11 +1712,12 @@ class MyTabWidget(QWidget):
 
     #    pop up not yet connected to choices (to connect to the yaml file)
 
-    def locationInImage(self, event):
+    def locationInImageCorner(self, event):
         """When pressed will save place in image clicked and append to list however points won't be adjusted for the image so may not like what is imagined"""
 
         helper = openHelperYaml()
-        try:
+        # try:
+        if True:
             if self.labelImageOriCorner.text() != "Original Image Place Holder":
                 pos = str(event.pos())
                 pos = pos.strip("PyQt5.QtCore.Qpoint")
@@ -1750,8 +1757,8 @@ class MyTabWidget(QWidget):
                         yaml.dump(
                             helper, file, default_flow_style=False, Dumper=NoAliasDumper
                         )
-        except:
-            print("fail")
+        # except:
+        #     print("fail 565739274")
 
         self.displayFrameCorner()
 
@@ -1783,7 +1790,7 @@ class MyTabWidget(QWidget):
                 yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
             self.displayFrameCorner()
 
-    def fieldTextUpdater(self):
+    def fieldTextUpdaterCorner(self):
         """Updates field  goes from TL to TR to BR to BL"""
         info = openYaml()
         helper = openHelperYaml()
@@ -1825,7 +1832,7 @@ class MyTabWidget(QWidget):
         except:
             pass
 
-    def FieldPointRegistrationTL(self):
+    def FieldPointRegistrationTLCorner(self):
         """Saves the top left position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
@@ -1850,7 +1857,7 @@ class MyTabWidget(QWidget):
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.displayFrameCorner()
 
-    def FieldPointRegistrationTR(self):
+    def FieldPointRegistrationTRCorner(self):
         """Saves the top Right position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
@@ -1877,7 +1884,7 @@ class MyTabWidget(QWidget):
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.displayFrameCorner()
 
-    def FieldPointRegistrationBR(self):
+    def FieldPointRegistrationBRCorner(self):
         """Saves the Bottom Right position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
@@ -1904,7 +1911,7 @@ class MyTabWidget(QWidget):
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.displayFrameCorner()
 
-    def FieldPointRegistrationBL(self):
+    def FieldPointRegistrationBLCorner(self):
         """Saves the Bottom left position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
@@ -1931,7 +1938,7 @@ class MyTabWidget(QWidget):
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.displayFrameCorner()
 
-    def toRegisterCorners(self):
+    def toRegisterCornersRegistration(self):
         """Will continue from the Choose points tab and register corners button to register corners tab and remove everything"""
         try:
             self.startTab.removeTab(0)
@@ -1950,7 +1957,7 @@ class MyTabWidget(QWidget):
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def toZones(self):
+    def toZonesRegistration(self):
         """Will continue from the Choose points tab and register corners button to register corners tab and remove everything"""
         try:
             self.startTab.removeTab(0)
@@ -1965,6 +1972,8 @@ class MyTabWidget(QWidget):
         zoneList = []
         for zone in info["zones"]:
             zoneList.append(zone)
+        self.ComboVidMenuZone.clear()   
+        self.ComboVidMenuZone.addItems(info["data"][" Videos"])
         zoneList = sorted(
                 zoneList,
                 key=lambda a: sum(
@@ -1977,16 +1986,16 @@ class MyTabWidget(QWidget):
         
         self.ComboZoneMenuZone.clear()
         self.ComboZoneMenuZone.addItems(zoneList)
-        self.ZoneDisplay()
+        self.DisplayZone()
 
-    def DoneRegisterCornersToBack(self, save=True):
+    def DoneRegisterCornersToBackCorner(self, save=True):
         """Brings back all tabs and gets rid of register corners tab"""
         try:
             self.startTab.removeTab(0)
         except:
             pass
         self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
-        self.startTab.addTab(self.tabPointSelection, "Choose Points")
+        self.startTab.addTab(self.tabRegistration, "Registration")
         self.startTab.addTab(self.tabScoring, "Scoring")
         self.startTab.addTab(self.tabValidation, "Validation")
         self.startTab.setCurrentIndex(1)
@@ -2001,7 +2010,7 @@ class MyTabWidget(QWidget):
             with open("config.yaml", "w") as file:
                 yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def ToGroup(self):
+    def ToGroupValidation(self):
         """brings user to group tab"""
         try:
             self.startTab.removeTab(0)
@@ -2013,19 +2022,19 @@ class MyTabWidget(QWidget):
         self.startTab.addTab(self.tabGroup, "Group")
         self.updateGroups()
 
-    def DoneGroupToBack(self):
+    def DoneGroupToBackGroup(self):
         """Brings back all tabs and gets rid of group tab"""
         try:
             self.startTab.removeTab(0)
         except:
             pass
         self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
-        self.startTab.addTab(self.tabPointSelection, "Choose Points")
+        self.startTab.addTab(self.tabRegistration, "Registration")
         self.startTab.addTab(self.tabScoring, "Scoring")
         self.startTab.addTab(self.tabValidation, "Validation")
         self.startTab.setCurrentIndex(3)
 
-    def toNext(self):
+    def toNextCreateAndLoad(self):
         """Will continue from the create or load project button and will update tabs to move to the rest"""
         sender = self.sender()
         pathExist = True
@@ -2044,7 +2053,7 @@ class MyTabWidget(QWidget):
             except:
                 pass
             self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
-            self.startTab.addTab(self.tabPointSelection, "Choose Points")
+            self.startTab.addTab(self.tabRegistration, "Registration")
             self.startTab.addTab(self.tabScoring, "Scoring")
             self.startTab.addTab(self.tabValidation, "Validation")
 
@@ -2057,7 +2066,7 @@ class MyTabWidget(QWidget):
         else:
             self.loadhelplabel.setText("You need to enter a project path")
 
-    def displayFrame(self):
+    def displayFrameRegistration(self):
         """Displays 1st frame of the video"""
         info = openYaml(False)
 
@@ -2124,7 +2133,7 @@ class MyTabWidget(QWidget):
             self.labelImageAlt.setScaledContents(True)
 
         else:
-            print("else")
+            print("else 58493")
             self.labelImageAlt.setText("Altered Image Place Holder")
 
     def displayFrameCorner(self):
@@ -2132,7 +2141,7 @@ class MyTabWidget(QWidget):
         info = openYaml(False)
         helper = openHelperYaml()
 
-        if self.ComboVidMenuCorner.count() != 0 and os.path.exists(info["folderPath"]):
+        if self.ComboVidMenuCorner.count() != 0 and os.path.exists(info["folderPath"]) and self.startTab.count() == 1:
             PROJECT_DIR = Path(info["folderPath"])
             cap = cv2.VideoCapture(
                 str(PROJECT_DIR / self.ComboVidMenuCorner.currentText())
@@ -2152,6 +2161,7 @@ class MyTabWidget(QWidget):
             self.labelImgBR.setText(str(imwidth) + "," + str(imheight))
             self.labelImgTL.setText("0,0")
             self.labelImgTR.setText(str(imwidth) + ",0")
+            self.cornerImageDim = [imwidth, imheight]
             self.zoneImageDim = [imwidth, imheight]
             pixmap = QPixmap(image)
             # Sets points
@@ -2160,6 +2170,7 @@ class MyTabWidget(QWidget):
                     info["videoPaths"][i]["title"]
                     == self.ComboVidMenuCorner.currentText()
                     and len(info["videoPaths"][i]["title"]) != 0
+                    and helper["points"][i] != None
                 ):
                     index = i
                     for j in range(len(helper["points"][i])):
@@ -2237,14 +2248,15 @@ class MyTabWidget(QWidget):
                 )
 
             # Updates the text fields
-            self.fieldTextUpdater()
+            self.fieldTextUpdaterCorner()
 
         else:
-            self.labelImageOriCorner.setText("Original Image Place Holder")
-            self.labelImgBL.setText("")
-            self.labelImgBR.setText("")
-            self.labelImgTL.setText("")
-            self.labelImgTR.setText("")
+            if self.startTab.currentIndex() == 0:
+                self.labelImageOriCorner.setText("Original Image Place Holder")
+                self.labelImgBL.setText("")
+                self.labelImgBR.setText("")
+                self.labelImgTL.setText("")
+                self.labelImgTR.setText("")
 
     def displayAltFrameSchema(self):
         """Displays 1st frame of the altered video"""
@@ -2340,7 +2352,7 @@ class MyTabWidget(QWidget):
                 self.FieldLSchema.setText("")
 
         else:
-            print("else")
+            print("else 57483")
             self.labelImageAltSchema.setText("Altered Image Place Holder")
             self.FieldBSchema.setPlaceholderText("Enter enter width in mm")
             self.FieldBSchema.setText("")
@@ -2351,7 +2363,7 @@ class MyTabWidget(QWidget):
             self.FieldLSchema.setPlaceholderText("Enter enter length in mm")
             self.FieldLSchema.setText("")
 
-    def FieldLengthRegistrationTop(self):
+    def FieldLengthRegistrationTopSchema(self):
         """Saves the Top length"""
         sender = self.sender()
         info = openYaml()
@@ -2372,7 +2384,7 @@ class MyTabWidget(QWidget):
         with open("config.yaml", "w") as file:
             yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def FieldLengthRegistrationRight(self):
+    def FieldLengthRegistrationRightSchema(self):
         """Saves the Right Length"""
         sender = self.sender()
         info = openYaml()
@@ -2393,7 +2405,7 @@ class MyTabWidget(QWidget):
         with open("config.yaml", "w") as file:
             yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def FieldLengthRegistrationLeft(self):
+    def FieldLengthRegistrationLeftSchema(self):
         """Saves the Left Length"""
         sender = self.sender()
         info = openYaml()
@@ -2414,7 +2426,7 @@ class MyTabWidget(QWidget):
         with open("config.yaml", "w") as file:
             yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def FieldLengthRegistrationBottom(self):
+    def FieldLengthRegistrationBottomSchema(self):
         """Saves the Bottom Length"""
         sender = self.sender()
         info = openYaml()
@@ -2435,7 +2447,7 @@ class MyTabWidget(QWidget):
         with open("config.yaml", "w") as file:
             yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def clearLengths(self):
+    def clearLengthsSchema(self):
         """clears the saved lengths of the box"""
         info = openYaml()
         for i in range(len(info["videoPaths"])):
@@ -2457,7 +2469,7 @@ class MyTabWidget(QWidget):
         with open("config.yaml", "w") as file:
             yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def setForAllLengths(self):
+    def setForAllLengthsSchema(self):
         """sets all lengths the same"""
         info = openYaml()
         for j in range(len(info["videoPaths"])):
@@ -2468,7 +2480,7 @@ class MyTabWidget(QWidget):
         with open("config.yaml", "w") as file:
             yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-    def ValidationPlayVid(self, breaker=False):
+    def checkVidPlayValidation(self, breaker=False):
         """Validates wether the video is playing correctly (still work in progress)"""
         helper = openHelperYaml()
 
@@ -2479,17 +2491,18 @@ class MyTabWidget(QWidget):
             except:
                 pass
             self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
-            self.threadVal.changePixmap.connect(self.setImage)
+            self.threadVal.changePixmap.connect(self.setImageValidation)
             self.sliderVal.setRange(0, helper["ValidationVideoSettings"]["TotalFrames"])
-            self.inzone()
+            self.sliderVal.setSliderPosition(helper["ValidationVideoSettings"]["Frame"])
+            self.inzoneValidation()
 
         else:
             self.threadVal = ThreadOpenCV(self.ComboVidValidationMenu.currentText())
-            self.threadVal.changePixmap.connect(self.setImage)
+            self.threadVal.changePixmap.connect(self.setImageValidation)
 
         self.vidPlayingVal = self.ComboVidValidationMenu.currentText()
 
-    def playVideo(self):
+    def playVideoValidation(self):
         """Plays the video"""
         try:
             self.featuresDataDisplay.resizeColumnsToContents()
@@ -2502,10 +2515,10 @@ class MyTabWidget(QWidget):
         
             
         except:
-            self.ValidationPlayVid(True)
+            self.checkVidPlayValidation(True)
             self.threadVal.start()
 
-    def stopVideo(self):
+    def stopVideoValidation(self):
         """stop the video"""
         try:
             if self.vidPlayingVal != self.ComboVidValidationMenu.currentText():
@@ -2514,9 +2527,9 @@ class MyTabWidget(QWidget):
                 x = 1 / 0
             self.threadVal.running = False
         except:
-            self.ValidationPlayVid(True)
+            self.checkVidPlayValidation(True)
 
-    def setImage(self, image):
+    def setImageValidation(self, image):
         """Sets frame"""
         # print("2")
         helper = openHelperYaml()
@@ -2544,9 +2557,9 @@ class MyTabWidget(QWidget):
 
         self.labelVideoValidation.setPixmap(QPixmap.fromImage(image))
 
-    def changeFrameSlider(self):
+    def changeFrameSliderValidation(self):
         """Slider will change the frame but it will mess up if you switch the video then scroll (trying to fix)"""
-        self.stopVideo()
+        self.stopVideoValidation()
         helper = openHelperYaml()
 
         # Original maybe semi work
@@ -2554,20 +2567,22 @@ class MyTabWidget(QWidget):
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
 
-        self.playVideo()
+        self.playVideoValidation()
 
-    def ChangeVideo(self):
-        try:
-            self.featuresDataDisplay.resizeColumnsToContents()
-            self.stopVideo()
-        except:
-            pass
-        finally:
-            self.ValidationPlayVid()
-            self.stopVideo()
+    def ChangeVideoValidation(self):
+        
+        if self.startTab.currentIndex() == 3:
+            try:
+                self.featuresDataDisplay.resizeColumnsToContents()
+                self.stopVideoValidation()
+            except:
+                pass
+            finally:
+                self.checkVidPlayValidation()
+                self.stopVideoValidation()
 
 
-    def FrameSet(self):
+    def FrameSetValidation(self):
         """Will change the frame to the designated frame"""
 
         helper = openHelperYaml()
@@ -2576,7 +2591,7 @@ class MyTabWidget(QWidget):
             and int(self.FieldTimeValidation.text())
             <= helper["ValidationVideoSettings"]["TotalFrames"]
         ):
-            self.stopVideo()
+            self.stopVideoValidation()
 
             self.sliderVal.setSliderPosition(int(self.FieldTimeValidation.text()))
             helper["ValidationVideoSettings"]["Frame"] = int(
@@ -2591,16 +2606,20 @@ class MyTabWidget(QWidget):
 
             with open("helper.yaml", "w") as file:
                 yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
-            self.ValidationPlayVid()
+            self.checkVidPlayValidation()
 
-    def inzone(self):
+    def inzoneValidation(self):
         """goes through each h5 file applies the zone transformation and will extract the number of frames of which each body part is inside of the zone and update the config file"""
 
         # Transform image frame
         info = openYaml()
         self.featuresDataDisplay.resizeColumnsToContents()
-        try:
-            w, h = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
+        # try:
+        if True:
+            try:
+                w, h = int(info["BoxWidth"]), int(info["BoxHeight"])  # in mm
+            except:
+                w, h = 500 , 500
             schema = np.array([[0, 0], [w, 0], [w, h], [0, h]]).astype(np.float32)
 
             for i in range(len(info["videoPaths"])):
@@ -2734,7 +2753,7 @@ class MyTabWidget(QWidget):
                     likelihood = transformed_df.xs("likelihood", level="coords", axis=1)
                     transformed_df = transformed_df.where(
                         likelihood > info["uncertainty"]
-                    )  # Will leave gap for distance measurment and wil assume false for inzone
+                    )  # Will leave gap for distance measurment and wil assume false for inzoneValidation
                     centroid = (
                         transformed_df.loc[:, pd.IndexSlice[:, features]]
                         .groupby(level="coords", axis=1)
@@ -2836,8 +2855,8 @@ class MyTabWidget(QWidget):
             self.featuresDataDisplay.resizeColumnsToContents()
             with open("config.yaml", "w") as file:
                 yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
-        except:
-            print("fail")
+        # except:
+        #     print("fail 57394")
 
     def ResetValidation(self):
         """Resets validation tab (currently just messes things up)"""
@@ -2895,7 +2914,7 @@ class MyTabWidget(QWidget):
 
         self.PlayBackSpeedValidationMenu.setCurrentIndex(1)
 
-    def changePlayBackSpeed(self):
+    def changePlayBackSpeedValidation(self):
         """changes play back speed"""
         helper = openHelperYaml()
         helper["ValidationVideoSettings"]["PlayBackSpeed"] = float(
@@ -2905,13 +2924,13 @@ class MyTabWidget(QWidget):
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
         try:
-            self.stopVideo()
+            self.stopVideoValidation()
             
         except:
             pass
-        self.playVideo()
+        self.playVideoValidation()
 
-    def ExportData(self):
+    def ExportDataValidation(self):
         info = openYaml()
         # try:
         if True:
@@ -3093,7 +3112,7 @@ class MyTabWidget(QWidget):
             except:
                 print("error code 785839")
 
-    def newGroupNameHolder(self):
+    def newGroupNameHolderGroup(self):
         """Allows user to type group name and when enter is pressed name is saved as place holder"""
         self.FieldGroupTitle.setPlaceholderText(str(self.FieldGroupTitle.text()))
         self.FieldGroupTitle.setText("")
@@ -3101,7 +3120,7 @@ class MyTabWidget(QWidget):
     def addGroupBtnGroup(self):
         """Takes placeholder text of field and makes that a new group"""
         if self.FieldGroupTitle.text() != "":
-            self.newGroupNameHolder()
+            self.newGroupNameHolderGroup()
         info = openYaml()
         if (
             not self.FieldGroupTitle.placeholderText() in info["groups"]
@@ -3200,7 +3219,7 @@ class MyTabWidget(QWidget):
             yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
         self.updateGroups()
 
-    def ZoneDisplay(self):
+    def DisplayZone(self):
         """Changes the image displays on the zone tab shoing either one zone or multiple"""
 
         info = openYaml(False)
@@ -3226,7 +3245,7 @@ class MyTabWidget(QWidget):
 
             bytes_per_line = ch * w
             image = QImage(frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
-
+            self.zoneImageDim = [image.width(), image.height()]
             
             pixmapOneZone = QPixmap(image)
             pixmapZones = QPixmap(image)
@@ -3277,6 +3296,27 @@ class MyTabWidget(QWidget):
                 
                 altimageoneZone = image.copy()
                 altimageZones = image.copy()
+
+            self.FieldTLZone.setPlaceholderText("Enter Cordinate in x y form")
+            self.FieldTRZone.setPlaceholderText("Enter Cordinate in x y form")
+            self.FieldBRZone.setPlaceholderText("Enter Cordinate in x y form")
+            self.FieldBLZone.setPlaceholderText("Enter Cordinate in x y form")
+          
+
+            if self.ComboZoneMenuZone.currentText() != None and self.ComboZoneMenuZone.currentText() in helper["Zones"]:
+                for j in range(len(helper["Zones"][self.ComboZoneMenuZone.currentText()])):
+                    if j == 0:
+                        self.FieldTLZone.setPlaceholderText(str(helper["Zones"][self.ComboZoneMenuZone.currentText()][j][0]) + " " +
+                        str(helper["Zones"][self.ComboZoneMenuZone.currentText()][j][1]))
+                    elif j == 1:
+                        self.FieldTRZone.setPlaceholderText(str(helper["Zones"][self.ComboZoneMenuZone.currentText()][j][0]) + " " +
+                        str(helper["Zones"][self.ComboZoneMenuZone.currentText()][j][1]))
+                    elif j == 2:
+                        self.FieldBRZone.setPlaceholderText(str(helper["Zones"][self.ComboZoneMenuZone.currentText()][j][0]) + " " +
+                        str(helper["Zones"][self.ComboZoneMenuZone.currentText()][j][1]))
+                    elif j == 3:
+                        self.FieldBLZone.setPlaceholderText(str(helper["Zones"][self.ComboZoneMenuZone.currentText()][j][0]) + " " +
+                        str(helper["Zones"][self.ComboZoneMenuZone.currentText()][j][1]))
 
                 
 
@@ -3368,8 +3408,11 @@ class MyTabWidget(QWidget):
                         
                     else:
                         pass
-                del painter
-                del brush
+                try:
+                    del painter
+                    del brush
+                except:
+                    pass
 
 
         
@@ -3390,7 +3433,7 @@ class MyTabWidget(QWidget):
         for key in helper["Zones"]:
             ZoneList.append(key)
 
-        if not self.FieldNameZone.text() in ZoneList:
+        if (self.FieldNameZone.text() != None) and (not self.FieldNameZone.text() in ZoneList):
             ZoneList.append(self.FieldNameZone.text())
             self.FieldNameZone.setPlaceholderText("Name of New Zone")
             helper["Zones"][self.FieldNameZone.text()] = []
@@ -3411,19 +3454,7 @@ class MyTabWidget(QWidget):
         self.FieldTRZone.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldBRZone.setPlaceholderText("Enter Cordinate in x y form")
         self.FieldBLZone.setPlaceholderText("Enter Cordinate in x y form")
-        for j in range(len(helper["Zones"][self.FieldNameZone.text()])):
-            if j == 0:
-                self.FieldTLZone.setPlaceholderText(str(helper["Zones"][self.FieldNameZone.text()][j][0]) + " " +
-                str(helper["Zones"][self.FieldNameZone.text()][j][1]))
-            elif j == 1:
-                self.FieldTRZone.setPlaceholderText(str(helper["Zones"][self.FieldNameZone.text()][j][0]) + " " +
-                str(helper["Zones"][self.FieldNameZone.text()][j][1]))
-            elif j == 2:
-                self.FieldBRZone.setPlaceholderText(str(helper["Zones"][self.FieldNameZone.text()][j][0]) + " " +
-                str(helper["Zones"][self.FieldNameZone.text()][j][1]))
-            elif j == 3:
-                self.FieldBLZone.setPlaceholderText(str(helper["Zones"][self.FieldNameZone.text()][j][0]) + " " +
-                str(helper["Zones"][self.FieldNameZone.text()][j][1]))
+        
 
     def removeZoneZone(self):
         """Removes zone to zone tab"""
@@ -3443,7 +3474,7 @@ class MyTabWidget(QWidget):
             self.ComboZoneMenuZone.addItems(ZoneList)
             with open("helper.yaml", "w") as file:
                 yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
-            self.ZoneDisplay()
+            self.DisplayZone()
         except:
             pass
             
@@ -3452,7 +3483,8 @@ class MyTabWidget(QWidget):
             
             info = openYaml()
             helper = openHelperYaml()
-            try:
+            # try:
+            if True:
                 if self.labelImageOneZone.text() != "One zone Image Place Holder":
                     pos = str(event.pos())
                     pos = pos.strip("PyQt5.QtCore.Qpoint")
@@ -3468,7 +3500,7 @@ class MyTabWidget(QWidget):
                         pass
                     else:
                         cord = pos.split(", ")
-                        
+                        # print(altimage.width(), altimage.height(), self.zoneImageDim)
                         cord[0] = int(
                             int(cord[0])
                             * self.zoneImageDim[0]
@@ -3497,9 +3529,9 @@ class MyTabWidget(QWidget):
                                 helper, file, default_flow_style=False, Dumper=NoAliasDumper
                             )
 
-                        self.ZoneDisplay()
-            except:
-                print("fail")
+                        self.DisplayZone()
+            # except:
+            #     print("fail 7869493")
 
     def clearZone(self):
         """Clears zone"""
@@ -3510,18 +3542,18 @@ class MyTabWidget(QWidget):
             
             with open("helper.yaml", "w") as file:
                 yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
-            self.ZoneDisplay()
+            self.DisplayZone()
         except:
             pass
 
-    def DoneRegisterZonesToBack(self, save=True):
+    def DoneRegisterZonesToBackZone(self, save=True):
         """Brings back all tabs and gets rid of register corners tab"""
         try:
             self.startTab.removeTab(0)
         except:
             pass
         self.startTab.addTab(self.tabFolderDisplay, "Folder Display")
-        self.startTab.addTab(self.tabPointSelection, "Choose Points")
+        self.startTab.addTab(self.tabRegistration, "Registration")
         self.startTab.addTab(self.tabScoring, "Scoring")
         self.startTab.addTab(self.tabValidation, "Validation")
         self.startTab.setCurrentIndex(1)
@@ -3533,7 +3565,7 @@ class MyTabWidget(QWidget):
                 yaml.dump(info, file, default_flow_style=False, Dumper=NoAliasDumper)
             
 
-    def FieldZoneRegistrationTL(self):
+    def FieldZoneRegistrationTLZone(self):
         """Saves the top left position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
@@ -3557,10 +3589,10 @@ class MyTabWidget(QWidget):
             
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
-        self.ZoneDisplay()
+        self.DisplayZone()
        
 
-    def FieldZoneRegistrationTR(self):
+    def FieldZoneRegistrationTRZone(self):
         """Saves the top Right position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
@@ -3584,9 +3616,9 @@ class MyTabWidget(QWidget):
          
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
-        self.ZoneDisplay()
+        self.DisplayZone()
 
-    def FieldZoneRegistrationBR(self):
+    def FieldZoneRegistrationBRZone(self):
         """Saves the Bottom Right position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
@@ -3610,9 +3642,9 @@ class MyTabWidget(QWidget):
          
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
-        self.ZoneDisplay()
+        self.DisplayZone()
 
-    def FieldZoneRegistrationBL(self):
+    def FieldZoneRegistrationBLZone(self):
         """Saves the Bottom left position cordinate for a point"""
         sender = self.sender()
         info = openYaml()
@@ -3636,7 +3668,7 @@ class MyTabWidget(QWidget):
         
         with open("helper.yaml", "w") as file:
             yaml.dump(helper, file, default_flow_style=False, Dumper=NoAliasDumper)
-        self.ZoneDisplay()
+        self.DisplayZone()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

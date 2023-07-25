@@ -1,26 +1,8 @@
 PartsOfInterest: []
 ValidationVideoSettings:
-  FPS: 30.0
-  Frame: 85
+  FPS: 30
+  Frame: 0
   PlayBackSpeed: 1
-  TotalFrames: 18175
-Zones:
-  TopLeft:
-  - - 600
-    - 100
-  - - 350
-    - 100
-  - - 350
-    - 350
-  - - 600
-    - 350
-  center:
-  - - 100
-    - 100
-  - - 400
-    - 100
-  - - 400
-    - 400
-  - - 100
-    - 400
+  TotalFrames: 1
+Zones: {}
 points: []
