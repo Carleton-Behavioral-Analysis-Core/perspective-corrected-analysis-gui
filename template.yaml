@@ -1,15 +1,15 @@
-project_name: qerqwer
-project_path: /Users/andretelfer/Downloads/2023-06-15_sample-data
+project_name: your_project_name
+project_path: /replace/this/with/a/real/path/
 
 # Dimensions of the box in mm
 box_height: 400.0
 box_width: 500.0
 
 # Directory that contains the .mp4 videos 
-video_folder_path: /Users/andretelfer/Downloads/2023-06-15_sample-data/videos
+video_folder_path: ...
 
 # Directory that contains the .h5 files produced by deeplabcut
-dlc_folder_path: /Users/andretelfer/Downloads/2023-06-15_sample-data/dlc_files
+dlc_folder_path: ...
 
 # Treatment groups for performing aggregate analysis and plots
 treatment_groups:
