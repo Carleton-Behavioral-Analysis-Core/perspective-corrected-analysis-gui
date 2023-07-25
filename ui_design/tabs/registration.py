@@ -70,6 +70,7 @@ class RegistrationTab(QWidget):
         registrations_complete_button = QPushButton("ALL VIDEOS REGISTERED")
         registrations_complete_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         right_widget_layout.addWidget(registrations_complete_button)
+        
         self.setLayout(layout)
 
     
