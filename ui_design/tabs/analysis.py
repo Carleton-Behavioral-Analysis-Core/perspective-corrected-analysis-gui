@@ -5,9 +5,10 @@ from ui_design.widgets import *
 
 
 class AnalysisTab(QWidget):
-    def __init__(self, label_column_width=50, button_column_width=100):
+    def __init__(self, model):
         super().__init__()
-
+        self.model = model
+        
         layout = QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
 

@@ -3,10 +3,10 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton
 from ui_design.widgets import *
 
 class CreateProjectTab(QWidget):
-    def __init__(self, label_column_width=50, button_column_width=100):
+    def __init__(self, model):
         super().__init__()
-        self.button_column_width = button_column_width
-        self.label_column_width = label_column_width
+        self.model = model
+
         layout = QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
         title = QLabel('Create New Project')
@@ -17,9 +17,13 @@ class CreateProjectTab(QWidget):
         self.project_folder_widget = MaterialFolderBrowseEdit("FOLDER")
         layout.addWidget(self.project_folder_widget)
         self.create_project_button = MaterialPushButton("CREATE PROJECT")
-        self.create_project_button.setProperty('class', 'material-button')
-        self.create_project_button.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.create_project_button)
         self.setLayout(layout)
 
-    
+        self.create_project_button.clicked.connect(self.create_project)
+
+    def create_project(self):
+        name = self.project_name_widget.line_edit.text()
+        folder = self.project_folder_widget.line_edit.text()
+        self.model.create_project(folder, name)
+        

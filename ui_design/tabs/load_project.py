@@ -3,10 +3,10 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QHBoxLayout
 from ui_design.widgets import *
 
 class LoadProjectTab(QWidget):
-    def __init__(self, label_column_width=50, button_column_width=100):
+    def __init__(self, model):
         super().__init__()
-        self.button_column_width = button_column_width
-        self.label_column_width = label_column_width
+        self.model = model
+        
         layout = QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
         title = QLabel('Load Existing Project')

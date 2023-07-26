@@ -18,3 +18,5 @@ dependencies = [
     "ruamel.yaml"
 ]
 
+[tool.setuptools.package-data]
+ui_design = ["*.yaml"]
