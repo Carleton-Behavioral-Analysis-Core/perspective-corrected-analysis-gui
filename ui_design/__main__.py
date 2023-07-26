@@ -1,8 +1,9 @@
 import sys
 
-from tabs import load_project, create_project, load_videos, registration
+from tabs import load_project, create_project, load_videos, registration, analysis
 from pathlib import Path
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget
+
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -38,7 +39,13 @@ class App(QMainWindow):
         self.registration_tab = registration.RegistrationTab()
         self.tab_widget.addTab(self.registration_tab, "Register")
 
+        self.analysis_tab = analysis.AnalysisTab()
+        self.tab_widget.addTab(self.analysis_tab, "Analysis")
+
+        self.analysis_tab = analysis.AnalysisTab()
+        self.tab_widget.addTab(self.analysis_tab, "Results")
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     ex = App()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
