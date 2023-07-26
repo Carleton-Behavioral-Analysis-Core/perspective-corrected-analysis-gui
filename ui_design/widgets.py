@@ -135,7 +135,7 @@ class MaterialLabelImageRegisterPoints(QWidget):
             self.frame_label.mousePressEvent = lambda event: self.locationInImageCorner(
                 event
             )
-        print("go")
+  
         layout.addWidget(self.frame_label)
 
         self.setLayout(layout)
@@ -149,8 +149,8 @@ class MaterialLabelImageRegisterPoints(QWidget):
             self.width = w
             
         bytes_per_line = ch * w
-        image = QImage(image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        image = image.scaled(self.width, self.height, QtCore.Qt.KeepAspectRatio)
+        image = QImage(image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
+        image = image.scaled(self.width, self.height, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         pixmap = QPixmap(image)
         self.frame_label.setPixmap(pixmap)
 
@@ -161,9 +161,9 @@ class MaterialLabelImageRegisterPoints(QWidget):
         if True:
             # print(self.sender())
             pos = str(event.pos())
-            pos = pos.strip("PyQt5.QtCore.Qpoint")
+            pos = pos.strip("PyQt6.QtCore.Qpoint")
             pos = pos.strip("()")
-            print(pos)
+     
             # info = openYaml()
             if len(pos) != 0:
         
