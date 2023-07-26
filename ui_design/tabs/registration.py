@@ -1,7 +1,7 @@
 import numpy as np
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QGroupBox
-from ui_design.widgets import MaterialLineEdit, MaterialFileBrowseEdit, MaterialLabel, EmptyQHBoxLayout, EmptyQVBoxLayout, MaterialLabelImage, MaterialComboBox
+from PyQt6 import QtCore
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QGroupBox
+from ui_design.widgets import *
 
 
 class RegistrationTab(QWidget):
@@ -9,7 +9,7 @@ class RegistrationTab(QWidget):
         super().__init__()
 
         layout = QVBoxLayout()
-        layout.setAlignment(QtCore.Qt.AlignTop)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
 
         title = QLabel('Register Points')
         title.setProperty('class', 'material-h1')
@@ -31,9 +31,9 @@ class RegistrationTab(QWidget):
         sublayout.addSpacing(16)
 
         right_widget = QWidget()
-        # right_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        # right_widget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         right_widget_layout = EmptyQVBoxLayout()
-        right_widget_layout.setAlignment(QtCore.Qt.AlignTop)
+        right_widget_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignTop)
         right_widget.setLayout(right_widget_layout)
         sublayout.addWidget(right_widget)
         width_line_edit = MaterialLineEdit("WIDTH [mm]")
@@ -63,14 +63,30 @@ class RegistrationTab(QWidget):
         registration_group_box_layout.addWidget(t3_line_edit)
         t4_line_edit = MaterialLineEdit("BUTTOM LEFT")
         registration_group_box_layout.addWidget(t4_line_edit)
+
+        right_widget_layout.addSpacing(8)
+
+        row = EmptyQHBoxLayout()
+        row.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
+        clear_points = MaterialPushButton("APPLY TO ALL VIDEOS")
+        clear_points.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        row.addWidget(clear_points)
+        clear_points = MaterialPushButton("CLEAR")
+        clear_points.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        row.addWidget(clear_points)
+        registration_group_box_layout.addLayout(row)
         right_widget_layout.addWidget(registration_group_box)
 
         right_widget_layout.addSpacing(24)
 
-        registrations_complete_button = QPushButton("ALL VIDEOS REGISTERED")
-        registrations_complete_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        right_widget_layout.addWidget(registrations_complete_button)
-        
+        row = EmptyQHBoxLayout()
+        row.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
+        clear_all_button = MaterialPushButton("CLEAR ALL")
+        registrations_complete_button = MaterialPushButton("NEXT STEP")
+        row.addWidget(clear_all_button)
+        row.addWidget(registrations_complete_button)
+        right_widget_layout.addLayout(row)
+
         self.setLayout(layout)
 
     

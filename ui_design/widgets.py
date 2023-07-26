@@ -1,7 +1,8 @@
 import numpy as np
-from PyQt5 import QtCore
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QSizePolicy, QComboBox
+import os
+from PyQt6 import QtCore
+from PyQt6.QtGui import QImage, QPixmap
+from PyQt6.QtWidgets import QFileDialog, QHBoxLayout, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QSizePolicy, QComboBox
 
 class EmptyQVBoxLayout(QVBoxLayout):
     def __init__(self):
@@ -15,9 +16,15 @@ class EmptyQHBoxLayout(QHBoxLayout):
         self.setContentsMargins(0,0,0,0)
         self.setSpacing(0)
 
+class MaterialPushButton(QPushButton):
+    def __init__(self, text):
+        super().__init__(text)
+        self.setProperty('class', 'material-button')
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
 class MaterialLabel(QLabel):
-    def __init__(self, label_text):
-        super().__init__(label_text)
+    def __init__(self, text):
+        super().__init__(text)
         self.setProperty('class', 'material-label')
 
 class MaterialLineEdit(QWidget):
@@ -55,12 +62,23 @@ class MaterialComboBox(QWidget):
 
         self.setLayout(self.vbox_layout)
 
+class MaterialFolderBrowseEdit(MaterialLineEdit):
+    def __init__(self, label_text="", default_line_edit=""):
+        super().__init__(label_text, default_line_edit)
+        self.browse_button = MaterialPushButton("BROWSE")
+        self.hbox_layout.addWidget(self.browse_button)
+        self.browse_button.clicked.connect(self.browse)
+
+    def browse(self):
+        path = QFileDialog.getExistingDirectory(
+            self, "Open the location of the folder", r"" + str(os.getcwd()))
+
+        self.line_edit.setText(path)
+
 class MaterialFileBrowseEdit(MaterialLineEdit):
     def __init__(self, label_text="", default_line_edit=""):
         super().__init__(label_text, default_line_edit)
-        self.browse_button = QPushButton("BROWSE")
-        self.browse_button.setProperty('class', 'material-button')
-        self.browse_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.browse_button = MaterialPushButton("BROWSE")
         self.hbox_layout.addWidget(self.browse_button)
 
 class MaterialLabelImage(QWidget):
@@ -86,7 +104,7 @@ class MaterialLabelImage(QWidget):
             self.width = w
             
         bytes_per_line = ch * w
-        image = QImage(image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        image = image.scaled(self.width, self.height, QtCore.Qt.KeepAspectRatio)
+        image = QImage(image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
+        image = image.scaled(self.width, self.height, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         pixmap = QPixmap(image)
         self.frame_label.setPixmap(pixmap)
