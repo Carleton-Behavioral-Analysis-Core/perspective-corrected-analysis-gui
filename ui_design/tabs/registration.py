@@ -1,7 +1,7 @@
 import numpy as np
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QGroupBox
-from ui_design.widgets import MaterialLineEdit, MaterialFileBrowseEdit, MaterialLabel, EmptyQHBoxLayout, EmptyQVBoxLayout, MaterialLabelImage, MaterialComboBox
+from PyQt6 import QtCore
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QGroupBox
+from ui_design.widgets import *
 
 
 class RegistrationTab(QWidget):
@@ -88,81 +88,3 @@ class RegistrationTab(QWidget):
         right_widget_layout.addLayout(row)
 
         self.setLayout(layout)
-
-class MaterialLabelImageRegisterPoints(QWidget):
-    def __init__(self, label_text="", height=320, width=480,Clickable = False):
-        super().__init__()
-
-        layout = EmptyQVBoxLayout()
-        self.title_label = MaterialLabel(label_text)
-        layout.addWidget(self.title_label)
-
-        self.frame_label = QLabel()
-        self.height = height
-        self.width = width
-        placeholder_frame = np.zeros(shape=(self.height,self.width,3), dtype=np.uint8)
-        self.set_image(placeholder_frame)
-        if Clickable:
-            """ insert config file refernce like config = openYaml()
-            self.points_storage = {}
-            {for i in range(len(config["video_data"])): /or for key in config["video_data"]:}
-            try:
-                self.points_storage[{key/config["video_data"][i][title]}] = config["video_data"][{key/[i]}]["registration_points"]
-            except:
-                self.points_storage[{key/config["video_data"][i][title]}] = []
-            """
-            self.frame_label.mousePressEvent = lambda event: self.locationInImageCorner(
-                event
-            )
-        print("go")
-        layout.addWidget(self.frame_label)
-
-        self.setLayout(layout)
-
-    def set_image(self, image):
-        h,w,ch = image.shape
-
-        self.cornerImageDim = [w, h]
-        if (h != self.height) or (w != self.width):
-            self.height = h
-            self.width = w
-            
-        bytes_per_line = ch * w
-        image = QImage(image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        image = image.scaled(self.width, self.height, QtCore.Qt.KeepAspectRatio)
-        pixmap = QPixmap(image)
-        self.frame_label.setPixmap(pixmap)
-
-    def locationInImageCorner(self, event):
-        """When pressed will save place in image clicked and append to list however points won't be adjusted for the image so may not like what is imagined"""
-
-        # try:
-        if True:
-            # print(self.sender())
-            pos = str(event.pos())
-            pos = pos.strip("PyQt5.QtCore.Qpoint")
-            pos = pos.strip("()")
-            print(pos)
-            # info = openYaml()
-            if len(pos) != 0:
-        
-                cord = pos.split(", ")
-                cord[0] = int(
-                    int(cord[0])
-                    * self.cornerImageDim[0] #need dimension of the image before resizing
-                    /self.frame_label.width()
-                )
-                cord[1] = int(
-                    int(cord[1])
-                    * self.cornerImageDim[1] #need dimension of the image before resizing
-                    / self.frame_label.height() #divid
-                )
-                print(cord)
-                #if len(self.points_storage[self.video_combo_box.combo_box.currentText()]) < 4:
-                    # self.points_storage[self.video_combo_box.combo_box.currentText()].append(cord)
-                # else:
-                #   self.points_storage[self.video_combo_box.combo_box.currentText()][3] = cord
-             
-            
-        # except:
-        #     print("fail 565739274")
