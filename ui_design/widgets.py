@@ -261,3 +261,43 @@ class MaterialLabelImageRegisterPoints(QWidget):
             
         # except:
         #     print("fail 565739274")
+
+
+class MaterialLineEditRegisterPoints(MaterialLineEdit):
+    def __init__(self, label_text="", default_line_edit="",LabelImageRegisterPoints= None,pos = int):
+        super().__init__(label_text, default_line_edit)
+
+
+       
+        self.LabelImageRegisterPoints = LabelImageRegisterPoints
+        self.position = pos
+        try:
+            self.line_edit.setPlaceholderText(str(self.LabelImageRegisterPoints.testHolder[self.position][0]) + " " + str(self.LabelImageRegisterPoints.testHolder[self.position][1]) )
+        except:
+            self.line_edit.setPlaceholderText(default_line_edit)
+        # self.line_edit.returnPressed.connect(self.RegisterPoints)
+    
+
+
+    def RegisterPoints(self):
+        """Saves the top left position cordinate for a point"""
+        
+        
+        cord = self.line_edit.text()
+        cord = cord.split(" ")
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric():
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            if True: #A check to insure it is searching the right key
+                if len(self.LabelImageRegisterPoints.testHolder) >= 4:
+                    self.LabelImageRegisterPoints.testHolder[self.position] = cord
+                elif len(self.LabelImageRegisterPoints.testHolder) == 0:
+                    self.LabelImageRegisterPoints.testHolder = [cord]
+                elif len(self.LabelImageRegisterPoints.testHolder) < self.position:
+                    self.LabelImageRegisterPoints.testHolder.append(cord)
+                try:
+                    self.line_edit.setPlaceholderText(str(self.LabelImageRegisterPoints.testHolder[self.position][0]) + " " + str(self.LabelImageRegisterPoints.testHolder[self.position][1]) )
+                except:
+                    self.line_edit.setPlaceholderText("")
+                finally:
+                    self.line_edit.setText("")
