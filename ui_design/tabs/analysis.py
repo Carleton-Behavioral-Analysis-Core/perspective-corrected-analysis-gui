@@ -25,4 +25,4 @@ class AnalysisTab(QWidget):
         layout.addLayout(hbox)
         self.setLayout(layout)
 
-    
+        run_analysis_button.clicked.connect(self.model.perform_analysis)

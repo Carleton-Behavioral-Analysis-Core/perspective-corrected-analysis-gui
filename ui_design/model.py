@@ -7,10 +7,12 @@ import logging
 import cv2
 from collections import OrderedDict
 from ruamel.yaml.comments import CommentedMap as ordereddict
+from ui_design.analysis import *
 
 class Model(QObject):
     config_changed_signal = QtCore.pyqtSignal()
-    
+    analysis_changed_signal = QtCore.pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.config = None 
@@ -82,6 +84,9 @@ class Model(QObject):
         video_folder = Path(video_folder)
         dlc_folder = Path(dlc_folder)
 
+        self.config['video_folder_path'] = str(video_folder)
+        self.config['dlc_folder_path'] = str(dlc_folder)
+
         videos = (
             list(video_folder.glob('*.mp4')) + 
             list(video_folder.glob('*.MP4'))
@@ -98,13 +103,10 @@ class Model(QObject):
 
             dlc_file = next(dlc_folder.glob(f"{fname}DLC*.h5")).parts[-1]
             dlc_video = next(dlc_folder.glob(f"{fname}DLC*_labeled.mp4")).parts[-1]
-
-            cap = cv2.VideoCapture(str(video))
-            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            fps = float(cap.get(cv2.CAP_PROP_FPS))
-            
             groups = []
+            video_info = self.get_video_info(key)
+            width = video_info['width']
+            height = video_info['height']
             registration_points = [
                 [0,0],
                 [width,0],
@@ -115,16 +117,42 @@ class Model(QObject):
             video_data[key] = (ordereddict([
                 ('dlc_file', str(dlc_file)),
                 ('dlc_video', str(dlc_video)),
-                ('video_width', width),
-                ('video_height', height),
-                ('video_fps', fps),
                 ('groups', groups),
                 ('registration_points', registration_points)
             ]))
 
+        # find the minimum number of frames in the video
+        min_frames = min([self.get_video_info(v)['fps'] for v in videos])
+        
+
         self.logger.info('Saving to config')
         self.config['video_data'] = video_data
-        self.config['video_folder_path'] = str(video_folder)
-        self.config['dlc_folder_path'] = str(dlc_folder)
-        self.config['video_data'] = video_data
+        
         self.dump_config()
+
+    def get_video_info(self, video):
+        video = Path(self.config['video_folder_path']) / video
+        cap = cv2.VideoCapture(str(video))
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = float(cap.get(cv2.CAP_PROP_FPS))
+        frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        return {
+            'width': width,
+            'height': height,
+            'fps': fps,
+            'frames': frames
+        }
+
+    def perform_analysis(self):
+        self.logger.info("Started analysis")
+
+        videos = self.config['video_data']
+        for counter, video in enumerate(videos):
+            self.logger.info("Started analysis on video %s [%i/%i]", video, counter, len(videos))
+            video_analysis = VideoAnalysis(video, self)
+            video_analysis.run()
+
+        self.logger.info("Analysis complete")
+        self.analysis_changed_signal.emit()
+

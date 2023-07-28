@@ -16,7 +16,9 @@ dependencies = [
     "PyQt6",
     "matplotlib",
     "ruamel.yaml",
-    "opencv-python-headless"
+    "opencv-python-headless",
+    "matplotlib", 
+    "tables"
 ]
 
 [tool.setuptools.package-data]

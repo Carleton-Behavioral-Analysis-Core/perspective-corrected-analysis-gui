@@ -1,6 +1,3 @@
-project_name: your_project_name
-project_path: /replace/this/with/a/real/path/
-
 # Dimensions of the box in mm
 box_height: 400.0
 box_width: 500.0
@@ -22,8 +19,12 @@ threshold: 20
 # The probability cutoff to filter out low confidence deeplabcut predictions 
 dlc_pcutoff: 0.6
 
+# The start and end times of the analysis
+analysis_start_time_in_seconds: 0
+analysis_end_time_in_seconds: 600 
+
 # Zone coordinates for performing analysis (in mm)
-analysis_zones: []
+zones: []
 
 # Video data
 video_data: []
