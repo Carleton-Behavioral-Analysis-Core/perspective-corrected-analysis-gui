@@ -19,10 +19,15 @@ class LoadProjectTab(QWidget):
         layout.addWidget(self.project_folder_widget)
         
         self.load_project_button = MaterialPushButton("LOAD PROJECT")
-        self.load_project_button.clicked.connect(self.load_project)
         layout.addWidget(self.load_project_button)
         self.setLayout(layout)
-    
+
+        self.load_project_button.clicked.connect(self.load_project)
+        self.model.config_changed_signal.connect(self.model_config_changed)
+
     def load_project(self):
         self.logger.info("Load project button clicked")
         self.model.load_project(self.project_folder_widget.line_edit.text())
+
+    def model_config_changed(self):
+        self.project_folder_widget.line_edit.setText(str(self.model.config_path.parent))

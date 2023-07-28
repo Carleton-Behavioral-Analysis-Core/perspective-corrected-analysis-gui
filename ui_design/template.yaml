@@ -13,8 +13,8 @@ dlc_folder_path: ...
 
 # Treatment groups for performing aggregate analysis and plots
 treatment_groups:
-- asdfasdfqewr
-- counting
+- group1 
+- group2
 
 # How far mice can move in each frame (used to filter out outliers)
 threshold: 20
@@ -24,43 +24,7 @@ dlc_pcutoff: 0.6
 
 # Zone coordinates for performing analysis (in mm)
 analysis_zones: []
-  # Dummy Zone:
-  # - - 130
-  #   - 110
-  # - - 379
-  #   - 105
-  # - - 373
-  #   - 405
-  # - - 133
-  #   - 407
 
 # Video data
-video_data:
-  # f1.mp4:
-  #   dlc_file: f4DLC_resnet50_agrpNov19shuffle1_400000.h5
-  #   dlc_video_file: f4DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
-  #   treatment_groups: []
-  #   registration_points:
-  #   - - 243
-  #     - 117
-  #   - - 692
-  #     - 114
-  #   - - 729
-  #     - 476
-  #   - - 216
-  #     - 486
-
-  f2.mp4:
-    dlc_file: f4DLC_resnet50_agrpNov19shuffle1_400000.h5
-    dlc_video_file: f4DLC_resnet50_agrpNov19shuffle1_400000_labeled.mp4
-    treatment_groups: []
-    registration_points:
-    - - 243
-      - 117
-    - - 692
-      - 114
-    - - 729
-      - 476
-    - - 216
-      - 486 
+video_data: []
 

@@ -21,9 +21,14 @@ class CreateProjectTab(QWidget):
         self.setLayout(layout)
 
         self.create_project_button.clicked.connect(self.create_project)
+        self.model.config_changed_signal.connect(self.model_config_changed)
 
     def create_project(self):
         name = self.project_name_widget.line_edit.text()
         folder = self.project_folder_widget.line_edit.text()
         self.model.create_project(folder, name)
         
+    def model_config_changed(self):
+        self.project_folder_widget.line_edit.setText(str(self.model.config_path.parent.parent))
+
+    
