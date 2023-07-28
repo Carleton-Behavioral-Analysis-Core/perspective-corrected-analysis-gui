@@ -1,7 +1,7 @@
 BoxHeight: 500
 BoxWidth: 500
-DLCfolderPath: ''
-DLCvideoPaths: []
+DlcFolderPath: ''
+DlcVideoPaths: []
 Name: ''
 Path: ''
 analysis_zones:

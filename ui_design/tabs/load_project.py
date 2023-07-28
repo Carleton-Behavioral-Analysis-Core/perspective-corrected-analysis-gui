@@ -15,7 +15,7 @@ class LoadProjectTab(QWidget):
         title.setProperty('class', 'material-h1')
         layout.addWidget(title)
 
-        self.project_folder_widget = MaterialFileBrowseEdit("CONFIG FILE")
+        self.project_folder_widget = MaterialFolderBrowseEdit("PROJECT PATH (must contain config.yaml file)")
         layout.addWidget(self.project_folder_widget)
         
         self.load_project_button = MaterialPushButton("LOAD PROJECT")

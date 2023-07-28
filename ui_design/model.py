@@ -32,14 +32,6 @@ class Model(QObject):
                 self.logger.error("Config path does not exist")
         else:
             self.logger.error("config.yaml path not set")
-
-    def update_config_path(self, config_path):
-        config_path = Path(config_path)
-        if not config_path.exists():
-            self.logger.error("Config path does not exist")
-            return
-
-        self._config_path = config_path
         
     def create_project(self, folder, name):
         template_path = Path(__file__).parent / 'template.yaml'
@@ -58,8 +50,12 @@ class Model(QObject):
         self.logger.info("Loading created project")
         self.load_config()
 
-    def load_project(self, config_path):
-        self.logger.info("Loading existing project")
-        assert Path(config_path).exists()
-        self.config_path = Path(config_path)
+    def load_project(self, project_path):
+        self.logger.info("Loading existing project from %s", project_path)
+        project_path = Path(project_path)
+        config_path = project_path / 'config.yaml'
+        if not config_path.exists():
+            self.logger.error("Config path does not exist at %s", config_path)
+
+        self.config_path = config_path
         self.load_config()
