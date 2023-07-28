@@ -130,6 +130,15 @@ class Model(QObject):
         
         self.dump_config()
 
+    def register_measurements(self,width,height):
+        print(width,height)
+        self.config['box_height'] = height
+        self.config['box_width'] = width
+        
+        self.dump_config()
+
+
+
     def get_video_info(self, video):
         video = Path(self.config['video_folder_path']) / video
         cap = cv2.VideoCapture(str(video))
