@@ -128,10 +128,3 @@ class Model(QObject):
         self.config['dlc_folder_path'] = str(dlc_folder)
         self.config['video_data'] = video_data
         self.dump_config()
-
-        # Update display
-        # self.dlc_list_widget.clear()
-        # self.video_list_widget.clear()
-        # for idx, row in self.df.iterrows():
-        #     self.video_list_widget.addItem(row.video)
-        #     self.dlc_list_widget.addItem(row.dlc_file)

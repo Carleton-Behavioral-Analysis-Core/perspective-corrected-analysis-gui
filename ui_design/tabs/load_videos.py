@@ -59,32 +59,6 @@ class LoadVideosTab(QWidget):
         dlc_folder = self.dlc_folder_widget.line_edit.text()
         self.model.load_videos_and_dlc_files(video_folder, dlc_folder)
 
-        # TODO exception if folders don't exist
-
-        # video_folder = Path(video_folder)
-        # dlc_folder = Path(dlc_folder)
-        # videos = (
-        #     list(video_folder.glob('*.mp4')) + 
-        #     list(video_folder.glob('*.MP4'))
-        # )
-        # # TODO exception if no videos were found
-        # data = []
-        # for video in videos:
-        #     fname, _ = video.parts[-1].split('.')
-        #     dlc_file = next(dlc_folder.glob(f"{fname}DLC*.h5"))
-        #     # TODO exception if can't find matching DLC file
-        #     data.append({'video': video.parts[-1], 'dlc_file': dlc_file.parts[-1]})
-
-        # # Store data for later usage
-        # self.df = pd.DataFrame(data)
-
-        # # Update display
-        # self.dlc_list_widget.clear()
-        # self.video_list_widget.clear()
-        # for idx, row in self.df.iterrows():
-        #     self.video_list_widget.addItem(row.video)
-        #     self.dlc_list_widget.addItem(row.dlc_file)
-
     def model_config_changed(self):
         video_folder_path = self.model.config.get('video_folder_path', 'n/a')
         self.video_folder_widget.line_edit.setText(str(video_folder_path))
