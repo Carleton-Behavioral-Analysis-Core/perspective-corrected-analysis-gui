@@ -131,9 +131,9 @@ class MaterialLabelImageRegisterPoints(QWidget):
         self.frame_label = QLabel()
         self.height = height
         self.width = width
-        placeholder_frame = np.zeros(shape=(self.height,self.width,3), dtype=np.uint8)
+        
         self.testHolder = [] #delete when real
-        self.set_image(placeholder_frame)
+        self.set_image()
 
         # Test delete when real
         
@@ -156,7 +156,13 @@ class MaterialLabelImageRegisterPoints(QWidget):
 
         self.setLayout(layout)
 
-    def set_image(self, image):
+    def set_image(self):
+        try:
+    
+            raise Exception("have not loaded from the config file")
+            
+        except:
+            image = np.zeros(shape=(self.height,self.width,3), dtype=np.uint8)
         h,w,ch = image.shape
 
         self.cornerImageDim = [w, h]
@@ -255,8 +261,7 @@ class MaterialLabelImageRegisterPoints(QWidget):
                 else:
                   self.testHolder[3] = cord
 
-                placeholder_frame = np.zeros(shape=(self.height,self.width,3), dtype=np.uint8)
-                self.set_image(placeholder_frame)
+                self.set_image()
                 # Test delete when real
 
                 #if len(self.points_storage[self.video_combo_box.combo_box.currentText()]) < 4:
@@ -273,7 +278,7 @@ class MaterialLabelImageRegisterPoints(QWidget):
 
 
 class MaterialLineEditRegisterPoints(MaterialLineEdit):
-    def __init__(self, label_text="", default_line_edit="",LabelImageRegisterPoints= None,pos = int):
+    def __init__(self, label_text="", default_line_edit="",LabelImageRegisterPoints= None,pos = -2):
         super().__init__(label_text, default_line_edit)
 
 
@@ -310,3 +315,69 @@ class MaterialLineEditRegisterPoints(MaterialLineEdit):
                     self.line_edit.setPlaceholderText("")
                 finally:
                     self.line_edit.setText("")
+                           
+                    self.LabelImageRegisterPoints.set_image()
+
+class RegisterPointsFieldCombined(QWidget):
+    def __init__(self, label_text="", height=320, width=480,original_video_widget= None):
+        super().__init__()
+
+        layout = EmptyQVBoxLayout()
+        self.LabelImageRegisterPoints = original_video_widget
+        self.tl_line_edit = MaterialLineEditRegisterPoints("TOP LEFT","",original_video_widget ,0)
+        self.tl_line_edit.line_edit.returnPressed.connect(lambda: self.RegisterPoints(self.tl_line_edit))
+        layout.addWidget(self.tl_line_edit)
+        self.t2_line_edit = MaterialLineEditRegisterPoints("TOP RIGHT","",original_video_widget,1)
+        self.t2_line_edit.line_edit.returnPressed.connect(lambda: self.RegisterPoints(self.t2_line_edit))
+        layout.addWidget(self.t2_line_edit)
+        self.t3_line_edit = MaterialLineEditRegisterPoints("BOTTOM RIGHT","",original_video_widget,2)
+        self.t3_line_edit.line_edit.returnPressed.connect(lambda: self.RegisterPoints(self.t3_line_edit))
+        layout.addWidget(self.t3_line_edit)
+        self.t4_line_edit = MaterialLineEditRegisterPoints("BOTTOM LEFT","",original_video_widget,3)
+        self.t4_line_edit.line_edit.returnPressed.connect(lambda: self.RegisterPoints(self.t4_line_edit))
+        layout.addWidget(self.t4_line_edit)
+   
+
+        self.setLayout(layout)
+
+    def RegisterPoints(self,t_line_edit):
+        """Saves the top left position cordinate for a point"""
+        
+        
+        cord = self.sender().text()
+        print(cord)
+        cord = cord.split(" ")
+        print(t_line_edit.position)
+        if len(cord) == 2 and cord[0].isnumeric() and cord[1].isnumeric() and t_line_edit.position != -2:
+            cord[0] = int(cord[0])
+            cord[1] = int(cord[1])
+            if True: #A check to insure it is searching the right key
+                print(len(self.LabelImageRegisterPoints.testHolder),t_line_edit.position)
+                
+                if len(self.LabelImageRegisterPoints.testHolder) == 0:
+                    print("0")
+                    self.LabelImageRegisterPoints.testHolder = [cord]
+                elif len(self.LabelImageRegisterPoints.testHolder) <= t_line_edit.position:
+                    print("position", t_line_edit.position)
+                    self.LabelImageRegisterPoints.testHolder.append(cord)
+                else: 
+                    print("4",t_line_edit.position)
+                    self.LabelImageRegisterPoints.testHolder[t_line_edit.position] = cord
+
+                try:
+                    
+                    # t_line_edit.line_edit.setPlaceholderText(str(self.LabelImageRegisterPoints.testHolder[self.position][0]) + " " + str(self.LabelImageRegisterPoints.testHolder[self.position][1]) )
+                    self.tl_line_edit.line_edit.setPlaceholderText("")
+                    self.t2_line_edit.line_edit.setPlaceholderText("")
+                    self.t3_line_edit.line_edit.setPlaceholderText("")
+                    self.t4_line_edit.line_edit.setPlaceholderText("")
+                    self.tl_line_edit.line_edit.setPlaceholderText(str(self.LabelImageRegisterPoints.testHolder[0][0]) + " " + str(self.LabelImageRegisterPoints.testHolder[0][1]) )
+                    self.t2_line_edit.line_edit.setPlaceholderText(str(self.LabelImageRegisterPoints.testHolder[1][0]) + " " + str(self.LabelImageRegisterPoints.testHolder[1][1]) )
+                    self.t3_line_edit.line_edit.setPlaceholderText(str(self.LabelImageRegisterPoints.testHolder[2][0]) + " " + str(self.LabelImageRegisterPoints.testHolder[2][1]) )
+                    self.t4_line_edit.line_edit.setPlaceholderText(str(self.LabelImageRegisterPoints.testHolder[3][0]) + " " + str(self.LabelImageRegisterPoints.testHolder[3][1]) )
+                except:
+                    pass
+                finally:
+                    t_line_edit.line_edit.setText("")
+                    print(self.LabelImageRegisterPoints.testHolder)
+                    self.LabelImageRegisterPoints.set_image()
