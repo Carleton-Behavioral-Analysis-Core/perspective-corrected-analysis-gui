@@ -23,6 +23,11 @@ class Model(QObject):
         with open(config_path, 'w') as fp:
             self._yaml_parser.dump(config, fp)
 
+        self.load_config()
+        
+        self.logger.info("Emit signal that project config has updated")
+        self.config_changed.emit()
+
     def get_config_path(self):
         if self.config_path is not None:
             config_path = Path(self.config_path)
@@ -50,6 +55,9 @@ class Model(QObject):
         self.logger.info("Loading created project")
         self.load_config()
 
+        self.logger.info("Emit signal that project config has updated")
+        self.config_changed.emit()
+
     def load_project(self, project_path):
         self.logger.info("Loading existing project from %s", project_path)
         project_path = Path(project_path)
@@ -59,3 +67,6 @@ class Model(QObject):
 
         self.config_path = config_path
         self.load_config()
+
+        self.logger.info("Emit signal that project config has updated")
+        self.config_changed.emit()

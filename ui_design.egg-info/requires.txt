@@ -1,5 +1,0 @@
-pandas>=1.5
-numpy>=1.22
-PyQt6
-matplotlib
-ruamel.yaml
