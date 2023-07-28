@@ -2,18 +2,21 @@ from PyQt6 import QtCore
 from PyQt6.QtCore import QObject
 from ruamel.yaml import YAML
 from pathlib import Path
+import logging
 
 class Model(QObject):
     config_changed = QtCore.pyqtSignal()
-
+    
     def __init__(self):
-        self._config = None 
-        self._config_path = None
+        self.config = None 
+        self.config_path = None
         self._yaml_parser = YAML()
+        self.logger = logging.getLogger(__name__)
 
-    def get_config(self):
+    def load_config(self):
         config_path = self.get_config_path()
-        return self._yaml_parser.load(self._config_path)
+        self.config = self._yaml_parser.load(self.config_path)
+        self.logger.info("Loaded config")
 
     def update_config(self, config):
         config_path = self.get_config_path()
@@ -21,19 +24,19 @@ class Model(QObject):
             self._yaml_parser.dump(config, fp)
 
     def get_config_path(self):
-        if self._config_path is not None:
-            config_path = Path(self._config_path)
+        if self.config_path is not None:
+            config_path = Path(self.config_path)
             if config_path.exists():
                 return config_path
             else:
-                raise Exception("Config path does not exist")
+                self.logger.error("Config path does not exist")
         else:
-            raise Exception("config.yaml path not set")
+            self.logger.error("config.yaml path not set")
 
     def update_config_path(self, config_path):
         config_path = Path(config_path)
         if not config_path.exists():
-            raise Exception("Config path does not exist")
+            self.logger.error("Config path does not exist")
             return
 
         self._config_path = config_path
@@ -43,7 +46,20 @@ class Model(QObject):
         config = self._yaml_parser.load(template_path)
 
         project_path = Path(folder) / name
+        project_path = project_path.resolve()
+        self.logger.info("Creating new project at %s", project_path)
         if not project_path.exists():
             project_path.mkdir(parents=True)
 
-        self._yaml_parser.dump(config, project_path / 'config.yaml')
+        self.logger.info("Creating config.yaml from template.yaml")
+        self.config_path = project_path / 'config.yaml'
+        self._yaml_parser.dump(config, self.config_path)
+
+        self.logger.info("Loading created project")
+        self.load_config()
+
+    def load_project(self, config_path):
+        self.logger.info("Loading existing project")
+        assert Path(config_path).exists()
+        self.config_path = Path(config_path)
+        self.load_config()

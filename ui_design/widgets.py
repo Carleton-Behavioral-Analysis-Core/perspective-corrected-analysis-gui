@@ -5,6 +5,7 @@ from PyQt6.QtGui import QImage, QPixmap, QPen, QColor
 from PyQt6.QtWidgets import QFileDialog, QHBoxLayout, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QSizePolicy, QComboBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
+
 class EmptyQVBoxLayout(QVBoxLayout):
     def __init__(self):
         super().__init__()
@@ -81,6 +82,14 @@ class MaterialFileBrowseEdit(MaterialLineEdit):
         super().__init__(label_text, default_line_edit)
         self.browse_button = MaterialPushButton("BROWSE")
         self.hbox_layout.addWidget(self.browse_button)
+        self.browse_button.clicked.connect(self.browse)
+
+
+    def browse(self):
+        path = QFileDialog.getExistingDirectory(
+            self, "Open the location of the folder", r"" + str(os.getcwd()))
+
+        self.line_edit.setText(path)
 
 class MaterialLabelImage(QWidget):
     def __init__(self, label_text="", height=320, width=480):

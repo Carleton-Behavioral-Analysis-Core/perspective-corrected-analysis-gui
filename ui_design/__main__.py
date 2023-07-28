@@ -1,4 +1,5 @@
 import sys
+import logging
 
 from tabs import load_project, create_project, load_videos, registration, analysis
 from pathlib import Path
@@ -49,6 +50,9 @@ class App(QMainWindow):
         self.tab_widget.addTab(self.analysis_tab, "Results")
 
 if __name__ == "__main__":
+    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    logging.basicConfig(level=logging.INFO, format=log_fmt)
+
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec())
