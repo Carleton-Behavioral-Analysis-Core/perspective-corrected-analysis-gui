@@ -20,9 +20,11 @@ class AnalysisTab(QWidget):
         create_default_zones_button = MaterialPushButton("CREATE DEFAULT ZONES")
         run_analysis_button = MaterialPushButton("ANALYZE")
         hbox.addWidget(create_default_zones_button)
+        hbox.addSpacing(16)
         hbox.addWidget(run_analysis_button)
 
         layout.addLayout(hbox)
         self.setLayout(layout)
 
+        create_default_zones_button.clicked.connect(self.model.create_default_analysis_zones)
         run_analysis_button.clicked.connect(self.model.perform_analysis)

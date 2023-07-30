@@ -8,6 +8,7 @@ import cv2
 from collections import OrderedDict
 from ruamel.yaml.comments import CommentedMap as ordereddict
 from ui_design.analysis import *
+from scipy.stats.kde import gaussian_kde
 
 class Model(QObject):
     config_changed_signal = QtCore.pyqtSignal()
@@ -42,6 +43,17 @@ class Model(QObject):
             self._yaml_parser.dump(self.config, fp)
 
         self.load_config(give_confirmation_message=False)
+
+    def get_schema(self):
+        height = self.config['box_height']
+        width = self.config['box_width']
+        schema_points = np.array([
+            [0,0],
+            [width,0],
+            [width,height],
+            [0,height]
+        ]).astype(np.float32)
+        return schema_points
 
     def get_config_path(self):
         if self.config_path is not None:
@@ -124,20 +136,15 @@ class Model(QObject):
         # find the minimum number of frames in the video
         min_frames = min([self.get_video_info(v)['fps'] for v in videos])
         
-
         self.logger.info('Saving to config')
         self.config['video_data'] = video_data
         
         self.dump_config()
 
     def register_measurements(self,width,height):
-        print(width,height)
         self.config['box_height'] = height
         self.config['box_width'] = width
-        
         self.dump_config()
-
-
 
     def get_video_info(self, video):
         video = Path(self.config['video_folder_path']) / video
@@ -155,13 +162,112 @@ class Model(QObject):
 
     def perform_analysis(self):
         self.logger.info("Started analysis")
+        self.load_config(False)
 
         videos = self.config['video_data']
+        all_video_analysis = []
         for counter, video in enumerate(videos):
             self.logger.info("Started analysis on video %s [%i/%i]", video, counter, len(videos))
             video_analysis = VideoAnalysis(video, self)
-            video_analysis.run()
+            video_analysis.process()
+            all_video_analysis.append(video_analysis)
+
+        self.logger.info("Saving results")
+        result_df = pd.DataFrame([va.results for va in all_video_analysis])
+        result_df.to_csv(Path(self.config_path).parent / 'results.csv')
+
+        self.logger.info("Creating group heatmaps")
+        for group in self.config['treatment_groups']:
+            group_analysis = [va for va in all_video_analysis if group in va.video_groups]
+            if not len(group_analysis):
+                continue
+            centroids = [va.centroid for va in group_analysis]
+            centroids = pd.concat(centroids, axis=0).dropna()
+            data = centroids[['y', 'x']].values.T
+            k = gaussian_kde(data[:,::10], )
+            mgrid = np.mgrid[:self.config['box_height'], :self.config['box_width']]
+            z = k(mgrid.reshape(2, -1))
+            plt.title(f"Heatmap ({group})")
+            plt.imshow(group_analysis[0].representative_frame)
+            contour_levels = 20
+            plt.contourf(z.reshape(mgrid.shape[1:]), cmap='seismic', alpha=1, levels=contour_levels)
+            folder = Path(self.config_path).parent / 'figures/group_heatmaps'
+            if not folder.exists():
+                folder.mkdir(parents=True)
+            plt.tight_layout()
+            plt.savefig(folder / f"{group}.png")
+            plt.savefig(folder / f"{group}.pdf")
+            plt.close()
 
         self.logger.info("Analysis complete")
         self.analysis_changed_signal.emit()
 
+
+    def create_default_analysis_zones(self):
+        width = self.config['box_width']
+        height = self.config['box_height']
+        overflow = 25 
+        padding = 80
+        zones = ordereddict()
+
+        self.logger.info("Creating default analysis zones")
+        zones["centre"] = [
+            [padding,padding],
+            [width-padding,padding],
+            [width-padding,height-padding],
+            [padding,height-padding]
+        ]
+
+        zones["outer"] = [
+            [-overflow,-overflow],
+            [width+overflow,-overflow],
+            [width+overflow,height+overflow],
+            [-overflow,height+overflow]
+        ]
+
+        x0 = -overflow
+        x1 = padding
+        y0 = -overflow
+        y1 = padding
+        zones["top_left_corner"] = [
+            [x0, y0],
+            [x1, y0],
+            [x1, y1],
+            [x0, y1]
+        ]
+
+        x0 = width-padding
+        x1 = width+overflow
+        y0 = -overflow
+        y1 = padding
+        zones["top_right_corner"] = [
+            [x0, y0],
+            [x1, y0],
+            [x1, y1],
+            [x0, y1]
+        ]
+
+        x0 = width-padding
+        x1 = width+overflow
+        y0 = height-padding
+        y1 = height+overflow
+        zones["bottom_right_corner"] = [
+            [x0, y0],
+            [x1, y0],
+            [x1, y1],
+            [x0, y1]
+        ]
+
+        x0 = -overflow
+        x1 = padding
+        y0 = height-padding
+        y1 = height+overflow
+        zones["bottom_left_corner"] = [
+            [x0, y0],
+            [x1, y0],
+            [x1, y1],
+            [x0, y1]
+        ]
+
+        self.config['zones'] = zones
+        self.dump_config()

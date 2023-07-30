@@ -18,7 +18,8 @@ dependencies = [
     "ruamel.yaml",
     "opencv-python-headless",
     "matplotlib", 
-    "tables"
+    "tables",
+    "scipy"
 ]
 
 [tool.setuptools.package-data]

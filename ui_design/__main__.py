@@ -9,7 +9,7 @@ from ui_design.model import Model
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.title = "Andre, Aidan"
+        self.title = "Analysis Application"
         self.left = 0
         self.top = 0
         self.width = 500
@@ -46,8 +46,8 @@ class App(QMainWindow):
         self.analysis_tab = analysis.AnalysisTab(self.model)
         self.tab_widget.addTab(self.analysis_tab, "Analysis")
 
-        self.analysis_tab = analysis.AnalysisTab(self.model)
-        self.tab_widget.addTab(self.analysis_tab, "Results")
+        # self.analysis_tab = analysis.AnalysisTab(self.model)
+        # self.tab_widget.addTab(self.analysis_tab, "Results")
 
 if __name__ == "__main__":
     log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
