@@ -1,7 +1,7 @@
 import sys
 import logging
 
-from tabs import load_project, create_project, load_videos, registration, analysis
+from ui_design.tabs import load_project, create_project, load_videos, registration, analysis
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget
 from ui_design.model import Model
