@@ -7,7 +7,7 @@ import logging
 import cv2
 from collections import OrderedDict
 from ruamel.yaml.comments import CommentedMap as ordereddict
-from ui_design.analysis import *
+from behavior_analysis_tool.analysis import *
 from scipy.stats.kde import gaussian_kde
 
 class Model(QObject):

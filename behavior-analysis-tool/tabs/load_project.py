@@ -1,6 +1,6 @@
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QHBoxLayout, QSpacerItem, QSizePolicy
-from ui_design.widgets import *
+from behavior_analysis_tool.widgets import *
 import logging
 
 class LoadProjectTab(QWidget):

@@ -5,8 +5,8 @@ import cv2
 
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QGroupBox
-from ui_design.widgets import *
-from ui_design.utils import *
+from behavior_analysis_tool.widgets import *
+from behavior_analysis_tool.utils import *
 from pathlib import Path
 
 logger = logging.getLogger(__name__)

@@ -1,5 +1,5 @@
 [project]
-name = "ui-design"
+name = "behavior-analysis-tool"
 version = "0.0.1"
 authors = []
 description = "Open Field Test Analysis"
@@ -23,4 +23,4 @@ dependencies = [
 ]
 
 [tool.setuptools.package-data]
-ui_design = ["*.yaml"]
+behavior_analysis_tool = ["*.yaml", "*.css"]

@@ -1,7 +1,7 @@
 import numpy as np
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QGroupBox
-from ui_design.widgets import *
+from behavior_analysis_tool.widgets import *
 
 
 class AnalysisTab(QWidget):

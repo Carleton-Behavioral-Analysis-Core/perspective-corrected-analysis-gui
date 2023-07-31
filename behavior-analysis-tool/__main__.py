@@ -1,10 +1,10 @@
 import sys
 import logging
 
-from ui_design.tabs import load_project, create_project, load_videos, registration, analysis
+from behavior_analysis_tool.tabs import load_project, create_project, load_videos, registration, analysis
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QTabWidget
-from ui_design.model import Model
+from behavior_analysis_tool.model import Model
 
 class App(QMainWindow):
     def __init__(self):

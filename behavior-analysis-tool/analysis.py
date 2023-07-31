@@ -4,7 +4,7 @@ import pandas as pd
 import cv2
 import matplotlib.pyplot as plt
 from scipy.stats.kde import gaussian_kde
-from ui_design.utils import *
+from behavior_analysis_tool.utils import *
 from ruamel.yaml.comments import CommentedMap as ordereddict
 from pathlib import Path
 
