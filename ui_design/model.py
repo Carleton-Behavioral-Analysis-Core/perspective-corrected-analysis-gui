@@ -14,6 +14,8 @@ from scipy.stats.kde import gaussian_kde
 class Model(QObject):
     config_changed_signal = QtCore.pyqtSignal()
     analysis_changed_signal = QtCore.pyqtSignal()
+    progressbar_changed_signal = QtCore.pyqtSignal(int)
+    # TODO create a new signal for analysis progress
 
     def __init__(self):
         super().__init__()
@@ -189,18 +191,28 @@ class Model(QObject):
 
             videos = self.config['video_data']
             all_video_analysis = []
+            self.progressbar_changed_signal.emit(int(3))
+            num_videos = len(videos) 
+            print(num_videos)
+            video_counter = 1
             for counter, video in enumerate(videos):
+             
+                # self.progressbar_changed_signal.emit(int(counter))
                 self.logger.info("Started analysis on video %s [%i/%i]", video, counter, len(videos))
                 video_analysis = VideoAnalysis(video, self)
                 video_analysis.process()
                 all_video_analysis.append(video_analysis)
-
+                self.progressbar_changed_signal.emit(int(((90/num_videos)*video_counter))+3)
+                video_counter += 1
+            
             self.logger.info("Saving results")
             result_df = pd.DataFrame([va.results for va in all_video_analysis])
             result_df.to_csv(Path(self.config_path).parent / 'results.csv')
-
+            
             self.logger.info("Creating group heatmaps")
+            self.progressbar_changed_signal.emit(int(97))
             for group in self.config['treatment_groups']:
+               
                 group_analysis = [va for va in all_video_analysis if group in va.video_groups]
                 if not len(group_analysis):
                     continue
@@ -221,8 +233,9 @@ class Model(QObject):
                 plt.savefig(folder / f"{group}.png")
                 plt.savefig(folder / f"{group}.pdf")
                 plt.close()
-
+            
             self.logger.info("Analysis complete")
+            self.progressbar_changed_signal.emit(int(100))
             self.analysis_changed_signal.emit()
         elif self.config_path == None or not os.path.exists(self.config_path):
             logger.warn("No Path to Config File Found")
