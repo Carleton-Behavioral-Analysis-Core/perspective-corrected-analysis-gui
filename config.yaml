@@ -1,0 +1,29 @@
+# Dimensions of the box in mm
+box_height: 400.0
+box_width: 500.0
+
+# Directory that contains the .mp4 videos 
+video_folder_path: '...'
+
+# Directory that contains the .h5 files produced by deeplabcut
+dlc_folder_path: '...'
+
+# Treatment groups for performing aggregate analysis and plots
+treatment_groups:
+- group1
+- group2
+
+# How far mice can move in each frame (used to filter out outliers)
+threshold: 20
+
+# The probability cutoff to filter out low confidence deeplabcut predictions 
+dlc_pcutoff: 0.6
+
+# The start and end times of the analysis
+analysis_start_time_in_seconds: 0
+analysis_end_time_in_seconds: 600
+
+# Zone coordinates for performing analysis (in mm)
+zones: []
+# Video data
+video_data: []

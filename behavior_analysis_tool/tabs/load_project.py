@@ -27,7 +27,13 @@ class LoadProjectTab(QWidget):
 
     def load_project(self):
         self.logger.info("Load project button clicked")
-        self.model.load_project(self.project_folder_widget.line_edit.text())
+        folder = self.project_folder_widget.line_edit.text()
+     
+        if not os.path.exists(folder):
+            logger.warn("Path " + str(folder) + "is Invalid")
+        else:
+           
+            self.model.load_project(folder)
 
     def model_config_changed(self):
         self.project_folder_widget.line_edit.setText(str(self.model.config_path.parent))

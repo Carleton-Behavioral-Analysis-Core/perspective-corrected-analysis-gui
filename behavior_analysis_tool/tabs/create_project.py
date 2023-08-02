@@ -1,3 +1,4 @@
+import os
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy
 from behavior_analysis_tool.widgets import *
@@ -26,7 +27,13 @@ class CreateProjectTab(QWidget):
     def create_project(self):
         name = self.project_name_widget.line_edit.text()
         folder = self.project_folder_widget.line_edit.text()
-        self.model.create_project(folder, name)
+        if name == "":
+            logger.warn("Name can't be blank")
+           
+        elif not os.path.exists(folder):
+            logger.warn("Path " + str(folder) + "is Invalid")
+        else:
+            self.model.create_project(folder, name)
         
     def model_config_changed(self):
         self.project_folder_widget.line_edit.setText(str(self.model.config_path.parent.parent))

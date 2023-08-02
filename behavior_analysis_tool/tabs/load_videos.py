@@ -1,3 +1,4 @@
+import os
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QLineEdit, QPushButton, QHBoxLayout, QSpacerItem, QSizePolicy, QListWidget, QMessageBox
 from behavior_analysis_tool.widgets import *
@@ -57,7 +58,16 @@ class LoadVideosTab(QWidget):
     def update_files(self):
         video_folder = self.video_folder_widget.line_edit.text()
         dlc_folder = self.dlc_folder_widget.line_edit.text()
-        self.model.load_videos_and_dlc_files(video_folder, dlc_folder)
+       
+        if os.path.exists(video_folder) and video_folder != "..." and os.path.exists(dlc_folder) and dlc_folder != "..." and self.model.config_path != None:
+            self.model.load_videos_and_dlc_files(video_folder, dlc_folder)
+        elif self.model.config_path == None:
+            logger.warn("No Path to Config File Found")
+        elif not os.path.exists(video_folder) or video_folder == "...":
+            logger.warn("No Path to Video Folder Found")
+        elif not os.path.exists(dlc_folder) or dlc_folder == "...":
+            logger.warn("No Path to DLC Video Folder Found")
+        
 
     def model_config_changed(self):
         video_folder_path = self.model.config.get('video_folder_path', 'n/a')

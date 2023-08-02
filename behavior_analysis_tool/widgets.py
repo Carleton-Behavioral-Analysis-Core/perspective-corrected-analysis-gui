@@ -97,7 +97,7 @@ class MaterialFileBrowseEdit(MaterialLineEdit):
 class MaterialLabelImage(QWidget):
     mouseclick_signal = QtCore.pyqtSignal([int, int])
 
-    def __init__(self, label_text="", max_height=320, max_width=480):
+    def __init__(self, label_text="", max_height=320, max_width=480,Clickable=True):
         super().__init__()
 
         layout = EmptyQVBoxLayout()
@@ -111,7 +111,8 @@ class MaterialLabelImage(QWidget):
         layout.addWidget(self.frame_label)
 
         self.setLayout(layout)
-        self.frame_label.mousePressEvent = self.mouse_press_event_handler
+        if Clickable:
+            self.frame_label.mousePressEvent = self.mouse_press_event_handler
 
     def set_image(self, image=None):
         if image is not None:

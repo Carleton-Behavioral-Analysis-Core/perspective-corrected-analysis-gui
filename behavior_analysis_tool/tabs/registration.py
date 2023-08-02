@@ -32,7 +32,7 @@ class RegistrationTab(QWidget):
         sublayout.addWidget(left_widget)
         self.original_video_widget = MaterialLabelImage("ORIGINAL VIDEO (click to register points)")
         # self.original_video_widget = MaterialLabelImageRegisterPoints("ORIGINAL VIDEO (click to register points)",320,480,True) 
-        self.corrected_video_widget = MaterialLabelImage("REGISTRATION VALIDATION")
+        self.corrected_video_widget = MaterialLabelImage("REGISTRATION VALIDATION",320, 480,False)
         left_widget_layout.addWidget(self.original_video_widget)
         left_widget_layout.addSpacing(16)
         left_widget_layout.addWidget(self.corrected_video_widget)
@@ -153,12 +153,15 @@ class RegistrationTab(QWidget):
             schema = self.model.get_schema().astype(np.float32)
             registration = self.registration_points[video].astype(np.float32)
             transform = get_homography(registration, schema)
-            transformed_frame = cv2.warpPerspective(
-                self.original_video_widget.base_image,
-                transform, 
-                (int(self.model.config['box_width']), int(self.model.config['box_height']))
-            )
-            self.corrected_video_widget.set_image(transformed_frame)
+            try:
+                transformed_frame = cv2.warpPerspective(
+                    self.original_video_widget.base_image,
+                    transform, 
+                    (int(self.model.config['box_width']), int(self.model.config['box_height']))
+                )
+                self.corrected_video_widget.set_image(transformed_frame)
+            except:
+                logger.warn(f"Issue with points")
 
         self.original_video_widget.update()
 
@@ -171,9 +174,9 @@ class RegistrationTab(QWidget):
                 try:
                     x = xinput.line_edit.text()
                     y = yinput.line_edit.text()
-                    if x == "":
+                    if x == "" or int(x) < 0:
                         x = 0
-                    if y == "":
+                    if y == "" or int(y) < 0:
                         y = 0
                     self.registration_points[video][k,0] = int(x)
                     self.registration_points[video][k,1] = int(y)
@@ -192,10 +195,19 @@ class RegistrationTab(QWidget):
         self.keypoint_combo_box.combo_box.setCurrentIndex((keypoint_index+1)%self.n_registration_points)
 
     def save_registrations(self):
-        for video in self.registration_points:
-            self.model.config['video_data'][video]['registration_points'] = self.registration_points[video].tolist()
+        if self.model.config_path != None and os.path.exists(self.model.config_path) and os.path.exists(self.model.config['video_folder_path']) and os.path.exists(self.model.config['dlc_folder_path']):
+            for video in self.registration_points:
+                self.model.config['video_data'][video]['registration_points'] = self.registration_points[video].tolist()
 
-        self.model.dump_config()
+            self.model.dump_config()
+        elif self.model.config_path == None or not os.path.exists(self.model.config_path):
+            logger.warn("No Path to Config File Found")
+        elif not os.path.exists(self.model.config['video_folder_path']):
+            logger.warn("No Path to Video Folder Found")
+        elif not os.path.exists(self.model.config['video_folder_path']):
+            logger.warn("No Path to DLC Video Folder Found")
+
+        
 
     def model_config_changed(self):
         self.width_line_edit.line_edit.setText(str(self.model.config['box_width']))
@@ -224,42 +236,56 @@ class RegistrationTab(QWidget):
             self.redraw_registration_points()
 
     def model_update_width_and_height(self):
-        width = float(self.width_line_edit.line_edit.text())
-        height = float(self.height_line_edit.line_edit.text())
-        logger.info('Saving measurements w=%i h=%i', width, height)
-        self.model.register_measurements(width, height)
+        if self.model.config_path != None and os.path.exists(self.model.config_path) and os.path.exists(self.model.config['video_folder_path']) and os.path.exists(self.model.config['dlc_folder_path']):
+            try:
+                width = float(self.width_line_edit.line_edit.text())
+                height = float(self.height_line_edit.line_edit.text())
+                if width > 0 and height >0:
+                    logger.info('Saving measurements w=%i h=%i', width, height)
+                    self.model.register_measurements(width, height)
+                else:
+                    raise Exception
+            except:
+                self.width_line_edit.line_edit.setText(str(self.model.config['box_width']))
+                self.height_line_edit.line_edit.setText(str(self.model.config['box_height']))
+        elif self.model.config_path == None or not os.path.exists(self.model.config_path):
+            logger.warn("No Path to Config File Found")
+        elif not os.path.exists(self.model.config['video_folder_path']):
+            logger.warn("No Path to Video Folder Found")
+        elif not os.path.exists(self.model.config['video_folder_path']):
+            logger.warn("No Path to DLC Video Folder Found")
 
 
 class MaterialLineEditWidth(MaterialLineEdit):
     def __init__(self, label_text="", default_line_edit=""):
         super().__init__(label_text, default_line_edit)
    
-        self.line_edit.returnPressed.connect(self.updateWidth)
+    #     self.line_edit.returnPressed.connect(self.updateWidth)
     
-    def updateWidth(self):
-        num = self.line_edit.text()
-        if str(num).isnumeric() and float(num) > 0:
-            try:
-                num = float(num)
-                self.line_edit.setPlaceholderText(str(num))
-                self.line_edit.setText("")
-            except:
-                pass
+    # def updateWidth(self):
+    #     num = self.line_edit.text()
+    #     if str(num).isnumeric() and float(num) > 0:
+    #         try:
+    #             num = float(num)
+    #             self.line_edit.setPlaceholderText(str(num))
+    #             self.line_edit.setText("")
+    #         except:
+    #             pass
             
 
 class MaterialLineEditHeight(MaterialLineEdit):
     def __init__(self, label_text="", default_line_edit=""):
         super().__init__(label_text, default_line_edit)
    
-        self.line_edit.returnPressed.connect(self.updateHeight)
+    #     self.line_edit.returnPressed.connect(self.updateHeight)
     
-    def updateHeight(self):
-        num = self.line_edit.text()
-        if str(num).isnumeric() and float(num) > 0:
-            try:
-                num = float(num)
-                self.line_edit.setPlaceholderText(str(num))
-                self.line_edit.setText("")
-            except:
-                pass
+    # def updateHeight(self):
+    #     num = self.line_edit.text()
+    #     if str(num).isnumeric() and float(num) > 0:
+    #         try:
+    #             num = float(num)
+    #             self.line_edit.setPlaceholderText(str(num))
+    #             self.line_edit.setText("")
+    #         except:
+    #             pass
             
