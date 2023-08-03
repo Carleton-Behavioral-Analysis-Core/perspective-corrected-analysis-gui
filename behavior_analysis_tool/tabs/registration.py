@@ -246,6 +246,7 @@ class RegistrationTab(QWidget):
                 else:
                     raise Exception
             except:
+                logger.warn("Cannot Have Negative Measurements")
                 self.width_line_edit.line_edit.setText(str(self.model.config['box_width']))
                 self.height_line_edit.line_edit.setText(str(self.model.config['box_height']))
         elif self.model.config_path == None or not os.path.exists(self.model.config_path):
