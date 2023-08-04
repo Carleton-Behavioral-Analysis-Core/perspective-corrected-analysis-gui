@@ -1,6 +1,7 @@
 # Perspective Corrected Analysis Gui
 
 ## Setup 
+![](https://youtu.be/_wLCJuvpfKM)
 
 ### Install Anaconda
 https://www.anaconda.com
