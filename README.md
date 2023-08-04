@@ -15,7 +15,7 @@ conda run -n abizaidlab-analysis pip install git+https://github.com/Carleton-Beh
 ```
 
 ## Running the Application
-If the install was successful, from now on you just have to run 
+If the install was successful, to run the application you can open terminal/command prompt and paste the following 
 ```
 conda run -n abizaidlab-analysis python -m behavior_analysis_tool
 ```
