@@ -11,7 +11,7 @@ This allows us to install python and the main application
 If the conda installation was successful, you should be able to open up a new terminal/command prompt (or Anaconda prompt if this fails) and create a new python environment
 ```
 conda env create -n abizaidlab-analysis python=3.10 pytables
-conda run -n abizaidlab-analysis pip install git+https://github.com/Carleton-Behavioral-Analysis-Core/perspective-corrected-analysis-gui/tree/main
+conda run -n abizaidlab-analysis pip install git+https://github.com/Carleton-Behavioral-Analysis-Core/perspective-corrected-analysis-gui
 ```
 
 ## Running the Application
