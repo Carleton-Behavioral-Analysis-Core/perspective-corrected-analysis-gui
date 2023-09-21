@@ -1,7 +1,7 @@
 import os
 from PyQt6 import QtCore
 from PyQt6.QtCore import QObject
-from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox, QApplication
 from ruamel.yaml import YAML
 from pathlib import Path
 import logging
@@ -125,18 +125,31 @@ class Model(QObject):
             list(video_folder.glob('*.MP4'))
         )
 
+        
+
         # TODO exception if no videos were found
         video_data = OrderedDict()
         for video in videos:
             try:
                 key = video.parts[-1]
                 fname, _ = key.split('.')
-                if key in self.config['video_data']:
-                    video_data[key] = self.config['video_data'][key]
-                    continue
+                # if key in self.config['video_data']:
+                #     video_data[key] = self.config['video_data'][key]
+                #     continue
 
-                dlc_file = next(dlc_folder.glob(f"{fname}DLC*.h5")).parts[-1]
-                dlc_video = next(dlc_folder.glob(f"{fname}DLC*_labeled.mp4")).parts[-1]
+                try:
+                    dlc_file = next(dlc_folder.glob(f"{fname}DLC*.h5")).parts[-1]
+                except Exception as e:
+                    logger.warn("No dlc file found for video %s", video)
+                    # QMessageBox(
+                    #     QMessageBox.Icon.Information,
+                    #     "DLC file not found.",
+                    #     "DLC file was not found for video %s (other may also be missing)" % video,
+                    #     QMessageBox.StandardButton.Ok
+                    # ).exec()
+                    return 
+
+                # dlc_video = next(dlc_folder.glob(f"{fname}DLC*_labeled.mp4")).parts[-1]
                 groups = []
                 video_info = self.get_video_info(key)
                 width = video_info['width']
@@ -150,19 +163,28 @@ class Model(QObject):
 
                 video_data[key] = (ordereddict([
                     ('dlc_file', str(dlc_file)),
-                    ('dlc_video', str(dlc_video)),
+                    # ('dlc_video', str(dlc_video)),
                     ('groups', groups),
                     ('registration_points', registration_points)
                 ]))
-            except:
-                pass
+            except Exception as e:
+                logger.exception(e)
 
         # find the minimum number of frames in the video
-        min_frames = min([self.get_video_info(v)['fps'] for v in videos])
+        if len(videos) == 0:
+            logger.warn('No .mp4 videos found')
+            QMessageBox(
+                QMessageBox.Icon.Information,
+                "No videos found.",
+                "No mp4 videos were found in this path, if this is intentional please delete directly from config or start a new project",
+                QMessageBox.StandardButton.Ok
+            ).exec()
+            return
+        else:
+            min_frames = min([self.get_video_info(v)['fps'] for v in videos])
         
         self.logger.info('Saving to config')
         self.config['video_data'] = video_data
-        
         self.dump_config()
 
     def register_measurements(self,width,height):
@@ -191,7 +213,10 @@ class Model(QObject):
 
             videos = self.config['video_data']
             all_video_analysis = []
+
             self.progressbar_changed_signal.emit(int(3))
+            QApplication.processEvents()
+
             num_videos = len(videos) 
             print(num_videos)
             video_counter = 1
@@ -203,6 +228,7 @@ class Model(QObject):
                 video_analysis.process()
                 all_video_analysis.append(video_analysis)
                 self.progressbar_changed_signal.emit(int(((90/num_videos)*video_counter))+3)
+                QApplication.processEvents()
                 video_counter += 1
             
             self.logger.info("Saving results")
@@ -211,6 +237,7 @@ class Model(QObject):
             
             self.logger.info("Creating group heatmaps")
             self.progressbar_changed_signal.emit(int(97))
+            QApplication.processEvents()
             for group in self.config['treatment_groups']:
                
                 group_analysis = [va for va in all_video_analysis if group in va.video_groups]
@@ -236,6 +263,7 @@ class Model(QObject):
             
             self.logger.info("Analysis complete")
             self.progressbar_changed_signal.emit(int(100))
+            QApplication.processEvents()
             self.analysis_changed_signal.emit()
         elif self.config_path == None or not os.path.exists(self.config_path):
             logger.warn("No Path to Config File Found")
